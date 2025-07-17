@@ -11,38 +11,39 @@ Rectangle {
     property bool showResults: searchText.length > 0
     signal itemSelected
 
-    width: 500
-    height: searchInput.height + (3 * 50) + 20
+    implicitWidth: 500
+    implicitHeight: mainLayout.implicitHeight + 16
     color: Colors.surface
-    radius: 12
+    radius: 24
     border.color: Colors.outline
-    border.width: 1
+    border.width: 0
 
     Behavior on height {
         NumberAnimation {
-            duration: 200
+            duration: 250
             easing.type: Easing.OutQuart
         }
     }
 
     ColumnLayout {
+        id: mainLayout
         anchors.fill: parent
-        anchors.margins: 10
+        anchors.margins: 8
         spacing: 0
 
         // Search input
         Rectangle {
             id: searchInputContainer
             Layout.fillWidth: true
-            height: 50
-            color: Colors.background
-            radius: 8
+            implicitHeight: 48
+            color: Colors.surface
+            radius: 16
             border.color: searchInput.activeFocus ? Colors.primary : Colors.outline
-            border.width: 1
+            border.width: 0
 
             RowLayout {
                 anchors.fill: parent
-                anchors.margins: 12
+                anchors.margins: 8
                 spacing: 8
 
                 Text {
@@ -87,7 +88,7 @@ Rectangle {
         ListView {
             id: resultsList
             Layout.fillWidth: true
-            Layout.preferredHeight: 3 * 50
+            Layout.preferredHeight: 3 * 48
             visible: true
             clip: true
 
@@ -97,9 +98,9 @@ Rectangle {
                 required property var modelData
 
                 width: resultsList.width
-                height: 50
+                height: 48
                 color: mouseArea.containsMouse ? Colors.surfaceVariant : "transparent"
-                radius: 6
+                radius: 16
 
                 MouseArea {
                     id: mouseArea
@@ -166,9 +167,8 @@ Rectangle {
             }
 
             highlight: Rectangle {
-                color: Colors.primary
-                opacity: 0.3
-                radius: 6
+                color: Colors.surfaceBright
+                radius: 16
             }
         }
     }

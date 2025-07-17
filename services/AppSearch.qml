@@ -34,7 +34,7 @@ Singleton {
             });
         }
         
-        return results.slice(0, 10); // Limit to first 10 apps
+        return results; // Show all apps
     }
     
     function fuzzyQuery(search) {

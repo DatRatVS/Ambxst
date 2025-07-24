@@ -162,6 +162,7 @@ Item {
                             text: (topRow.showAppName ? notificationGroup?.appName : notificationGroup?.notifications[0]?.summary) || ""
                             font.family: Styling.defaultFont
                             font.pixelSize: topRow.showAppName ? topRow.fontSize : 14
+                            font.weight: Font.Bold
                             color: topRow.showAppName ? Colors.outline : Colors.primary
                         }
                         Text {

@@ -7,7 +7,23 @@ import Quickshell.Hyprland
 
 Singleton {
     id: root
-    property bool oledMode: false
+
+    property bool oledMode: loader.adapter.oledMode
+    property int roundness: loader.adapter.roundness
+
+    FileView {
+        id: loader
+        path: Qt.resolvedUrl("./globals.json")
+        preload: true
+        watchChanges: true
+        onFileChanged: reload()
+
+        adapter: JsonAdapter {
+            property bool oledMode: false
+            property int roundness: 16
+        }
+    }
+
     property bool sidebarLeftOpen: false
     property bool sidebarRightOpen: false
     property bool overviewOpen: false
@@ -15,7 +31,6 @@ Singleton {
     property bool dashboardOpen: false
     property bool workspaceShowNumbers: false
     property bool superReleaseMightTrigger: true
-    property int roundness: 16
     onSuperReleaseMightTriggerChanged: {
         workspaceShowNumbersTimer.stop();
     }

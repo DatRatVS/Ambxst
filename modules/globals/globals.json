@@ -1,3 +1,4 @@
 {
-  "oledMode": true
+  "oledMode": false,
+  "roundness": 16
 }

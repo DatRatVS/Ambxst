@@ -24,18 +24,12 @@ Singleton {
         }
     }
 
-    property bool sidebarLeftOpen: false
-    property bool sidebarRightOpen: false
     property bool notchOpen: launcherOpen || dashboardOpen || overviewOpen
     property bool overviewOpen: false
     property bool launcherOpen: false
     property bool dashboardOpen: false
     property bool workspaceShowNumbers: false
-    property bool superReleaseMightTrigger: true
     property var wallpaperManager: null
-    onSuperReleaseMightTriggerChanged: {
-        workspaceShowNumbersTimer.stop();
-    }
 
     Timer {
         id: workspaceShowNumbersTimer

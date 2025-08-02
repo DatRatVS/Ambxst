@@ -20,11 +20,19 @@ PanelWindow {
 
     color: "transparent"
 
-    property string wallpaperDir: Quickshell.env("HOME") + "/Wallpapers"
+    property string wallpaperDir: wallpaperConfig.adapter.wallPath || Quickshell.env("HOME") + "/Wallpapers"
     property string fallbackDir: Quickshell.env("PWD") + "/assets/wallpapers_example"
     property list<string> wallpaperPaths: []
     property int currentIndex: 0
     property string currentWallpaper: wallpaperPaths.length > 0 ? wallpaperPaths[currentIndex] : ""
+
+    onCurrentWallpaperChanged: {
+        if (currentWallpaper) {
+            console.log("Wallpaper changed to:", currentWallpaper);
+            matugenProcess.command = ["matugen", "image", currentWallpaper];
+            matugenProcess.running = true;
+        }
+    }
 
     function setWallpaper(path) {
         console.log("setWallpaper called with:", path);
@@ -33,28 +41,28 @@ PanelWindow {
         if (pathIndex !== -1) {
             currentIndex = pathIndex;
         }
-        wallpaperConfig.adapter.currentWallpaperPath = path;
+        wallpaperConfig.adapter.currentWall = path;
     }
 
     function nextWallpaper() {
         if (wallpaperPaths.length === 0) return;
         currentIndex = (currentIndex + 1) % wallpaperPaths.length;
         currentWallpaper = wallpaperPaths[currentIndex];
-        wallpaperConfig.adapter.currentWallpaperPath = wallpaperPaths[currentIndex];
+        wallpaperConfig.adapter.currentWall = wallpaperPaths[currentIndex];
     }
 
     function previousWallpaper() {
         if (wallpaperPaths.length === 0) return;
         currentIndex = currentIndex === 0 ? wallpaperPaths.length - 1 : currentIndex - 1;
         currentWallpaper = wallpaperPaths[currentIndex];
-        wallpaperConfig.adapter.currentWallpaperPath = wallpaperPaths[currentIndex];
+        wallpaperConfig.adapter.currentWall = wallpaperPaths[currentIndex];
     }
 
     function setWallpaperByIndex(index) {
         if (index >= 0 && index < wallpaperPaths.length) {
             currentIndex = index;
             currentWallpaper = wallpaperPaths[currentIndex];
-            wallpaperConfig.adapter.currentWallpaperPath = wallpaperPaths[currentIndex];
+            wallpaperConfig.adapter.currentWall = wallpaperPaths[currentIndex];
         }
     }
 
@@ -73,17 +81,26 @@ PanelWindow {
         onAdapterUpdated: writeAdapter()
         
         JsonAdapter {
-            property string currentWallpaperPath: ""
+            property string currentWall: ""
+            property string wallPath: ""
             
-            onCurrentWallpaperPathChanged: {
+            onCurrentWallChanged: {
                 // Solo actualizar si el cambio viene del archivo JSON (no de nuestras funciones)
-                if (currentWallpaperPath && currentWallpaperPath !== wallpaper.currentWallpaper) {
-                    console.log("Loading wallpaper from JSON:", currentWallpaperPath);
-                    wallpaper.currentWallpaper = currentWallpaperPath;
-                    const pathIndex = wallpaper.wallpaperPaths.indexOf(currentWallpaperPath);
+                if (currentWall && currentWall !== wallpaper.currentWallpaper) {
+                    console.log("Loading wallpaper from JSON:", currentWall);
+                    wallpaper.currentWallpaper = currentWall;
+                    const pathIndex = wallpaper.wallpaperPaths.indexOf(currentWall);
                     if (pathIndex !== -1) {
                         wallpaper.currentIndex = pathIndex;
                     }
+                }
+            }
+            
+            onWallPathChanged: {
+                // Rescan wallpapers when wallPath changes
+                if (wallPath) {
+                    console.log("Wallpaper directory changed to:", wallPath);
+                    scanWallpapers.running = true;
                 }
             }
         }
@@ -102,6 +119,28 @@ PanelWindow {
     }
 
     Process {
+        id: matugenProcess
+        running: false
+        command: []
+
+        stdout: StdioCollector {
+            onStreamFinished: {
+                if (text.length > 0) {
+                    console.log("Matugen output:", text);
+                }
+            }
+        }
+
+        stderr: StdioCollector {
+            onStreamFinished: {
+                if (text.length > 0) {
+                    console.warn("Matugen error:", text);
+                }
+            }
+        }
+    }
+
+    Process {
         id: scanWallpapers
         running: false
         command: ["find", wallpaperDir, "-type", "f", "(", "-name", "*.jpg", "-o", "-name", "*.jpeg", "-o", "-name", "*.png", "-o", "-name", "*.webp", "-o", "-name", "*.tif", "-o", "-name", "*.tiff", ")"]
@@ -114,17 +153,17 @@ PanelWindow {
                 } else {
                     wallpaperPaths = files.sort();
                     if (wallpaperPaths.length > 0) {
-                        if (wallpaperConfig.adapter.currentWallpaperPath) {
-                            const savedIndex = wallpaperPaths.indexOf(wallpaperConfig.adapter.currentWallpaperPath);
+                        if (wallpaperConfig.adapter.currentWall) {
+                            const savedIndex = wallpaperPaths.indexOf(wallpaperConfig.adapter.currentWall);
                             if (savedIndex !== -1) {
                                 currentIndex = savedIndex;
                             } else {
                                 currentIndex = 0;
-                                wallpaperConfig.adapter.currentWallpaperPath = wallpaperPaths[0];
+                                wallpaperConfig.adapter.currentWall = wallpaperPaths[0];
                             }
                         } else {
                             currentIndex = 0;
-                            wallpaperConfig.adapter.currentWallpaperPath = wallpaperPaths[0];
+                            wallpaperConfig.adapter.currentWall = wallpaperPaths[0];
                         }
                     }
                 }
@@ -150,17 +189,17 @@ PanelWindow {
                 const files = text.trim().split("\n").filter(f => f.length > 0);
                 wallpaperPaths = files.sort();
                 if (wallpaperPaths.length > 0) {
-                    if (wallpaperConfig.adapter.currentWallpaperPath) {
-                        const savedIndex = wallpaperPaths.indexOf(wallpaperConfig.adapter.currentWallpaperPath);
+                    if (wallpaperConfig.adapter.currentWall) {
+                        const savedIndex = wallpaperPaths.indexOf(wallpaperConfig.adapter.currentWall);
                         if (savedIndex !== -1) {
                             currentIndex = savedIndex;
                         } else {
                             currentIndex = 0;
-                            wallpaperConfig.adapter.currentWallpaperPath = wallpaperPaths[0];
+                            wallpaperConfig.adapter.currentWall = wallpaperPaths[0];
                         }
                     } else {
                         currentIndex = 0;
-                        wallpaperConfig.adapter.currentWallpaperPath = wallpaperPaths[0];
+                        wallpaperConfig.adapter.currentWall = wallpaperPaths[0];
                     }
                 }
             }

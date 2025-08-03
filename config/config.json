@@ -6,8 +6,8 @@
   "bar": {
     "bottom": false,
     "borderless": false,
-    "topLeftIcon": "spark",
-    "showBackground": true,
+    "launcherIcon": "",
+    "showBackground": false,
     "verbose": true,
     "screenList": []
   },

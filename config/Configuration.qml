@@ -19,16 +19,16 @@ Singleton {
                 property bool oledMode: false
                 property int roundness: 16
             }
-            
+
             property JsonObject bar: JsonObject {
                 property bool bottom: false
                 property bool borderless: false
-                property string topLeftIcon: "spark"
+                property string launcherIcon: ""
                 property bool showBackground: true
                 property bool verbose: true
                 property list<string> screenList: []
             }
-            
+
             property JsonObject workspaces: JsonObject {
                 property int shown: 10
                 property bool showAppIcons: true

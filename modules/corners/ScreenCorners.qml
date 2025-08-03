@@ -9,7 +9,6 @@ PanelWindow {
 
     color: "transparent"
     exclusionMode: ExclusionMode.Ignore
-    WlrLayershell.layer: WlrLayer.Bottom
     WlrLayershell.namespace: "quickshell:screenCorners"
     mask: Region {
         item: null

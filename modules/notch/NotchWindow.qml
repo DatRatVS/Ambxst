@@ -26,7 +26,7 @@ PanelWindow {
         id: focusGrab
         windows: [notchPanel]
         active: GlobalStates.launcherOpen || GlobalStates.dashboardOpen
-        
+
         onCleared: {
             GlobalStates.launcherOpen = false;
             GlobalStates.dashboardOpen = false;

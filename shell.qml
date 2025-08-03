@@ -1,31 +1,18 @@
 //@ pragma UseQApplication
+//@ pragma ShellId Ambyst
 import QtQuick
 import Quickshell
-import "./modules/bar/"
-import "./modules/workspaces/"
-import "./modules/notifications/"
-import "./modules/wallpaper/"
-import "./modules/notch/"
-import "./modules/services/"
-import "./modules/corners/"
+import qs.modules.bar
+import qs.modules.workspaces
+import qs.modules.notifications
+import qs.modules.wallpaper
+import qs.modules.notch
+import qs.modules.services
+import qs.modules.corners
 import qs.config
 
 ShellRoot {
     id: root
-
-    // Multi-monitor support - create corners for each screen
-    Variants {
-        model: Quickshell.screens
-
-        Loader {
-            id: cornersLoader
-            active: true
-            required property ShellScreen modelData
-            sourceComponent: ScreenCorners {
-                screen: cornersLoader.modelData
-            }
-        }
-    }
 
     // Wallpaper for all screens
     Variants {
@@ -77,6 +64,20 @@ ShellRoot {
             required property ShellScreen modelData
             sourceComponent: NotchWindow {
                 screen: notchLoader.modelData
+            }
+        }
+    }
+
+    // Multi-monitor support - create corners for each screen
+    Variants {
+        model: Quickshell.screens
+
+        Loader {
+            id: cornersLoader
+            active: true
+            required property ShellScreen modelData
+            sourceComponent: ScreenCorners {
+                screen: cornersLoader.modelData
             }
         }
     }

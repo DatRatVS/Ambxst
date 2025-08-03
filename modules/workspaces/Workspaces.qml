@@ -111,8 +111,8 @@ Item {
                 topRightRadius: radiusRight
                 bottomRightRadius: radiusRight
 
-                color: Colors.adapter.surfaceBright
-                opacity: (workspaceOccupied[index] && !(!activeWindow?.activated && monitor?.activeWorkspace?.id === index + 1)) ? 1 : 0
+                color: Colors.adapter.primary
+                opacity: (workspaceOccupied[index] && !(!activeWindow?.activated && monitor?.activeWorkspace?.id === index + 1)) ? 0.3 : 0
 
                 Behavior on opacity {
                     NumberAnimation {
@@ -214,7 +214,7 @@ Item {
                         font.pixelSize: Styling.fontSize.small - ((text.length - 1) * (text !== "10") * 2)
                         text: `${button.workspaceValue}`
                         elide: Text.ElideRight
-                        color: (monitor?.activeWorkspace?.id == button.workspaceValue) ? Colors.background : (workspaceOccupied[index] ? Colors.adapter.overBackground : Colors.adapter.surfaceBright)
+                        color: (monitor?.activeWorkspace?.id == button.workspaceValue) ? Colors.background : (workspaceOccupied[index] ? Colors.adapter.overBackground : Colors.adapter.overSecondaryFixedVariant)
 
                         Behavior on opacity {
                             NumberAnimation {
@@ -223,14 +223,14 @@ Item {
                             }
                         }
                     }
-                    StyledContainer {
+                    Rectangle {
                         opacity: (Configuration.workspaces.showNumbers || Configuration.workspaces.alwaysShowNumbers || (Configuration.workspaces.showAppIcons && workspaceButtonBackground.biggestWindow)) ? 0 : 1
                         visible: opacity > 0
                         anchors.centerIn: parent
-                        width: workspaceButtonWidth * 0.18
+                        width: workspaceButtonWidth * 0.2
                         height: width
                         radius: width / 2
-                        color: (monitor?.activeWorkspace?.id == button.workspaceValue) ? Colors.background : (workspaceOccupied[index] ? Colors.adapter.overBackground : Colors.adapter.surfaceBright)
+                        color: (monitor?.activeWorkspace?.id == button.workspaceValue) ? Colors.background : (workspaceOccupied[index] ? Colors.adapter.overBackground : Colors.adapter.overSecondaryFixedVariant)
 
                         Behavior on opacity {
                             NumberAnimation {

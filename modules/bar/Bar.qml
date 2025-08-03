@@ -10,6 +10,7 @@ import qs.modules.theme
 import qs.modules.clock
 import qs.modules.systray
 import qs.modules.launcher
+import qs.modules.corners
 import qs.config
 
 PanelWindow {
@@ -27,32 +28,40 @@ PanelWindow {
     WlrLayershell.keyboardFocus: WlrKeyboardFocus.None
 
     exclusiveZone: Configuration.bar.showBackground ? 44 : 40
-    implicitHeight: 44
+    exclusionMode: ExclusionMode.Ignore
+    implicitHeight: 44 + Configuration.roundness + 4
+    mask: Region {
+        width: panel.width
+        height: 44
+    }
 
     Rectangle {
         id: bar
-        anchors.fill: parent
+        anchors.top: parent.top
+        anchors.left: parent.left
+        anchors.right: parent.right
+        implicitHeight: 44
 
         property color bgcolor: Qt.rgba(Qt.color(Colors.background).r, Qt.color(Colors.background).g, Qt.color(Colors.background).b, 0.5)
 
         color: Configuration.bar.showBackground ? bgcolor : "transparent"
 
-        layer.enabled: true
-        layer.effect: DropShadow {
-            horizontalOffset: 0
-            verticalOffset: 0
-            radius: 8
-            samples: 16
-            color: Qt.rgba(0, 0, 0, 0.5)
+        RoundCorner {
+            id: topLeft
+            size: Configuration.roundness > 0 ? Configuration.roundness + 4 : 0
+            anchors.left: parent.left
+            anchors.top: parent.bottom
+            corner: RoundCorner.CornerEnum.TopLeft
+            color: parent.color
         }
 
-        // Fake bottom border
-        Rectangle {
-            height: 0
-            color: Colors.background
-            anchors.left: parent.left
+        RoundCorner {
+            id: topRight
+            size: Configuration.roundness > 0 ? Configuration.roundness + 4 : 0
             anchors.right: parent.right
-            anchors.bottom: parent.bottom
+            anchors.top: parent.bottom
+            corner: RoundCorner.CornerEnum.TopRight
+            color: parent.color
         }
 
         // Left side of bar

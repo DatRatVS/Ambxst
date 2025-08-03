@@ -4,6 +4,7 @@ import Quickshell
 import Quickshell.Hyprland
 import qs.modules.theme
 import qs.modules.globals
+import qs.config
 
 Button {
     id: root
@@ -28,7 +29,7 @@ Button {
     }
 
     contentItem: Text {
-        text: "󰈸"
+        text: Configuration.bar.launcherIcon
         font.family: Styling.defaultFont
         font.pixelSize: 20
         color: root.pressed ? Colors.background : Colors.adapter.primary

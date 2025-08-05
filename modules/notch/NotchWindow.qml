@@ -118,8 +118,8 @@ PanelWindow {
     Component {
         id: launcherViewComponent
         Item {
-            width: 480
-            height: Math.min(launcherSearch.implicitHeight, 368)
+            implicitWidth: 480
+            implicitHeight: Math.min(launcherSearch.implicitHeight, 368)
 
             LauncherSearch {
                 id: launcherSearch
@@ -150,12 +150,12 @@ PanelWindow {
     Component {
         id: overviewViewComponent
         Item {
-            width: Math.max(overviewItem.implicitWidth, 600)
-            height: Math.max(overviewItem.implicitHeight, 300)
+            implicitWidth: overviewItem.implicitWidth
+            implicitHeight: overviewItem.implicitHeight
 
             Overview {
                 id: overviewItem
-                anchors.fill: parent
+                anchors.centerIn: parent
 
                 Keys.onPressed: event => {
                     if (event.key === Qt.Key_Escape) {
@@ -177,8 +177,8 @@ PanelWindow {
     Component {
         id: dashboardViewComponent
         Item {
-            width: 900
-            height: 400
+            implicitWidth: 900
+            implicitHeight: 400
 
             Dashboard {
                 id: dashboardItem

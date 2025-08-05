@@ -76,8 +76,8 @@ Item {
         Item {
             id: stackContainer
             anchors.centerIn: parent
-            width: stackViewInternal.currentItem ? stackViewInternal.currentItem.width + 32 : 32
-            height: stackViewInternal.currentItem ? stackViewInternal.currentItem.height + 32 : 32
+            width: stackViewInternal.currentItem ? stackViewInternal.currentItem.implicitWidth + 32 : 32
+            height: stackViewInternal.currentItem ? stackViewInternal.currentItem.implicitHeight + 32 : 32
             clip: true
 
             StackView {

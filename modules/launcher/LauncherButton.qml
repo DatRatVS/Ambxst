@@ -9,6 +9,7 @@ ToggleButton {
 
     onToggle: function () {
         if (GlobalStates.launcherOpen) {
+            GlobalStates.clearLauncherState();
             Visibilities.setActiveModule("");
         } else {
             Visibilities.setActiveModule("launcher");

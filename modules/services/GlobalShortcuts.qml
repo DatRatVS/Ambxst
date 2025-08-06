@@ -17,6 +17,7 @@ Item {
             
             // Toggle launcher - if already open, close it; otherwise open launcher
             if (Visibilities.currentActiveModule === "launcher") {
+                GlobalStates.clearLauncherState();
                 Visibilities.setActiveModule("");
             } else {
                 Visibilities.setActiveModule("launcher");

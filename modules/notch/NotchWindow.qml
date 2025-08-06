@@ -35,6 +35,9 @@ PanelWindow {
         active: screenVisibilities.launcher || screenVisibilities.dashboard || screenVisibilities.overview
 
         onCleared: {
+            if (screenVisibilities.launcher) {
+                GlobalStates.clearLauncherState();
+            }
             Visibilities.setActiveModule("");
         }
     }
@@ -248,6 +251,9 @@ PanelWindow {
         // Handle global keyboard events
         Keys.onPressed: event => {
             if (event.key === Qt.Key_Escape && (screenVisibilities.launcher || screenVisibilities.dashboard || screenVisibilities.overview)) {
+                if (screenVisibilities.launcher) {
+                    GlobalStates.clearLauncherState();
+                }
                 Visibilities.setActiveModule("");
                 event.accepted = true;
             }

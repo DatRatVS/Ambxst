@@ -167,7 +167,7 @@ Rectangle {
                                 fillMode: Image.PreserveAspectCrop
                                 asynchronous: true
                                 smooth: true
-                                playing: true
+                                playing: false  // Solo se anima al hacer hover
                             }
                         }
 
@@ -180,10 +180,20 @@ Rectangle {
                                 if (!parent.isCurrentWallpaper) {
                                     parent.color = Colors.surfaceContainerHigh;
                                 }
+                                // Activar animación de GIF al hacer hover
+                                var loader = parent.children[0]; // El Loader
+                                if (loader && loader.item && loader.item.hasOwnProperty('playing')) {
+                                    loader.item.playing = true;
+                                }
                             }
                             onExited: {
                                 if (!parent.isCurrentWallpaper) {
                                     parent.color = Colors.surface;
+                                }
+                                // Desactivar animación de GIF al salir del hover
+                                var loader = parent.children[0]; // El Loader
+                                if (loader && loader.item && loader.item.hasOwnProperty('playing')) {
+                                    loader.item.playing = false;
                                 }
                             }
                             onPressed: parent.scale = 0.95

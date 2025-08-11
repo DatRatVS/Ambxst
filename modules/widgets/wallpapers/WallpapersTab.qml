@@ -222,7 +222,7 @@ Rectangle {
                     // Elemento de realce para el wallpaper seleccionado.
                     highlight: Rectangle {
                         color: "transparent"
-                        border.color: Colors.adapter.surfaceContainerLowest
+                        border.color: Colors.adapter.primary
                         border.width: 2
                         // opacity: 0.2
                         // radius: Config.roundness > 0 ? Config.roundness + 4 : 0
@@ -278,7 +278,8 @@ Rectangle {
                                 color: parent.isCurrentWallpaper ? Colors.adapter.primary : Colors.adapter.overBackground
                                 font.family: Config.theme.font
                                 font.pixelSize: 14
-                                font.weight: parent.isCurrentWallpaper ? Font.Bold : Font.Normal
+                                font.weight: Font.Bold
+                                horizontalAlignment: Text.AlignHCenter
 
                                 readonly property bool needsScroll: width > parent.width - 8
 

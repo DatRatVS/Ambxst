@@ -222,8 +222,10 @@ Rectangle {
                     // Elemento de realce para el wallpaper seleccionado.
                     highlight: Rectangle {
                         color: "transparent"
-                        border.color: Colors.adapter.primary
+                        border.color: Colors.adapter.surfaceContainerLowest
                         border.width: 2
+                        // opacity: 0.2
+                        // radius: Config.roundness > 0 ? Config.roundness + 4 : 0
                         visible: selectedIndex >= 0
                         z: 5
 
@@ -238,6 +240,85 @@ Rectangle {
                             NumberAnimation {
                                 duration: Config.animDuration / 2
                                 easing.type: Easing.OutQuart
+                            }
+                        }
+
+                        // Etiqueta unificada que se anima con el highlight
+                        Rectangle {
+                            anchors.bottom: parent.bottom
+                            anchors.left: parent.left
+                            anchors.right: parent.right
+                            height: 24
+                            color: Colors.adapter.surfaceContainerLowest
+                            z: 10
+                            clip: true
+
+                            property var currentItem: wallpaperGrid.currentItem
+                            property bool isCurrentWallpaper: {
+                                if (!GlobalStates.wallpaperManager || wallpaperGrid.currentIndex < 0)
+                                    return false;
+                                return GlobalStates.wallpaperManager.currentWallpaper === filteredWallpapers[wallpaperGrid.currentIndex];
+                            }
+                            property bool showHoveredItem: currentItem && currentItem.isHovered && !visible
+
+                            visible: selectedIndex >= 0 || showHoveredItem
+
+                            Text {
+                                id: labelText
+                                anchors.verticalCenter: parent.verticalCenter
+                                x: 4
+                                text: {
+                                    if (parent.isCurrentWallpaper) {
+                                        return "CURRENT";
+                                    } else if (wallpaperGrid.currentIndex >= 0 && wallpaperGrid.currentIndex < filteredWallpapers.length) {
+                                        return filteredWallpapers[wallpaperGrid.currentIndex].split('/').pop();
+                                    }
+                                    return "";
+                                }
+                                color: parent.isCurrentWallpaper ? Colors.adapter.primary : Colors.adapter.overBackground
+                                font.family: Config.theme.font
+                                font.pixelSize: 14
+                                font.weight: parent.isCurrentWallpaper ? Font.Bold : Font.Normal
+
+                                readonly property bool needsScroll: width > parent.width - 8
+
+                                SequentialAnimation {
+                                    id: scrollAnimation
+                                    running: labelText.needsScroll && parent.visible && !parent.isCurrentWallpaper
+                                    loops: Animation.Infinite
+
+                                    PauseAnimation {
+                                        duration: 1000
+                                    }
+                                    NumberAnimation {
+                                        target: labelText
+                                        property: "x"
+                                        to: labelText.parent.width - labelText.width - 4
+                                        duration: 2000
+                                        easing.type: Easing.InOutQuad
+                                    }
+                                    PauseAnimation {
+                                        duration: 1000
+                                    }
+                                    NumberAnimation {
+                                        target: labelText
+                                        property: "x"
+                                        to: 4
+                                        duration: 2000
+                                        easing.type: Easing.InOutQuad
+                                    }
+                                }
+                            }
+
+                            onVisibleChanged: {
+                                if (visible) {
+                                    labelText.x = 4;
+                                    if (labelText.needsScroll && !isCurrentWallpaper) {
+                                        scrollAnimation.restart();
+                                    }
+                                } else {
+                                    scrollAnimation.stop();
+                                }
                             }
                         }
                     }
@@ -276,44 +357,6 @@ Rectangle {
                             property string sourceFile: modelData
                         }
 
-                        // Borde de resaltado para navegación por teclado.
-                        Rectangle {
-                            anchors.fill: parent
-                            color: "transparent"
-                            // border.color: Colors.adapter.primary
-                            // border.width: parent.isSelected ? 2 : 0
-                            radius: 4
-                            z: 15
-
-                            Behavior on border.width {
-                                NumberAnimation {
-                                    duration: Config.animDuration
-                                    easing.type: Easing.OutQuart
-                                }
-                            }
-                        }
-
-                        // Etiqueta "CURRENT" para el fondo de pantalla activo.
-                        Rectangle {
-                            visible: parent.isCurrentWallpaper
-                            anchors.bottom: parent.bottom
-                            anchors.left: parent.left
-                            anchors.right: parent.right
-                            height: 24
-                            color: Colors.adapter.surfaceContainerLowest
-                            z: 10
-                            clip: true
-
-                            Text {
-                                anchors.centerIn: parent
-                                text: "CURRENT"
-                                color: Colors.adapter.primary
-                                font.family: Config.theme.font
-                                font.pixelSize: 14
-                                font.weight: Font.Bold
-                            }
-                        }
-
                         // Componente para imágenes estáticas.
                         Component {
                             id: staticImageComponent
@@ -334,57 +377,6 @@ Rectangle {
                                 asynchronous: true
                                 smooth: true
                                 playing: parent.isHovered // Solo se anima al hacer hover
-                            }
-                        }
-
-                        // Etiqueta con el nombre del archivo al hacer hover o seleccionar.
-                        Rectangle {
-                            visible: parent.isHovered || parent.isSelected
-                            anchors.bottom: parent.bottom
-                            anchors.left: parent.left
-                            anchors.right: parent.right
-                            height: 24
-                            color: Colors.adapter.surfaceContainerLowest
-                            z: 10
-                            clip: true
-
-                            Text {
-                                id: hoverText
-                                anchors.verticalCenter: parent.verticalCenter
-                                x: 4
-                                text: modelData ? modelData.split('/').pop() : ""
-                                color: Colors.adapter.overBackground
-                                font.family: Config.theme.font
-                                font.pixelSize: 14
-
-                                readonly property bool needsScroll: paintedWidth > parent.width - 8
-
-                                SequentialAnimation {
-                                    id: scrollAnimation
-                                    running: hoverText.needsScroll && parent.visible
-                                    loops: Animation.Infinite
-
-                                    PauseAnimation {
-                                        duration: 1000
-                                    }
-                                    NumberAnimation {
-                                        target: hoverText
-                                        property: "x"
-                                        to: parent.width - paintedWidth - 4
-                                        duration: 2000
-                                        easing.type: Easing.InOutQuad
-                                    }
-                                    PauseAnimation {
-                                        duration: 1000
-                                    }
-                                    NumberAnimation {
-                                        target: hoverText
-                                        property: "x"
-                                        to: 4
-                                        duration: 2000
-                                        easing.type: Easing.InOutQuad
-                                    }
-                                }
                             }
                         }
 

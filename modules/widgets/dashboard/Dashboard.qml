@@ -18,19 +18,20 @@ NotchAnimationBehavior {
         property int currentTab: 0
     }
 
-    readonly property var tabModel: ["Widgets", "Pins", "Kanban", "Wallpapers"]
+    readonly property var tabModel: ["", "", "", ""]
     readonly property int tabCount: tabModel.length
     readonly property int tabSpacing: 8
 
-    readonly property real nonAnimWidth: 400 + viewWrapper.anchors.margins * 2
+    readonly property int tabWidth: 40
+    readonly property real nonAnimWidth: 400 + tabWidth + 16 // contenido + pestañas + spacing
 
     implicitWidth: nonAnimWidth
-    implicitHeight: mainLayout.implicitHeight
+    implicitHeight: 430 // Altura fija para el dashboard vertical
 
     // Usar el comportamiento estándar de animaciones del notch
     isVisible: GlobalStates.dashboardOpen
 
-    Column {
+    Row {
         id: mainLayout
         anchors.fill: parent
         spacing: 8
@@ -38,21 +39,21 @@ NotchAnimationBehavior {
         // Tab buttons
         Item {
             id: tabsContainer
-            width: parent.width
-            height: 32
+            width: root.tabWidth
+            height: parent.height
 
-            // Background highlight que se desplaza
+            // Background highlight que se desplaza verticalmente
             Rectangle {
                 id: tabHighlight
-                width: (parent.width - root.tabSpacing * (root.tabCount - 1)) / root.tabCount
-                height: parent.height
-                x: root.state.currentTab * (width + root.tabSpacing)
-                y: 0
+                width: parent.width
+                height: (parent.height - root.tabSpacing * (root.tabCount - 1)) / root.tabCount
+                x: 0
+                y: root.state.currentTab * (height + root.tabSpacing)
                 color: Qt.rgba(Colors.surfaceContainer.r, Colors.surfaceContainer.g, Colors.surfaceContainer.b, Config.opacity)
                 radius: Config.roundness > 0 ? Config.roundness + 4 : 0
                 z: 0
 
-                Behavior on x {
+                Behavior on y {
                     NumberAnimation {
                         duration: Config.animDuration
                         easing.type: Easing.OutQuart
@@ -60,7 +61,7 @@ NotchAnimationBehavior {
                 }
             }
 
-            Row {
+            Column {
                 id: tabs
                 anchors.fill: parent
                 spacing: root.tabSpacing
@@ -74,8 +75,8 @@ NotchAnimationBehavior {
 
                         text: modelData
                         flat: true
-                        implicitWidth: (tabsContainer.width - root.tabSpacing * (root.tabCount - 1)) / root.tabCount
-                        height: tabsContainer.height
+                        width: tabsContainer.width
+                        implicitHeight: (tabsContainer.height - root.tabSpacing * (root.tabCount - 1)) / root.tabCount
 
                         background: Rectangle {
                             color: "transparent"
@@ -85,8 +86,10 @@ NotchAnimationBehavior {
                         contentItem: Text {
                             text: parent.text
                             color: root.state.currentTab === index ? Colors.adapter.primary : Colors.adapter.overBackground
-                            font.family: Config.theme.font
-                            font.pixelSize: Config.theme.fontSize
+                            // font.family: Config.theme.font
+                            font.family: Icons.font
+                            // font.pixelSize: Config.theme.fontSize
+                            font.pixelSize: 20
                             font.weight: Font.Medium
                             horizontalAlignment: Text.AlignHCenter
                             verticalAlignment: Text.AlignVCenter
@@ -125,8 +128,8 @@ NotchAnimationBehavior {
         PaneRect {
             id: viewWrapper
 
-            width: parent.width
-            height: parent.height - tabs.height - 8 // Adjust height to fit below tabs
+            width: parent.width - root.tabWidth - 8 // Resto del ancho disponible
+            height: parent.height
 
             radius: Config.roundness > 0 ? Config.roundness + 4 : 0
             clip: true
@@ -135,6 +138,7 @@ NotchAnimationBehavior {
                 id: view
 
                 anchors.fill: parent
+                orientation: Qt.Vertical
 
                 currentIndex: root.state.currentTab
 

@@ -322,6 +322,11 @@ Item {
 
     Component {
         id: clipboardComponent
-        LauncherClipboardTab {}
+        LauncherClipboardTab {
+            onItemSelected: {
+                GlobalStates.clearLauncherState();
+                Visibilities.setActiveModule("");
+            }
+        }
     }
 }

@@ -3,6 +3,7 @@ import QtQuick.Controls
 import QtQuick.Layouts
 import Quickshell
 import Quickshell.Io
+import Quickshell.Widgets
 import qs.modules.theme
 import qs.modules.components
 import qs.modules.globals
@@ -13,6 +14,10 @@ Rectangle {
     id: root
     focus: true
 
+    Keys.onEscapePressed: {
+        root.itemSelected();
+    }
+
     property string searchText: ""
     property bool showResults: searchText.length > 0
     property int selectedIndex: -1
@@ -20,6 +25,9 @@ Rectangle {
     property var imageItems: []
     property var textItems: []
     property bool isImageSectionFocused: false
+    property bool hasNavigatedFromSearch: false
+
+    property int imgSize: 78
 
     signal itemSelected
 
@@ -38,6 +46,7 @@ Rectangle {
         selectedIndex = -1;
         selectedImageIndex = -1;
         isImageSectionFocused = false;
+        hasNavigatedFromSearch = false;
         searchInput.focusInput();
         updateFilteredItems();
     }
@@ -53,7 +62,7 @@ Rectangle {
         for (var i = 0; i < ClipboardService.items.length; i++) {
             var item = ClipboardService.items[i];
             var content = item.preview || "";
-            
+
             if (searchText.length === 0 || content.toLowerCase().includes(searchText.toLowerCase())) {
                 if (item.isImage) {
                     newImageItems.push(item);
@@ -148,27 +157,51 @@ Rectangle {
             }
 
             onDownPressed: {
-                if (root.isImageSectionFocused) {
-                    // Cambiar de sección de imágenes a textos
-                    root.isImageSectionFocused = false;
-                    if (root.textItems.length > 0) {
-                        root.selectedIndex = 0;
-                        textResultsList.currentIndex = 0;
+                if (!root.hasNavigatedFromSearch) {
+                    // Primera vez presionando down desde search
+                    root.hasNavigatedFromSearch = true;
+                    if (root.imageItems.length > 0) {
+                        // Ir primero a la sección de imágenes si hay imágenes
+                        root.isImageSectionFocused = true;
+                        root.selectedIndex = -1;
+                        textResultsList.currentIndex = -1;
+                        if (root.selectedImageIndex === -1) {
+                            root.selectedImageIndex = 0;
+                        }
+                        imageResultsList.currentIndex = root.selectedImageIndex;
+                    } else if (textResultsList.count > 0) {
+                        // Si no hay imágenes, ir directo a textos
+                        root.isImageSectionFocused = false;
+                        if (root.selectedIndex === -1) {
+                            root.selectedIndex = 0;
+                            textResultsList.currentIndex = 0;
+                        }
                     }
-                } else if (textResultsList.count > 0) {
-                    if (root.selectedIndex === -1) {
-                        root.selectedIndex = 0;
-                        textResultsList.currentIndex = 0;
-                    } else if (root.selectedIndex < textResultsList.count - 1) {
-                        root.selectedIndex++;
-                        textResultsList.currentIndex = root.selectedIndex;
+                } else {
+                    // Ya navegamos desde search, ahora navegamos dentro de secciones
+                    if (root.isImageSectionFocused) {
+                        // Cambiar de sección de imágenes a textos
+                        root.isImageSectionFocused = false;
+                        if (root.textItems.length > 0) {
+                            root.selectedIndex = 0;
+                            textResultsList.currentIndex = 0;
+                        }
+                    } else if (textResultsList.count > 0 && root.selectedIndex >= 0) {
+                        if (root.selectedIndex < textResultsList.count - 1) {
+                            root.selectedIndex++;
+                            textResultsList.currentIndex = root.selectedIndex;
+                        }
                     }
                 }
             }
 
             onUpPressed: {
                 if (root.isImageSectionFocused) {
-                    // Mantenerse en sección de imágenes
+                    // Al estar en imágenes y presionar up, regresar al search
+                    root.isImageSectionFocused = false;
+                    root.selectedImageIndex = -1;
+                    root.hasNavigatedFromSearch = false;
+                    imageResultsList.currentIndex = -1;
                 } else if (root.selectedIndex > 0) {
                     root.selectedIndex--;
                     textResultsList.currentIndex = root.selectedIndex;
@@ -180,18 +213,25 @@ Rectangle {
                     if (root.selectedImageIndex === -1) {
                         root.selectedImageIndex = 0;
                     }
+                } else if (root.selectedIndex === 0 && root.imageItems.length === 0) {
+                    // No hay imágenes, regresar al search
+                    root.selectedIndex = -1;
+                    root.hasNavigatedFromSearch = false;
+                    textResultsList.currentIndex = -1;
                 }
             }
 
             onLeftPressed: {
                 if (root.isImageSectionFocused && root.selectedImageIndex > 0) {
                     root.selectedImageIndex--;
+                    imageResultsList.currentIndex = root.selectedImageIndex;
                 }
             }
 
             onRightPressed: {
                 if (root.isImageSectionFocused && root.selectedImageIndex < root.imageItems.length - 1) {
                     root.selectedImageIndex++;
+                    imageResultsList.currentIndex = root.selectedImageIndex;
                 }
             }
         }
@@ -199,15 +239,15 @@ Rectangle {
         // Sección de imágenes horizontal
         Item {
             Layout.fillWidth: true
-            Layout.preferredHeight: 80
+            Layout.preferredHeight: root.imgSize
             visible: root.imageItems.length > 0
 
-            Rectangle {
+            ClippingRectangle {
                 anchors.fill: parent
                 color: "transparent"
                 border.color: root.isImageSectionFocused ? Colors.adapter.primary : Colors.adapter.outline
-                border.width: 1
-                radius: Config.roundness > 0 ? Config.roundness : 0
+                border.width: 0
+                radius: Config.roundness > 0 ? Config.roundness + 4 : 0
 
                 Behavior on border.color {
                     ColorAnimation {
@@ -216,139 +256,153 @@ Rectangle {
                     }
                 }
 
-                ScrollView {
-                    id: imageScrollView
+                ListView {
+                    id: imageResultsList
                     anchors.fill: parent
-                    anchors.margins: 4
-                    ScrollBar.vertical.policy: ScrollBar.AlwaysOff
-                    ScrollBar.horizontal.policy: ScrollBar.AsNeeded
+                    anchors.margins: 0
+                    orientation: ListView.Horizontal
+                    spacing: 8
                     clip: true
 
-                    Row {
-                        spacing: 8
-                        height: parent.height
+                    model: root.imageItems
+                    currentIndex: root.selectedImageIndex
 
-                        Repeater {
-                            model: root.imageItems
+                    onCurrentIndexChanged: {
+                        if (currentIndex !== root.selectedImageIndex && root.isImageSectionFocused) {
+                            root.selectedImageIndex = currentIndex;
+                        }
+                    }
 
+                    delegate: ClippingRectangle {
+                        required property var modelData
+                        required property int index
+
+                        width: root.imgSize
+                        height: width
+                        color: root.isImageSectionFocused && root.selectedImageIndex === index ? Colors.adapter.primary : Colors.adapter.surface
+                        radius: Config.roundness > 0 ? Config.roundness + 4 : 0
+
+                        Behavior on color {
+                            ColorAnimation {
+                                duration: Config.animDuration / 2
+                                easing.type: Easing.OutQuart
+                            }
+                        }
+
+                        MouseArea {
+                            anchors.fill: parent
+                            hoverEnabled: true
+
+                            onEntered: {
+                                if (!root.isImageSectionFocused) {
+                                    root.isImageSectionFocused = true;
+                                    root.selectedIndex = -1;
+                                    textResultsList.currentIndex = -1;
+                                }
+                                root.selectedImageIndex = index;
+                                imageResultsList.currentIndex = index;
+                            }
+
+                            onClicked: {
+                                root.copyToClipboard(modelData.id);
+                            }
+                        }
+
+                        // Preview de imagen real o placeholder
+                        Item {
+                            anchors.centerIn: parent
+                            width: root.imgSize
+                            height: width
+
+                            // Imagen real si está disponible
+                            Image {
+                                id: imagePreview
+                                anchors.fill: parent
+                                fillMode: Image.PreserveAspectCrop
+                                visible: status === Image.Ready
+                                source: {
+                                    // Forzar re-evaluación cuando el cache cambia
+                                    ClipboardService.revision;
+                                    return ClipboardService.getImageData(modelData.id);
+                                }
+                                clip: true
+
+                                Component.onCompleted: {
+                                    // Cargar imagen on-demand si no está en cache
+                                    if (!ClipboardService.getImageData(modelData.id)) {
+                                        ClipboardService.decodeToDataUrl(modelData.id, modelData.mime);
+                                    }
+                                }
+
+                                onStatusChanged: {
+                                    if (status === Image.Error) {
+                                        console.log("Error loading image for ID:", modelData.id);
+                                    }
+                                }
+                            }
+
+                            // Placeholder cuando la imagen no está disponible
                             Rectangle {
-                                property int itemIndex: index
-                                width: 64
-                                height: 64
-                                color: root.isImageSectionFocused && root.selectedImageIndex === index ? 
-                                       Colors.adapter.primary : Colors.adapter.surface
-                                radius: Config.roundness > 0 ? Config.roundness - 2 : 0
+                                anchors.fill: parent
+                                color: Colors.adapter.primary
+                                radius: Config.roundness > 0 ? Config.roundness - 4 : 0
+                                visible: imagePreview.status !== Image.Ready
 
-                                Behavior on color {
-                                    ColorAnimation {
-                                        duration: Config.animDuration / 2
-                                        easing.type: Easing.OutQuart
-                                    }
-                                }
-
-                                MouseArea {
-                                    anchors.fill: parent
-                                    hoverEnabled: true
-
-                                    onEntered: {
-                                        if (!root.isImageSectionFocused) {
-                                            root.isImageSectionFocused = true;
-                                            root.selectedIndex = -1;
-                                            textResultsList.currentIndex = -1;
-                                        }
-                                        root.selectedImageIndex = index;
-                                    }
-
-                                    onClicked: {
-                                        root.copyToClipboard(modelData.id);
-                                    }
-                                }
-
-                                // Preview de imagen real o placeholder
-                                Item {
+                                Text {
                                     anchors.centerIn: parent
-                                    width: 48
-                                    height: 48
-
-                                    // Imagen real si está disponible
-                                    Image {
-                                        id: imagePreview
-                                        anchors.fill: parent
-                                        fillMode: Image.PreserveAspectCrop
-                                        visible: status === Image.Ready
-                                        source: {
-                                            // Forzar re-evaluación cuando el cache cambia
-                                            ClipboardService.revision;
-                                            return ClipboardService.getImageData(modelData.id);
-                                        }
-                                        clip: true
-                                        
-                                        Component.onCompleted: {
-                                            // Cargar imagen on-demand si no está en cache
-                                            if (!ClipboardService.getImageData(modelData.id)) {
-                                                ClipboardService.decodeToDataUrl(modelData.id, modelData.mime);
-                                            }
-                                        }
-                                        
-                                        onStatusChanged: {
-                                            if (status === Image.Error) {
-                                                console.log("Error loading image for ID:", modelData.id);
-                                            }
-                                        }
-                                    }
-
-                                    // Placeholder cuando la imagen no está disponible
-                                    Rectangle {
-                                        anchors.fill: parent
-                                        color: Colors.adapter.primary
-                                        radius: Config.roundness > 0 ? Config.roundness - 4 : 0
-                                        visible: imagePreview.status !== Image.Ready
-
-                                        Text {
-                                            anchors.centerIn: parent
-                                            text: Icons.image
-                                            font.family: Icons.font
-                                            font.pixelSize: 24
-                                            color: Colors.adapter.overPrimary
-                                        }
-                                    }
-
-                                    // Indicador de carga
-                                    Rectangle {
-                                        anchors.fill: parent
-                                        color: Colors.adapter.surface
-                                        radius: Config.roundness > 0 ? Config.roundness - 4 : 0
-                                        visible: imagePreview.status === Image.Loading
-                                        opacity: 0.8
-
-                                        Text {
-                                            anchors.centerIn: parent
-                                            text: "..."
-                                            font.family: Config.theme.font
-                                            font.pixelSize: 16
-                                            color: Colors.adapter.overSurface
-                                        }
-                                    }
+                                    text: Icons.image
+                                    font.family: Icons.font
+                                    font.pixelSize: 24
+                                    color: Colors.adapter.overPrimary
                                 }
+                            }
 
-                                // Highlight cuando está seleccionado
-                                Rectangle {
-                                    anchors.fill: parent
-                                    color: "transparent"
-                                    border.color: Colors.adapter.primary
-                                    border.width: root.isImageSectionFocused && root.selectedImageIndex === index ? 2 : 0
-                                    radius: parent.radius
+                            // Indicador de carga
+                            Rectangle {
+                                anchors.fill: parent
+                                color: Colors.adapter.surface
+                                radius: Config.roundness > 0 ? Config.roundness - 4 : 0
+                                visible: imagePreview.status === Image.Loading
+                                opacity: 0.8
 
-                                    Behavior on border.width {
-                                        NumberAnimation {
-                                            duration: Config.animDuration / 2
-                                            easing.type: Easing.OutQuart
-                                        }
-                                    }
+                                Text {
+                                    anchors.centerIn: parent
+                                    text: "..."
+                                    font.family: Config.theme.font
+                                    font.pixelSize: 16
+                                    color: Colors.adapter.overSurface
+                                }
+                            }
+                        }
+
+                        // Highlight cuando está seleccionado
+                        Rectangle {
+                            anchors.fill: parent
+                            color: "transparent"
+                            border.color: Colors.adapter.primary
+                            border.width: 0
+                            radius: Config.roundness > 0 ? Config.roundness + 4 : 0
+
+                            Behavior on border.width {
+                                NumberAnimation {
+                                    duration: Config.animDuration / 2
+                                    easing.type: Easing.OutQuart
                                 }
                             }
                         }
                     }
+
+                    highlight: Rectangle {
+                        color: "transparent"
+                        z: 100
+                        border.color: Colors.adapter.primary
+                        border.width: 2
+                        radius: Config.roundness > 0 ? Config.roundness + 4 : 0
+                        visible: root.isImageSectionFocused
+                    }
+
+                    highlightMoveDuration: Config.animDuration / 2
+                    highlightMoveVelocity: -1
                 }
             }
         }
@@ -357,7 +411,7 @@ Rectangle {
         ListView {
             id: textResultsList
             Layout.fillWidth: true
-            Layout.preferredHeight: 5 * 48
+            Layout.preferredHeight: 3 * 48
             visible: true
             clip: true
 
@@ -405,8 +459,7 @@ Rectangle {
                     Rectangle {
                         Layout.preferredWidth: 32
                         Layout.preferredHeight: 32
-                        color: root.selectedIndex === index && !root.isImageSectionFocused ? 
-                               Colors.adapter.overPrimary : Colors.adapter.primary
+                        color: root.selectedIndex === index && !root.isImageSectionFocused ? Colors.adapter.overPrimary : Colors.surface
                         radius: Config.roundness > 0 ? Config.roundness - 4 : 0
 
                         Behavior on color {
@@ -419,8 +472,7 @@ Rectangle {
                         Text {
                             anchors.centerIn: parent
                             text: Icons.clip
-                            color: root.selectedIndex === index && !root.isImageSectionFocused ? 
-                                   Colors.adapter.primary : Colors.adapter.overPrimary
+                            color: root.selectedIndex === index && !root.isImageSectionFocused ? Colors.adapter.primary : Colors.adapter.overBackground
                             font.family: Icons.font
                             font.pixelSize: 16
 
@@ -436,8 +488,7 @@ Rectangle {
                     Text {
                         Layout.fillWidth: true
                         text: modelData.preview
-                        color: root.selectedIndex === index && !root.isImageSectionFocused ? 
-                               Colors.adapter.overPrimary : Colors.adapter.overBackground
+                        color: root.selectedIndex === index && !root.isImageSectionFocused ? Colors.adapter.overPrimary : Colors.adapter.overBackground
                         font.family: Config.theme.font
                         font.pixelSize: Config.theme.fontSize
                         font.weight: Font.Bold

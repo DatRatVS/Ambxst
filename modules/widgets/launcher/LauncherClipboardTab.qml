@@ -279,7 +279,6 @@ Rectangle {
             Layout.fillWidth: true
             text: root.searchText
             placeholderText: "Search clipboard history..."
-            iconText: Icons.clipboard
 
             onSearchTextChanged: text => {
                 root.searchText = text;
@@ -334,65 +333,19 @@ Rectangle {
             }
 
             onDownPressed: {
-                if (!root.deleteMode && root.textItems.length > 0) {
-                    if (root.isImageSectionFocused) {
-                        // Si estamos en imágenes, bajar a texto
-                        root.isImageSectionFocused = false;
-                        root.selectedIndex = 0;
-                        textResultsList.currentIndex = 0;
-                        root.selectedImageIndex = -1;
-                    } else if (root.selectedIndex === -1) {
-                        root.selectedIndex = 0;
-                        textResultsList.currentIndex = 0;
-                    } else if (root.selectedIndex < root.textItems.length - 1) {
-                        root.selectedIndex++;
-                        textResultsList.currentIndex = root.selectedIndex;
-                    }
-                }
+                root.onDownPressed();
             }
 
             onUpPressed: {
-                if (!root.deleteMode) {
-                    if (root.selectedIndex > 0) {
-                        root.selectedIndex--;
-                        textResultsList.currentIndex = root.selectedIndex;
-                    } else if (root.selectedIndex === 0) {
-                        // Si hay imágenes, subir a la sección de imágenes
-                        if (root.imageItems.length > 0 && root.searchText.length === 0) {
-                            root.isImageSectionFocused = true;
-                            textResultsList.currentIndex = -1;
-                            if (root.selectedImageIndex === -1) {
-                                root.selectedImageIndex = 0;
-                            }
-                        } else {
-                            // Regresar al search
-                            root.selectedIndex = -1;
-                            root.hasNavigatedFromSearch = false;
-                            textResultsList.currentIndex = -1;
-                        }
-                    } else if (root.selectedIndex === -1 && root.imageItems.length > 0 && root.searchText.length === 0) {
-                        // Ir a imágenes si están disponibles
-                        root.isImageSectionFocused = true;
-                        textResultsList.currentIndex = -1;
-                        if (root.selectedImageIndex === -1) {
-                            root.selectedImageIndex = 0;
-                        }
-                    }
-                }
+                root.onUpPressed();
             }
 
             onLeftPressed: {
-                if (root.isImageSectionFocused && root.selectedImageIndex > 0) {
-                    root.selectedImageIndex--;
-                    imageResultsList.currentIndex = root.selectedImageIndex;
-                }
+                root.onLeftPressed();
             }
 
             onRightPressed: {
-                if (root.isImageSectionFocused && root.selectedImageIndex < root.imageItems.length - 1) {
-                    root.selectedImageIndex++;
-                    imageResultsList.currentIndex = root.selectedImageIndex;
-                }
+                root.onRightPressed();
             }
         }
 

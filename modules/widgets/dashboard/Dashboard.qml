@@ -18,7 +18,7 @@ NotchAnimationBehavior {
     id: root
 
     property var state: QtObject {
-        property int currentTab: 0
+        property int currentTab: GlobalStates.dashboardCurrentTab
     }
 
     readonly property var tabModel: [Icons.widgets, Icons.pins, Icons.kanban, Icons.wallpapers, Icons.assistant]
@@ -33,6 +33,21 @@ NotchAnimationBehavior {
 
     // Usar el comportamiento estándar de animaciones del notch
     isVisible: GlobalStates.dashboardOpen
+
+    // Navegar a la pestaña seleccionada cuando se abre el dashboard
+    Component.onCompleted: {
+        root.state.currentTab = GlobalStates.dashboardCurrentTab;
+    }
+
+    // Escuchar cambios en dashboardCurrentTab para navegar automáticamente
+    Connections {
+        target: GlobalStates
+        function onDashboardCurrentTabChanged() {
+            if (GlobalStates.dashboardCurrentTab !== root.state.currentTab) {
+                stack.navigateToTab(GlobalStates.dashboardCurrentTab);
+            }
+        }
+    }
 
     Row {
         id: mainLayout
@@ -166,14 +181,15 @@ NotchAnimationBehavior {
             radius: Config.roundness > 0 ? Config.roundness + 4 : 0
             clip: true
 
-            StackView {
+                StackView {
                 id: stack
                 anchors.fill: parent
 
                 // Array de componentes para cargar dinámicamente
                 property var components: [overviewComponent, systemComponent, quickSettingsComponent, wallpapersComponent, assistantComponent]
 
-                initialItem: overviewComponent
+                // Cargar directamente el componente correcto según GlobalStates
+                initialItem: components[GlobalStates.dashboardCurrentTab]
 
                 // Función para navegar a un tab específico
                 function navigateToTab(index) {
@@ -187,6 +203,7 @@ NotchAnimationBehavior {
                         stack.replace(targetComponent, {}, direction);
 
                         root.state.currentTab = index;
+                        GlobalStates.dashboardCurrentTab = index;
 
                         // Auto-focus search input when switching to wallpapers tab
                         if (index === 3) {

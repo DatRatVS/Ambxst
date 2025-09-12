@@ -20,6 +20,9 @@ Singleton {
         launcherSelectedIndex = -1;
     }
 
+    // Persistent dashboard state across monitors  
+    property int dashboardCurrentTab: 0
+
     // Persistent wallpaper navigation state
     property int wallpaperSelectedIndex: -1
 

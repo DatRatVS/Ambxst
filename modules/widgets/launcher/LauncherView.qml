@@ -31,11 +31,20 @@ Item {
     implicitWidth: 480
     implicitHeight: Math.min(stack.currentItem ? stack.currentItem.implicitHeight : 368, 368)
 
-    // Reset al tab 0 cuando se abre el launcher
+    // Reset al tab seleccionado cuando se abre el launcher
     Component.onCompleted: {
-        root.state.currentTab = 0;
-        GlobalStates.launcherCurrentTab = 0;
+        root.state.currentTab = GlobalStates.launcherCurrentTab;
         focusSearchInput();
+    }
+
+    // Escuchar cambios en launcherCurrentTab para navegar automáticamente
+    Connections {
+        target: GlobalStates
+        function onLauncherCurrentTabChanged() {
+            if (GlobalStates.launcherCurrentTab !== root.state.currentTab) {
+                stack.navigateToTab(GlobalStates.launcherCurrentTab);
+            }
+        }
     }
 
     Row {
@@ -158,14 +167,15 @@ Item {
             radius: Config.roundness > 0 ? Config.roundness + 4 : 0
             clip: true
 
-            StackView {
+                StackView {
                 id: stack
                 anchors.fill: parent
 
                 // Array de componentes para cargar dinámicamente
                 property var components: [appsComponent, tmuxComponent, clipboardComponent]
 
-                initialItem: appsComponent
+                // Cargar directamente el componente correcto según GlobalStates
+                initialItem: components[GlobalStates.launcherCurrentTab]
 
                 // Función para navegar a un tab específico
                 function navigateToTab(index) {

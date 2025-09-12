@@ -17,6 +17,7 @@ Rectangle {
     property bool showResults: searchText.length > 0
     property int selectedIndex: -1
     property int selectedRecentIndex: -1
+    property int lastSelectedRecentIndex: -1
     property bool isRecentFocused: false
     property bool hasNavigatedFromSearch: false
     property bool clearButtonFocused: false
@@ -41,6 +42,7 @@ Rectangle {
         searchText = "";
         selectedIndex = -1;
         selectedRecentIndex = -1;
+        lastSelectedRecentIndex = -1;
         isRecentFocused = false;
         hasNavigatedFromSearch = false;
         clearButtonFocused = false;
@@ -160,8 +162,11 @@ Rectangle {
                 isRecentFocused = true;
                 selectedIndex = -1;
                 emojiList.currentIndex = -1;
-                if (selectedRecentIndex === -1) {
-                    selectedRecentIndex = 0;
+                if (lastSelectedRecentIndex >= 0 && lastSelectedRecentIndex < recentEmojis.length) {
+                    selectedRecentIndex = lastSelectedRecentIndex;
+                } else {
+                    selectedRecentIndex = 0; // Start from first recent
+                    lastSelectedRecentIndex = selectedRecentIndex; // Remember it
                 }
                 recentList.currentIndex = selectedRecentIndex;
             } else if (filteredEmojis.length > 0) {
@@ -178,6 +183,7 @@ Rectangle {
             // Ya navegamos desde search, ahora navegamos dentro de secciones
             if (isRecentFocused) {
                 // Cambiar de sección de recientes a emojis
+                lastSelectedRecentIndex = selectedRecentIndex; // Remember last position
                 isRecentFocused = false;
                 selectedRecentIndex = -1;
                 recentList.currentIndex = -1;
@@ -189,6 +195,18 @@ Rectangle {
                 if (selectedIndex < emojiList.count - 1) {
                     selectedIndex++;
                     emojiList.currentIndex = selectedIndex;
+                } else if (selectedIndex === emojiList.count - 1 && recentEmojis.length > 0 && searchText.length === 0) {
+                    // At end of normal list, go back to recent section
+                    isRecentFocused = true;
+                    selectedIndex = -1;
+                    emojiList.currentIndex = -1;
+                    if (lastSelectedRecentIndex >= 0 && lastSelectedRecentIndex < recentEmojis.length) {
+                        selectedRecentIndex = lastSelectedRecentIndex;
+                    } else {
+                        selectedRecentIndex = 0;
+                        lastSelectedRecentIndex = selectedRecentIndex; // Remember it
+                    }
+                    recentList.currentIndex = selectedRecentIndex;
                 }
             }
         }
@@ -196,26 +214,33 @@ Rectangle {
 
     function onUpPressed() {
         if (isRecentFocused) {
-            // If in recent, go back to search
+            // If in recent section, go back to search
+            lastSelectedRecentIndex = selectedRecentIndex; // Remember last position
             isRecentFocused = false;
             selectedRecentIndex = -1;
             recentList.currentIndex = -1;
+            hasNavigatedFromSearch = false; // Allow going down again to recent
         } else if (selectedIndex > 0) {
+            // Navigate within normal list
             selectedIndex--;
             emojiList.currentIndex = selectedIndex;
         } else if (selectedIndex === 0 && recentEmojis.length > 0 && searchText.length === 0) {
-            // Go to recent section
+            // Go to recent section (last highlighted item)
             isRecentFocused = true;
             selectedIndex = -1;
             emojiList.currentIndex = -1;
-            if (selectedRecentIndex === -1) {
+            if (lastSelectedRecentIndex >= 0 && lastSelectedRecentIndex < recentEmojis.length) {
+                selectedRecentIndex = lastSelectedRecentIndex;
+            } else {
                 selectedRecentIndex = 0;
+                lastSelectedRecentIndex = selectedRecentIndex; // Remember it
             }
             recentList.currentIndex = selectedRecentIndex;
         } else if (selectedIndex === 0) {
             // Go back to search
             selectedIndex = -1;
             emojiList.currentIndex = -1;
+            hasNavigatedFromSearch = false; // Allow going down again
         }
     }
 
@@ -223,6 +248,7 @@ Rectangle {
         if (isRecentFocused && selectedRecentIndex > 0) {
             selectedRecentIndex--;
             recentList.currentIndex = selectedRecentIndex;
+            lastSelectedRecentIndex = selectedRecentIndex; // Remember position
         }
     }
 
@@ -230,6 +256,7 @@ Rectangle {
         if (isRecentFocused && selectedRecentIndex < recentEmojis.length - 1) {
             selectedRecentIndex++;
             recentList.currentIndex = selectedRecentIndex;
+            lastSelectedRecentIndex = selectedRecentIndex; // Remember position
         }
     }
 
@@ -512,11 +539,12 @@ Rectangle {
                     model: recentEmojis
                     currentIndex: root.selectedRecentIndex
 
-                    onCurrentIndexChanged: {
-                        if (currentIndex !== root.selectedRecentIndex && root.isRecentFocused) {
-                            root.selectedRecentIndex = currentIndex;
-                        }
-                    }
+                     onCurrentIndexChanged: {
+                         if (currentIndex !== root.selectedRecentIndex && root.isRecentFocused) {
+                             root.selectedRecentIndex = currentIndex;
+                             root.lastSelectedRecentIndex = currentIndex; // Remember position
+                         }
+                     }
 
                     delegate: Rectangle {
                         required property var modelData
@@ -538,15 +566,16 @@ Rectangle {
                             anchors.fill: parent
                             hoverEnabled: true
 
-                            onEntered: {
-                                if (!root.isRecentFocused) {
-                                    root.isRecentFocused = true;
-                                    root.selectedIndex = -1;
-                                    emojiList.currentIndex = -1;
-                                }
-                                root.selectedRecentIndex = index;
-                                recentList.currentIndex = index;
-                            }
+                             onEntered: {
+                                 if (!root.isRecentFocused) {
+                                     root.isRecentFocused = true;
+                                     root.selectedIndex = -1;
+                                     emojiList.currentIndex = -1;
+                                 }
+                                 root.selectedRecentIndex = index;
+                                 root.lastSelectedRecentIndex = index; // Remember position
+                                 recentList.currentIndex = index;
+                             }
 
                             onClicked: {
                                 root.copyEmoji(modelData);

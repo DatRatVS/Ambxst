@@ -159,19 +159,9 @@ Item {
                     }
 
                     Text {
-                        text: "•"
-                        font.family: Config.theme.font
-                        font.pixelSize: Config.theme.fontSize
-                        font.weight: Font.Bold
-                        color: Colors.adapter.outline
-                        verticalAlignment: Text.AlignVCenter
-                        visible: currentNotification && currentNotification.appName !== "" && summaryText.text !== ""
-                    }
-
-                    Text {
                         id: appNameText
                         width: Math.min(implicitWidth, Math.max(80, parent.width * 0.3))
-                        text: currentNotification ? currentNotification.appName : ""
+                        text: currentNotification ? "• " + currentNotification.appName : ""
                         font.family: Config.theme.font
                         font.pixelSize: Config.theme.fontSize
                         font.weight: Font.Bold

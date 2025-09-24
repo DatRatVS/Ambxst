@@ -288,7 +288,8 @@ Item {
                             }
 
                             // Detectar nueva notificación: si la lista creció, ir a la más reciente (última)
-                            if (Notifications.popupList.length > root.lastNotificationCount) {
+                            // Solo si no hay hover para no interrumpir la interacción del usuario
+                            if (Notifications.popupList.length > root.lastNotificationCount && !root.hovered) {
                                 const newIndex = Notifications.popupList.length - 1;
                                 root.currentIndex = newIndex;
                                 notificationStack.navigateToNotification(newIndex, StackView.PushTransition);

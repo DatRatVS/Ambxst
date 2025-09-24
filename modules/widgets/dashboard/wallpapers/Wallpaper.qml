@@ -160,12 +160,12 @@ PanelWindow {
     function runMatugenForCurrentWallpaper() {
         if (currentWallpaper && initialLoadCompleted) {
             console.log("Running Matugen for current wallpaper:", currentWallpaper);
-            
+
             var fileType = getFileType(currentWallpaper);
             var matugenSource = getColorSource(currentWallpaper);
-            
+
             console.log("Using source for matugen:", matugenSource, "(type:", fileType + ")");
-            
+
             // Ejecutar matugen con configuración específica
             var command = ["matugen", "image", matugenSource, "-c", Qt.resolvedUrl("../../../../assets/matugen/config.toml").toString().replace("file://", "")];
             if (Config.theme.lightMode) {
@@ -509,6 +509,7 @@ PanelWindow {
         }
 
         Loader {
+            asynchronous: true
             anchors.fill: parent
             sourceComponent: {
                 if (!parent.source)

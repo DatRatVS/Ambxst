@@ -314,65 +314,74 @@ Rectangle {
 
                                     visible: selectedIndex >= 0 || showHoveredItem
 
-                                    Text {
-                                        id: labelText
+                                    Rectangle {
                                         anchors.verticalCenter: parent.verticalCenter
-                                        anchors.horizontalCenter: needsScroll ? undefined : parent.horizontalCenter
-                                        x: needsScroll ? 4 : undefined
-                                        text: {
-                                            if (parent.isCurrentWallpaper) {
-                                                return "CURRENT";
-                                            } else if (wallpaperGrid.currentIndex >= 0 && wallpaperGrid.currentIndex < filteredWallpapers.length) {
-                                                return filteredWallpapers[wallpaperGrid.currentIndex].split('/').pop();
-                                            }
-                                            return "";
-                                        }
-                                        color: parent.isCurrentWallpaper ? Colors.adapter.primary : Colors.adapter.overBackground
-                                        font.family: Config.theme.font
-                                        font.pixelSize: Config.theme.fontSize
-                                        font.weight: Font.Bold
-                                        horizontalAlignment: Text.AlignHCenter
+                                        anchors.horizontalCenter: parent.horizontalCenter
+                                        width: wallpaperGridContainer.wallpaperWidth - 20
+                                        height: parent.height
+                                        color: "transparent"
+                                        clip: true
 
-                                        readonly property bool needsScroll: width > parent.width - 8
+                                        Text {
+                                            id: labelText
+                                            anchors.verticalCenter: parent.verticalCenter
+                                            anchors.horizontalCenter: needsScroll ? undefined : parent.horizontalCenter
+                                            x: needsScroll ? 4 : undefined
+                                            text: {
+                                                if (parent.parent.isCurrentWallpaper) {
+                                                    return "CURRENT";
+                                                } else if (wallpaperGrid.currentIndex >= 0 && wallpaperGrid.currentIndex < filteredWallpapers.length) {
+                                                    return filteredWallpapers[wallpaperGrid.currentIndex].split('/').pop();
+                                                }
+                                                return "";
+                                            }
+                                            color: parent.parent.isCurrentWallpaper ? Colors.adapter.primary : Colors.adapter.overBackground
+                                            font.family: Config.theme.font
+                                            font.pixelSize: Config.theme.fontSize
+                                            font.weight: Font.Bold
+                                            horizontalAlignment: Text.AlignHCenter
 
-                                        // Resetear posición cuando cambia el texto o cuando deja de necesitar scroll
-                                        onTextChanged: {
-                                            if (needsScroll) {
-                                                x = 4;
-                                            }
-                                        }
+                                            readonly property bool needsScroll: contentWidth > parent.width - 8
 
-                                        onNeedsScrollChanged: {
-                                            if (needsScroll) {
-                                                x = 4;
-                                                scrollAnimation.restart();
+                                            // Resetear posición cuando cambia el texto o cuando deja de necesitar scroll
+                                            onTextChanged: {
+                                                if (needsScroll) {
+                                                    x = 4;
+                                                }
                                             }
-                                        }
 
-                                        SequentialAnimation {
-                                            id: scrollAnimation
-                                            running: labelText.needsScroll && labelText.parent && labelText.parent.visible && !labelText.parent.isCurrentWallpaper
-                                            loops: Animation.Infinite
+                                            onNeedsScrollChanged: {
+                                                if (needsScroll) {
+                                                    x = 4;
+                                                    scrollAnimation.restart();
+                                                }
+                                            }
 
-                                            PauseAnimation {
-                                                duration: 1000
-                                            }
-                                            NumberAnimation {
-                                                target: labelText
-                                                property: "x"
-                                                to: labelText.parent.width - labelText.width - 4
-                                                duration: 2000
-                                                easing.type: Easing.InOutQuad
-                                            }
-                                            PauseAnimation {
-                                                duration: 1000
-                                            }
-                                            NumberAnimation {
-                                                target: labelText
-                                                property: "x"
-                                                to: 4
-                                                duration: 2000
-                                                easing.type: Easing.InOutQuad
+                                            SequentialAnimation {
+                                                id: scrollAnimation
+                                                running: labelText.needsScroll && labelText.parent && labelText.parent.parent.visible && !labelText.parent.parent.isCurrentWallpaper
+                                                loops: Animation.Infinite
+
+                                                PauseAnimation {
+                                                    duration: 1000
+                                                }
+                                                NumberAnimation {
+                                                    target: labelText
+                                                    property: "x"
+                                                    to: labelText.parent.width - labelText.contentWidth - 4
+                                                    duration: 2000
+                                                    easing.type: Easing.InOutQuad
+                                                }
+                                                PauseAnimation {
+                                                    duration: 1000
+                                                }
+                                                NumberAnimation {
+                                                    target: labelText
+                                                    property: "x"
+                                                    to: 4
+                                                    duration: 2000
+                                                    easing.type: Easing.InOutQuad
+                                                }
                                             }
                                         }
                                     }

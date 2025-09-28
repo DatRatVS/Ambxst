@@ -16,11 +16,9 @@ Item {
     property real fontSize: 12
     property real padding: 8
     property bool onlyNotification: false
-    
-    property bool isValid: notificationObject !== null && 
-                          (notificationObject.summary !== null && notificationObject.summary.length > 0) ||
-                          (notificationObject.body !== null && notificationObject.body.length > 0)
-    
+
+    property bool isValid: notificationObject !== null && (notificationObject.summary !== null && notificationObject.summary.length > 0) || (notificationObject.body !== null && notificationObject.body.length > 0)
+
     signal destroyRequested
 
     implicitHeight: background.height
@@ -95,7 +93,7 @@ Item {
             id: contentColumn
             width: parent.width
             anchors.fill: parent
-            anchors.margins: root.padding
+            anchors.margins: 0
             spacing: onlyNotification ? 8 : (expanded ? 8 : 4)
 
             // Individual notification layout (like expanded popup)

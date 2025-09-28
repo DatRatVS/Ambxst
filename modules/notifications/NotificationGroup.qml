@@ -163,9 +163,9 @@ Item {
             anchors.margins: root.padding
             spacing: root.padding / 2
 
-            ColumnLayout {
-                Layout.fillWidth: true
-                spacing: expanded ? (root.multipleNotifications ? (notificationGroup?.notifications[root.notificationCount - 1].image != "") ? 35 : 5 : 0) : 0
+                ColumnLayout {
+                    Layout.fillWidth: true
+                    spacing: 8
 
                 Behavior on spacing {
                     NumberAnimation {

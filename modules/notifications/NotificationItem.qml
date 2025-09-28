@@ -14,7 +14,7 @@ Item {
     property var notificationObject
     property bool expanded: false
     property real fontSize: 12
-    property real padding: 8
+    property real padding: onlyNotification || expanded ? 8 : 0
     property bool onlyNotification: false
 
     property bool isValid: notificationObject !== null && (notificationObject.summary !== null && notificationObject.summary.length > 0) || (notificationObject.body !== null && notificationObject.body.length > 0)
@@ -250,19 +250,19 @@ Item {
                 spacing: 8
                 visible: !onlyNotification
 
-                NotificationAppIcon {
-                    id: groupedAppIcon
-                    Layout.preferredWidth: 32
-                    Layout.preferredHeight: 32
-                    Layout.alignment: Qt.AlignTop
-                    size: 32
-                    radius: Config.roundness > 0 ? Config.roundness + 4 : 0
-                    visible: notificationObject && (notificationObject.appIcon !== "" || notificationObject.image !== "")
-                    appIcon: notificationObject ? notificationObject.appIcon : ""
-                    image: notificationObject ? notificationObject.image : ""
-                    summary: notificationObject ? notificationObject.summary : ""
-                    urgency: notificationObject ? notificationObject.urgency : NotificationUrgency.Normal
-                }
+                    NotificationAppIcon {
+                        id: groupedAppIcon
+                        Layout.preferredWidth: expanded ? 48 : 32
+                        Layout.preferredHeight: expanded ? 48 : 32
+                        Layout.alignment: Qt.AlignTop
+                        size: expanded ? 48 : 32
+                        radius: Config.roundness > 0 ? Config.roundness + 4 : 0
+                        visible: notificationObject && (notificationObject.appIcon !== "" || notificationObject.image !== "")
+                        appIcon: notificationObject ? notificationObject.appIcon : ""
+                        image: notificationObject ? notificationObject.image : ""
+                        summary: notificationObject ? notificationObject.summary : ""
+                        urgency: notificationObject ? notificationObject.urgency : NotificationUrgency.Normal
+                    }
 
                 Item {
                     Layout.fillWidth: true

@@ -55,10 +55,12 @@ class ThumbnailGenerator:
 
             wall_path = config.get('wallPath', '')
             if not wall_path:
-                print("ERROR: wallPath not found in config")
-                return False
+                # Fallback to example wallpapers if wallPath not set
+                self.wall_path = Path.cwd() / "assets" / "wallpapers_example"
+                print(f"wallPath not found in config, using fallback: {self.wall_path}")
+            else:
+                self.wall_path = Path(wall_path).expanduser()
 
-            self.wall_path = Path(wall_path).expanduser()
             if not self.wall_path.exists():
                 print(f"ERROR: Wallpaper directory not found: {self.wall_path}")
                 return False

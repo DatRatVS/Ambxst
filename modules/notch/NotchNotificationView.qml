@@ -548,11 +548,19 @@ Item {
                                             hoverEnabled: true
 
                                             background: Rectangle {
-                                                color: parent.pressed ? Colors.error : (parent.hovered ? Colors.surfaceBright : Colors.surface)
+                                                color: notification && notification.urgency == NotificationUrgency.Critical ? Colors.redSource : (parent.pressed ? Colors.error : (parent.hovered ? Colors.surfaceBright : Colors.surface))
                                                 radius: Config.roundness > 0 ? Config.roundness + 4 : 0
+                                                border.width: notification && notification.urgency == NotificationUrgency.Critical ? 4 : 0
+                                                border.color: notification && notification.urgency == NotificationUrgency.Critical ? Colors.shadow : "transparent"
 
                                                 Behavior on color {
                                                     ColorAnimation {
+                                                        duration: Config.animDuration
+                                                    }
+                                                }
+
+                                                Behavior on border.width {
+                                                    NumberAnimation {
                                                         duration: Config.animDuration
                                                     }
                                                 }
@@ -562,7 +570,7 @@ Item {
                                                 text: Icons.cancel
                                                 font.family: Icons.font
                                                 font.pixelSize: 20
-                                                color: parent.pressed ? Colors.overError : (parent.hovered ? Colors.overBackground : Colors.error)
+                                                color: notification && notification.urgency == NotificationUrgency.Critical ? Colors.shadow : (parent.pressed ? Colors.overError : (parent.hovered ? Colors.overBackground : Colors.error))
                                                 horizontalAlignment: Text.AlignHCenter
                                                 verticalAlignment: Text.AlignVCenter
 
@@ -612,7 +620,7 @@ Item {
                                             // Ya no necesita gestionar anyButtonHovered porque mouseArea principal maneja el hover
 
                                             background: Rectangle {
-                                                color: parent.pressed ? Colors.primary : (parent.hovered ? Colors.surfaceBright : Colors.surface)
+                                                color: notification && notification.urgency == NotificationUrgency.Critical ? Colors.redSource : (parent.pressed ? Colors.primary : (parent.hovered ? Colors.surfaceBright : Colors.surface))
                                                 radius: Config.roundness > 0 ? Config.roundness + 4 : 0
 
                                                 Behavior on color {
@@ -625,7 +633,7 @@ Item {
                                             contentItem: Text {
                                                 text: parent.text
                                                 font: parent.font
-                                                color: parent.pressed ? Colors.overPrimary : (parent.hovered ? Colors.primary : Colors.overBackground)
+                                                color: notification && notification.urgency == NotificationUrgency.Critical ? Colors.shadow : (parent.pressed ? Colors.overPrimary : (parent.hovered ? Colors.primary : Colors.overBackground))
                                                 horizontalAlignment: Text.AlignHCenter
                                                 verticalAlignment: Text.AlignVCenter
                                                 elide: Text.ElideRight

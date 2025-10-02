@@ -213,6 +213,7 @@ Item {
 
                     NotificationDismissButton {
                         visibleWhen: onlyNotification
+                        urgency: latestNotification ? latestNotification.urgency : NotificationUrgency.Normal
                         onClicked: root.destroyWithAnimation()
                     }
                 }
@@ -357,6 +358,7 @@ Item {
 
                     NotificationDismissButton {
                         visibleWhen: expanded
+                        urgency: latestNotification ? latestNotification.urgency : NotificationUrgency.Normal
                         onClicked: root.destroyWithAnimation()
                     }
                 }
@@ -367,6 +369,7 @@ Item {
                 showWhen: (onlyNotification || expanded) && latestNotification && latestNotification.actions.length > 0 && !latestNotification.isCached
                 actions: latestNotification ? latestNotification.actions : []
                 notificationObject: latestNotification
+                urgency: latestNotification ? latestNotification.urgency : NotificationUrgency.Normal
             }
         }
     }

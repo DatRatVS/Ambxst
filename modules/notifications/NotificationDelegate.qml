@@ -108,8 +108,8 @@ Item {
                 anchors.fill: parent
                 anchors.topMargin: background.criticalMargins
                 anchors.bottomMargin: background.criticalMargins
-                anchors.leftMargin: background.criticalMargins > 0 ? 4 : 0
-                anchors.rightMargin: background.criticalMargins > 0 ? 4 : 0
+                anchors.leftMargin: background.criticalMargins > 0 ? 8 : 0
+                anchors.rightMargin: background.criticalMargins > 0 ? 8 : 0
                 spacing: onlyNotification || expanded ? 8 : 0
 
                 // Individual notification layout (like expanded popup)

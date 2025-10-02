@@ -13,6 +13,8 @@ ClippingRectangle {
     property bool animationRunning: true
 
     color: Colors.shadow
+    border.width: 2
+    border.color: Colors.criticalRed
 
     Repeater {
         model: Math.ceil((parent.width + parent.height) / root.stripeWidth)
@@ -41,20 +43,13 @@ ClippingRectangle {
         anchors.fill: parent
         anchors.topMargin: 4
         anchors.bottomMargin: 4
-        color: Colors.shadow
+        color: root.stripeColor
     }
 
     Rectangle {
         anchors.fill: parent
         anchors.topMargin: 6
         anchors.bottomMargin: 6
-        color: root.stripeColor
-    }
-
-    Rectangle {
-        anchors.fill: parent
-        anchors.topMargin: 8
-        anchors.bottomMargin: 8
         color: Colors.shadow
     }
 }

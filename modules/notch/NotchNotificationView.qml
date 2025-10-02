@@ -392,8 +392,8 @@ Item {
                                     anchors.fill: parent
                                     anchors.topMargin: parent.criticalMargins
                                     anchors.bottomMargin: parent.criticalMargins
-                                    anchors.leftMargin: parent.criticalMargins > 0 ? 4 : 0
-                                    anchors.rightMargin: parent.criticalMargins > 0 ? 4 : 0
+                                    anchors.leftMargin: parent.criticalMargins > 0 ? 8 : 0
+                                    anchors.rightMargin: parent.criticalMargins > 0 ? 8 : 0
                                     implicitHeight: Math.max(hovered ? 48 : 32, textColumn.implicitHeight)
                                     spacing: 8
 

@@ -523,6 +523,7 @@ Rectangle {
                     Text {
                         Layout.preferredWidth: 32
                         text: root.clearButtonConfirmState ? Icons.alert : Icons.trash
+                        textFormat: Text.RichText
                         font.family: Icons.font
                         font.pixelSize: 20
                         color: root.clearButtonConfirmState ? Colors.overError : Colors.primary
@@ -859,6 +860,7 @@ Rectangle {
                                     Text {
                                         anchors.centerIn: parent
                                         text: Icons.image
+                                        textFormat: Text.RichText
                                         font.family: Icons.font
                                         font.pixelSize: 24
                                         color: Colors.overPrimary
@@ -1026,20 +1028,21 @@ Rectangle {
                                                 onExited: parent.color = "transparent"
                                             }
 
-                                            Text {
-                                                anchors.centerIn: parent
-                                                text: Icons.cancel
-                                                color: imageCancelButton.isHighlighted ? Colors.error : Colors.overError
-                                                font.pixelSize: 16
-                                                font.family: Icons.font
+                                        Text {
+                                            anchors.centerIn: parent
+                                            text: Icons.cancel
+                                            color: imageCancelButton.isHighlighted ? Colors.error : Colors.overError
+                                            font.pixelSize: 16
+                                            font.family: Icons.font
+                                            textFormat: Text.RichText
 
-                                                Behavior on color {
-                                                    ColorAnimation {
-                                                        duration: Config.animDuration / 2
-                                                        easing.type: Easing.OutQuart
-                                                    }
+                                            Behavior on color {
+                                                ColorAnimation {
+                                                    duration: Config.animDuration / 2
+                                                    easing.type: Easing.OutQuart
                                                 }
                                             }
+                                        }
                                         }
 
                                         // Botón confirmar (trash)
@@ -1062,20 +1065,21 @@ Rectangle {
                                                 onExited: parent.color = "transparent"
                                             }
 
-                                            Text {
-                                                anchors.centerIn: parent
-                                                text: Icons.trash
-                                                color: imageConfirmButton.isHighlighted ? Colors.error : Colors.overError
-                                                font.pixelSize: 16
-                                                font.family: Icons.font
+                                        Text {
+                                            anchors.centerIn: parent
+                                            text: Icons.trash
+                                            color: imageConfirmButton.isHighlighted ? Colors.error : Colors.overError
+                                            font.pixelSize: 16
+                                            font.family: Icons.font
+                                            textFormat: Text.RichText
 
-                                                Behavior on color {
-                                                    ColorAnimation {
-                                                        duration: Config.animDuration / 2
-                                                        easing.type: Easing.OutQuart
-                                                    }
+                                            Behavior on color {
+                                                ColorAnimation {
+                                                    duration: Config.animDuration / 2
+                                                    easing.type: Easing.OutQuart
                                                 }
                                             }
+                                        }
                                         }
                                     }
                                 }
@@ -1375,6 +1379,7 @@ Rectangle {
                                             color: cancelButton.isHighlighted ? Colors.error : Colors.overError
                                             font.pixelSize: 14
                                             font.family: Icons.font
+                                            textFormat: Text.RichText
 
                                             Behavior on color {
                                                 ColorAnimation {
@@ -1412,6 +1417,7 @@ Rectangle {
                                             color: confirmButton.isHighlighted ? Colors.error : Colors.overError
                                             font.pixelSize: 14
                                             font.family: Icons.font
+                                            textFormat: Text.RichText
 
                                             Behavior on color {
                                                 ColorAnimation {
@@ -1544,6 +1550,7 @@ Rectangle {
                                     }
                                     font.family: Icons.font
                                     font.pixelSize: 16
+                                    textFormat: Text.RichText
 
                                     Behavior on color {
                                         ColorAnimation {
@@ -1627,6 +1634,7 @@ Rectangle {
                         font.pixelSize: 48
                         color: Colors.surfaceBright
                         anchors.horizontalCenter: parent.horizontalCenter
+                        textFormat: Text.RichText
                     }
 
                     Text {

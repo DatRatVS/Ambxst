@@ -229,6 +229,7 @@ Menu {
                             font.pixelSize: 14
                             font.weight: Font.Bold
                             anchors.centerIn: parent
+                            textFormat: Text.RichText
                             
                             Behavior on color {
                                 ColorAnimation {

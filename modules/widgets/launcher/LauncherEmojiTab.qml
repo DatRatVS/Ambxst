@@ -500,6 +500,7 @@ Rectangle {
                         font.pixelSize: 20
                         color: root.clearButtonConfirmState ? Colors.overError : Colors.primary
                         horizontalAlignment: Text.AlignHCenter
+                        textFormat: Text.RichText
 
                         Behavior on color {
                             ColorAnimation {

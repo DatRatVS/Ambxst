@@ -737,6 +737,7 @@ Rectangle {
                                 color: renameCancelButton.isHighlighted ? Colors.secondary : Colors.overSecondary
                                 font.pixelSize: 14
                                 font.family: Icons.font
+                                textFormat: Text.RichText
 
                                 Behavior on color {
                                     ColorAnimation {
@@ -773,6 +774,7 @@ Rectangle {
                                 color: renameConfirmButton.isHighlighted ? Colors.secondary : Colors.overSecondary
                                 font.pixelSize: 14
                                 font.family: Icons.font
+                                textFormat: Text.RichText
 
                                 Behavior on color {
                                     ColorAnimation {
@@ -852,6 +854,7 @@ Rectangle {
                             }
                             font.family: Icons.font
                             font.pixelSize: 16
+                            textFormat: Text.RichText
 
                             Behavior on color {
                                 ColorAnimation {
@@ -1045,6 +1048,7 @@ Rectangle {
                                 color: cancelButton.isHighlighted ? Colors.error : Colors.overError
                                 font.pixelSize: 14
                                 font.family: Icons.font
+                                textFormat: Text.RichText
 
                                 Behavior on color {
                                     ColorAnimation {
@@ -1081,6 +1085,7 @@ Rectangle {
                                 color: confirmButton.isHighlighted ? Colors.error : Colors.overError
                                 font.pixelSize: 14
                                 font.family: Icons.font
+                                textFormat: Text.RichText
 
                                 Behavior on color {
                                     ColorAnimation {

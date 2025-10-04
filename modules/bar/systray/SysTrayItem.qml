@@ -16,7 +16,7 @@ MouseArea {
     property int trayItemSize: 20
 
     acceptedButtons: Qt.LeftButton | Qt.RightButton
-    Layout.fillHeight: true
+    Layout.fillHeight: bar.orientation === "horizontal"
     implicitWidth: trayItemSize
     implicitHeight: trayItemSize
     onClicked: event => {

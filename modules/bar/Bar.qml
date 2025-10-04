@@ -253,9 +253,8 @@ PanelWindow {
             ColumnLayout {
                 Layout.fillWidth: true
                 spacing: 4
-                SysTray { 
+                SysTray {
                     bar: panel
-                    Layout.preferredHeight: 36
                 }
                 Clock { 
                     id: clockComponentVert

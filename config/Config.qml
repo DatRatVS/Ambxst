@@ -64,6 +64,7 @@ Singleton {
                 property string launcherIcon: ""
                 property bool showBackground: false
                 property real bgOpacity: 0.5
+                property string bgColor: "surface"
                 property bool verbose: true
                 property list<string> screenList: []
                 property bool enableFirefoxPlayer: false

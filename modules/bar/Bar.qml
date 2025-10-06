@@ -127,7 +127,8 @@ PanelWindow {
         Rectangle {
             id: barBg
             anchors.fill: parent
-            property color bgColor: Qt.rgba(Colors.surface.r, Colors.surface.g, Colors.surface.b, Config.bar.bgOpacity)
+            property color configColor: Colors[Config.bar.bgColor] || Colors.surface
+            property color bgColor: Qt.rgba(configColor.r, configColor.g, configColor.b, Config.bar.bgOpacity)
             color: Config.bar.showBackground ? bgColor : "transparent"
 
             RoundCorner {

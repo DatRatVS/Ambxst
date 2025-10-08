@@ -12,6 +12,23 @@ Singleton {
     property string positionsFile: Quickshell.dataPath("desktop-positions.json")
     property int maxRowsHint: 15
     property int maxColumnsHint: 10
+    property bool gridReady: false
+    property bool positionsLoaded: false
+
+    onMaxRowsHintChanged: checkGridReady()
+    onMaxColumnsHintChanged: checkGridReady()
+    onPositionsLoadedChanged: checkGridReady()
+
+    function checkGridReady() {
+        if (maxRowsHint > 0 && maxColumnsHint > 0 && positionsLoaded && !gridReady) {
+            gridReady = true;
+            console.log("Grid ready - rows:", maxRowsHint, "cols:", maxColumnsHint);
+            if (tempItems.length > 0 || tempDesktopFiles.length > 0) {
+                console.log("Finalizing items with", tempItems.length + tempDesktopFiles.length, "items");
+                finalizeItems();
+            }
+        }
+    }
 
     property ListModel items: ListModel {
         id: itemsModel
@@ -93,6 +110,21 @@ Singleton {
         openFileProcess.running = true;
     }
 
+    function saveAllPositions() {
+        iconPositions = {};
+        
+        for (var i = 0; i < items.count; i++) {
+            var item = items.get(i);
+            if (!item.isPlaceholder && item.path) {
+                var col = Math.floor(i / maxRowsHint);
+                var row = i % maxRowsHint;
+                iconPositions[item.path] = { x: col, y: row };
+            }
+        }
+        
+        savePositions();
+    }
+
     function moveItem(fromIndex, toIndex) {
         if (fromIndex === toIndex || fromIndex < 0 || toIndex < 0 || fromIndex >= items.count) {
             return;
@@ -122,19 +154,23 @@ Singleton {
             
             var col = Math.floor(toIndex / maxRowsHint);
             var row = toIndex % maxRowsHint;
-            updateIconPosition(item.path, col, row);
+            items.setProperty(toIndex, "gridX", col);
+            items.setProperty(toIndex, "gridY", row);
         } else {
             items.move(fromIndex, toIndex, 1);
             
-            var movedItem = items.get(toIndex);
-            var col = Math.floor(toIndex / maxRowsHint);
-            var row = toIndex % maxRowsHint;
+            var sourceCol = Math.floor(toIndex / maxRowsHint);
+            var sourceRow = toIndex % maxRowsHint;
+            items.setProperty(toIndex, "gridX", sourceCol);
+            items.setProperty(toIndex, "gridY", sourceRow);
             
-            items.setProperty(toIndex, "gridX", col);
-            items.setProperty(toIndex, "gridY", row);
-            
-            updateIconPosition(movedItem.path, col, row);
+            var targetCol = Math.floor(fromIndex / maxRowsHint);
+            var targetRow = fromIndex % maxRowsHint;
+            items.setProperty(fromIndex, "gridX", targetCol);
+            items.setProperty(fromIndex, "gridY", targetRow);
         }
+        
+        saveAllPositions();
     }
 
     function getFileType(fileName) {
@@ -196,21 +232,31 @@ Singleton {
             onStreamFinished: {
                 if (text.trim().length > 0) {
                     try {
-                        root.iconPositions = JSON.parse(text);
-                        console.log("Loaded icon positions:", Object.keys(root.iconPositions).length, "items");
+                        var parsed = JSON.parse(text);
+                        
+                        for (var key in root.iconPositions) {
+                            delete root.iconPositions[key];
+                        }
+                        
+                        for (var k in parsed) {
+                            root.iconPositions[k] = {
+                                x: parsed[k].x,
+                                y: parsed[k].y
+                            };
+                        }
+                        
+                        console.log("Loaded", Object.keys(root.iconPositions).length, "icon positions");
                     } catch (e) {
                         console.warn("Error parsing positions file:", e);
-                        root.iconPositions = {};
                     }
-                } else {
-                    root.iconPositions = {};
                 }
+                root.positionsLoaded = true;
             }
         }
 
         stderr: StdioCollector {
             onStreamFinished: {
-                root.iconPositions = {};
+                root.positionsLoaded = true;
             }
         }
     }
@@ -304,7 +350,9 @@ Singleton {
                     currentDesktopFileIndex = 0;
                     parseNextDesktopFile();
                 } else {
-                    finalizeItems();
+                    if (gridReady && positionsLoaded) {
+                        finalizeItems();
+                    }
                 }
             }
         }
@@ -328,7 +376,9 @@ Singleton {
             parseDesktopFileProcess.command = ["cat", item.path];
             parseDesktopFileProcess.running = true;
         } else {
-            finalizeItems();
+            if (gridReady && positionsLoaded) {
+                finalizeItems();
+            }
         }
     }
 
@@ -359,22 +409,43 @@ Singleton {
             });
         }
         
+        var usedIndices = new Set();
+        
         for (var i = 0; i < allItems.length; i++) {
             var item = allItems[i];
             var savedPos = getIconPosition(item.path);
-            var pos = savedPos || calculateAutoPosition(i);
+            var gridIndex = -1;
             
-            var gridIndex = pos.x * maxRowsHint + pos.y;
+            if (savedPos && savedPos.x < maxColumnsHint && savedPos.y < maxRowsHint) {
+                gridIndex = savedPos.x * maxRowsHint + savedPos.y;
+                
+                if (usedIndices.has(gridIndex)) {
+                    gridIndex = -1;
+                }
+            }
             
-            if (gridIndex < items.count) {
+            if (gridIndex === -1) {
+                for (var j = 0; j < gridSize; j++) {
+                    if (!usedIndices.has(j)) {
+                        gridIndex = j;
+                        break;
+                    }
+                }
+            }
+            
+            if (gridIndex !== -1 && gridIndex < items.count) {
+                usedIndices.add(gridIndex);
+                var col = Math.floor(gridIndex / maxRowsHint);
+                var row = gridIndex % maxRowsHint;
+                
                 items.setProperty(gridIndex, "name", item.name);
                 items.setProperty(gridIndex, "path", item.path);
                 items.setProperty(gridIndex, "type", item.type);
                 items.setProperty(gridIndex, "icon", item.icon);
                 items.setProperty(gridIndex, "isDesktopFile", item.isDesktopFile);
                 items.setProperty(gridIndex, "isPlaceholder", false);
-                items.setProperty(gridIndex, "gridX", pos.x);
-                items.setProperty(gridIndex, "gridY", pos.y);
+                items.setProperty(gridIndex, "gridX", col);
+                items.setProperty(gridIndex, "gridY", row);
             }
         }
         

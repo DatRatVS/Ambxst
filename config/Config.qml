@@ -144,7 +144,7 @@ Singleton {
             property JsonObject desktop: JsonObject {
                 property bool enabled: true
                 property int iconSize: 64
-                property int spacing: 16
+                property int spacingVertical: 16
                 property string textColor: "overBackground"
             }
         }

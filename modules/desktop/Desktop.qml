@@ -32,9 +32,10 @@ PanelWindow {
 
     Component.onCompleted: {
         DesktopService.maxRowsHint = Qt.binding(() => iconContainer.maxRows);
+        DesktopService.maxColumnsHint = Qt.binding(() => iconContainer.maxColumns);
     }
 
-    GridView {
+    Item {
         id: iconContainer
         anchors.fill: parent
         anchors.margins: 16
@@ -43,118 +44,155 @@ PanelWindow {
         anchors.leftMargin: desktop.barPosition === "left" ? desktop.barSize + 16 : 16
         anchors.rightMargin: desktop.barPosition === "right" ? desktop.barSize + 16 : 16
 
-        cellWidth: Config.desktop.iconSize + Config.desktop.spacing
-        cellHeight: Config.desktop.iconSize + 40 + Config.desktop.spacing
-        flow: GridView.FlowTopToBottom
-
-        model: DesktopService.items
-
+        property int cellWidth: Config.desktop.iconSize + 32
+        property int cellHeight: Config.desktop.iconSize + 40 + Config.desktop.spacingVertical
         property int maxRows: Math.floor(height / cellHeight)
         property int maxColumns: Math.floor(width / cellWidth)
 
-        interactive: false
+        Repeater {
+            model: DesktopService.items
 
-        displaced: Transition {
-            NumberAnimation {
-                properties: "x,y"
-                duration: Config.animDuration
-                easing.type: Easing.OutCubic
-            }
-        }
+            delegate: Item {
+                id: delegateRoot
+                required property string name
+                required property string path
+                required property string type
+                required property string icon
+                required property bool isDesktopFile
+                required property bool isPlaceholder
+                required property int index
 
-        delegate: Item {
-            id: delegateRoot
-            required property string name
-            required property string path
-            required property string type
-            required property string icon
-            required property bool isDesktopFile
-            required property int index
+                width: iconContainer.cellWidth
+                height: iconContainer.cellHeight
 
-            width: iconContainer.cellWidth
-            height: iconContainer.cellHeight
+                x: Math.floor(index / iconContainer.maxRows) * iconContainer.cellWidth
+                y: (index % iconContainer.maxRows) * iconContainer.cellHeight
+                
+                visible: !isPlaceholder
 
-            DesktopIcon {
-                id: iconItem
-                anchors.fill: parent
-
-                itemName: delegateRoot.name
-                itemPath: delegateRoot.path
-                itemType: delegateRoot.type
-                itemIcon: delegateRoot.icon
-
-                onActivated: {
-                    console.log("Activated:", itemName);
-                }
-
-                onContextMenuRequested: {
-                    console.log("Context menu requested for:", itemName);
-                }
-
-                Drag.active: dragHandler.active
-                Drag.source: delegateRoot
-                Drag.hotSpot.x: width / 2
-                Drag.hotSpot.y: height / 2
-
-                opacity: dragHandler.active ? 0.3 : 1.0
-
-                Behavior on opacity {
+                Behavior on x {
+                    enabled: !dragHandler.active
                     NumberAnimation {
-                        duration: Config.animDuration / 2
+                        duration: Config.animDuration
                         easing.type: Easing.OutCubic
                     }
                 }
 
-                DragHandler {
-                    id: dragHandler
-                    target: dragPreview
-                    onActiveChanged: {
-                        if (!active && dragPreview.Drag.target) {
-                            DesktopService.moveItem(delegateRoot.index, dragPreview.Drag.target.visualIndex);
-                            dragPreview.Drag.drop();
-                        }
+                Behavior on y {
+                    enabled: !dragHandler.active
+                    NumberAnimation {
+                        duration: Config.animDuration
+                        easing.type: Easing.OutCubic
                     }
                 }
-            }
-
-            Item {
-                id: dragPreview
-                parent: iconContainer
-                width: delegateRoot.width
-                height: delegateRoot.height
-                visible: dragHandler.active
-                z: 999
 
                 DesktopIcon {
+                    id: iconItem
                     anchors.fill: parent
+
                     itemName: delegateRoot.name
                     itemPath: delegateRoot.path
                     itemType: delegateRoot.type
                     itemIcon: delegateRoot.icon
-                    opacity: 0.7
-                    scale: 1.05
+
+                    onActivated: {
+                        console.log("Activated:", itemName);
+                    }
+
+                    onContextMenuRequested: {
+                        console.log("Context menu requested for:", itemName);
+                    }
+
+                    opacity: dragHandler.active ? 0.3 : 1.0
+
+                    Behavior on opacity {
+                        NumberAnimation {
+                            duration: Config.animDuration / 2
+                            easing.type: Easing.OutCubic
+                        }
+                    }
+
+                    DragHandler {
+                        id: dragHandler
+                        target: dragPreview
+                        onActiveChanged: {
+                            if (!active) {
+                                var targetIndex = delegateRoot.index;
+                                
+                                console.log("Drop - Drag.target:", dragPreview.Drag.target);
+                                
+                                if (dragPreview.Drag.target && dragPreview.Drag.target.visualIndex !== undefined) {
+                                    targetIndex = dragPreview.Drag.target.visualIndex;
+                                    console.log("Using Drag.target visualIndex:", targetIndex);
+                                } else {
+                                    var gridPos = iconContainer.mapFromItem(dragPreview.parent, dragPreview.x, dragPreview.y);
+                                    var dropX = gridPos.x + dragPreview.width / 2;
+                                    var dropY = gridPos.y + dragPreview.height / 2;
+                                    
+                                    if (dropX >= 0 && dropY >= 0 && 
+                                        dropX < iconContainer.width && dropY < iconContainer.height) {
+                                        var col = Math.floor(dropX / iconContainer.cellWidth);
+                                        var row = Math.floor(dropY / iconContainer.cellHeight);
+                                        
+                                        col = Math.max(0, Math.min(col, iconContainer.maxColumns - 1));
+                                        row = Math.max(0, Math.min(row, iconContainer.maxRows - 1));
+                                        
+                                        targetIndex = col * iconContainer.maxRows + row;
+                                        console.log("Calculated targetIndex:", targetIndex, "col:", col, "row:", row);
+                                    }
+                                }
+                                
+                                if (targetIndex !== delegateRoot.index) {
+                                    console.log("Moving from", delegateRoot.index, "to", targetIndex);
+                                    DesktopService.moveItem(delegateRoot.index, targetIndex);
+                                }
+                                
+                                dragPreview.Drag.drop();
+                            }
+                        }
+                    }
                 }
 
-                Drag.active: dragHandler.active
-                Drag.source: delegateRoot
-                Drag.hotSpot.x: width / 2
-                Drag.hotSpot.y: height / 2
-            }
+                Item {
+                    id: dragPreview
+                    parent: iconContainer
+                    width: delegateRoot.width
+                    height: delegateRoot.height
+                    visible: dragHandler.active
+                    z: 999
 
-            DropArea {
-                anchors.fill: parent
-                z: 1
+                    DesktopIcon {
+                        anchors.fill: parent
+                        itemName: delegateRoot.name
+                        itemPath: delegateRoot.path
+                        itemType: delegateRoot.type
+                        itemIcon: delegateRoot.icon
+                        opacity: 0.7
+                        scale: 1.05
+                    }
 
-                property int visualIndex: delegateRoot.index
+                    Drag.active: dragHandler.active
+                    Drag.source: delegateRoot
+                    Drag.hotSpot.x: width / 2
+                    Drag.hotSpot.y: height / 2
+                    Drag.keys: ["desktopIcon"]
+                }
 
-                Rectangle {
+                DropArea {
                     anchors.fill: parent
-                    color: "transparent"
-                    border.color: Colors.primary
-                    border.width: 2
-                    radius: Config.roundness / 2
-                    visible: parent.containsDrag
-                    opacity: 0.5
+                    keys: ["desktopIcon"]
+
+                    property int visualIndex: delegateRoot.index
+
+                    Rectangle {
+                        anchors.fill: parent
+                        color: "transparent"
+                        border.color: Colors.primary
+                        border.width: 2
+                        radius: Config.roundness / 2
+                        visible: parent.containsDrag
+                        opacity: 0.5
+                    }
                 }
             }
         }

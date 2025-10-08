@@ -11,6 +11,7 @@ Singleton {
     property bool initialLoadComplete: false
     property string positionsFile: Quickshell.dataPath("desktop-positions.json")
     property int maxRowsHint: 15
+    property int maxColumnsHint: 10
 
     property ListModel items: ListModel {
         id: itemsModel
@@ -93,12 +94,47 @@ Singleton {
     }
 
     function moveItem(fromIndex, toIndex) {
-        if (fromIndex === toIndex || fromIndex < 0 || toIndex < 0 || 
-            fromIndex >= items.count || toIndex >= items.count) {
+        if (fromIndex === toIndex || fromIndex < 0 || toIndex < 0 || fromIndex >= items.count) {
             return;
         }
         
-        items.move(fromIndex, toIndex, 1);
+        if (toIndex >= items.count) {
+            toIndex = items.count - 1;
+        }
+        
+        var targetIsPlaceholder = items.get(toIndex).isPlaceholder === true;
+        
+        if (targetIsPlaceholder) {
+            var item = items.get(fromIndex);
+            items.setProperty(toIndex, "name", item.name);
+            items.setProperty(toIndex, "path", item.path);
+            items.setProperty(toIndex, "type", item.type);
+            items.setProperty(toIndex, "icon", item.icon);
+            items.setProperty(toIndex, "isDesktopFile", item.isDesktopFile);
+            items.setProperty(toIndex, "isPlaceholder", false);
+            
+            items.setProperty(fromIndex, "name", "");
+            items.setProperty(fromIndex, "path", "");
+            items.setProperty(fromIndex, "type", "placeholder");
+            items.setProperty(fromIndex, "icon", "");
+            items.setProperty(fromIndex, "isDesktopFile", false);
+            items.setProperty(fromIndex, "isPlaceholder", true);
+            
+            var col = Math.floor(toIndex / maxRowsHint);
+            var row = toIndex % maxRowsHint;
+            updateIconPosition(item.path, col, row);
+        } else {
+            items.move(fromIndex, toIndex, 1);
+            
+            var movedItem = items.get(toIndex);
+            var col = Math.floor(toIndex / maxRowsHint);
+            var row = toIndex % maxRowsHint;
+            
+            items.setProperty(toIndex, "gridX", col);
+            items.setProperty(toIndex, "gridY", row);
+            
+            updateIconPosition(movedItem.path, col, row);
+        }
     }
 
     function getFileType(fileName) {
@@ -307,20 +343,39 @@ Singleton {
         });
 
         items.clear();
+        
+        var gridSize = maxRowsHint * maxColumnsHint;
+        
+        for (var i = 0; i < gridSize; i++) {
+            items.append({
+                name: "",
+                path: "",
+                type: "placeholder",
+                icon: "",
+                isDesktopFile: false,
+                isPlaceholder: true,
+                gridX: Math.floor(i / maxRowsHint),
+                gridY: i % maxRowsHint
+            });
+        }
+        
         for (var i = 0; i < allItems.length; i++) {
             var item = allItems[i];
             var savedPos = getIconPosition(item.path);
             var pos = savedPos || calculateAutoPosition(i);
             
-            items.append({
-                name: item.name,
-                path: item.path,
-                type: item.type,
-                icon: item.icon,
-                isDesktopFile: item.isDesktopFile,
-                gridX: pos.x,
-                gridY: pos.y
-            });
+            var gridIndex = pos.x * maxRowsHint + pos.y;
+            
+            if (gridIndex < items.count) {
+                items.setProperty(gridIndex, "name", item.name);
+                items.setProperty(gridIndex, "path", item.path);
+                items.setProperty(gridIndex, "type", item.type);
+                items.setProperty(gridIndex, "icon", item.icon);
+                items.setProperty(gridIndex, "isDesktopFile", item.isDesktopFile);
+                items.setProperty(gridIndex, "isPlaceholder", false);
+                items.setProperty(gridIndex, "gridX", pos.x);
+                items.setProperty(gridIndex, "gridY", pos.y);
+            }
         }
         
         root.initialLoadComplete = true;

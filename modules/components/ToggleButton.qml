@@ -17,7 +17,12 @@ Button {
     implicitHeight: 36
 
     background: BgRect {
-        color: root.pressed ? Colors.primary : (root.hovered ? Colors.surfaceContainerHighest : Colors.background)
+        Rectangle {
+            anchors.fill: parent
+            color: Colors.primary
+            opacity: root.pressed ? 0.5 : (root.hovered ? 0.25 : 0)
+            radius: parent.radius
+        }
     }
 
     contentItem: Text {

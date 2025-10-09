@@ -111,13 +111,71 @@ Singleton {
     }
 
     function executeDesktopFile(filePath) {
-        execDesktopProcess.command = ["sh", "-c", "cd ~ && gio launch '" + filePath.replace(/'/g, "'\\''") + "'"];
-        execDesktopProcess.running = true;
+        var escapedPath = filePath.replace(/'/g, "'\\''");
+        var processComponent = Qt.createQmlObject('
+            import Quickshell
+            import Quickshell.Io
+            Process {
+                running: true
+                command: ["bash", "-c", "cd ~ && setsid gio launch \'' + escapedPath + '\' < /dev/null > /dev/null 2>&1 &"]
+                
+                stdout: StdioCollector {
+                    onStreamFinished: {
+                        if (text.length > 0) {
+                            console.log("Desktop file execution:", text);
+                        }
+                    }
+                }
+                
+                stderr: StdioCollector {
+                    onStreamFinished: {
+                        if (text.length > 0) {
+                            console.warn("Desktop file execution error:", text);
+                        }
+                    }
+                }
+                
+                onRunningChanged: {
+                    if (!running) {
+                        destroy();
+                    }
+                }
+            }
+        ', root);
     }
 
     function openFile(filePath) {
-        openFileProcess.command = ["xdg-open", filePath];
-        openFileProcess.running = true;
+        var escapedPath = filePath.replace(/'/g, "'\\''");
+        var processComponent = Qt.createQmlObject('
+            import Quickshell
+            import Quickshell.Io
+            Process {
+                running: true
+                command: ["bash", "-c", "setsid xdg-open \'' + escapedPath + '\' < /dev/null > /dev/null 2>&1 &"]
+                
+                stdout: StdioCollector {
+                    onStreamFinished: {
+                        if (text.length > 0) {
+                            console.log("File opened:", text);
+                        }
+                    }
+                }
+                
+                stderr: StdioCollector {
+                    onStreamFinished: {
+                        if (text.length > 0) {
+                            console.warn("Error opening file:", text);
+                        }
+                    }
+                }
+                
+                onRunningChanged: {
+                    if (!running) {
+                        destroy();
+                    }
+                }
+            }
+        ', root);
     }
 
     function saveAllPositions() {
@@ -541,50 +599,6 @@ Singleton {
                 }
                 currentDesktopFileIndex++;
                 parseNextDesktopFile();
-            }
-        }
-    }
-
-    Process {
-        id: execDesktopProcess
-        running: false
-        command: []
-
-        stdout: StdioCollector {
-            onStreamFinished: {
-                if (text.length > 0) {
-                    console.log("Desktop file execution:", text);
-                }
-            }
-        }
-
-        stderr: StdioCollector {
-            onStreamFinished: {
-                if (text.length > 0) {
-                    console.warn("Desktop file execution error:", text);
-                }
-            }
-        }
-    }
-
-    Process {
-        id: openFileProcess
-        running: false
-        command: []
-
-        stdout: StdioCollector {
-            onStreamFinished: {
-                if (text.length > 0) {
-                    console.log("File opened:", text);
-                }
-            }
-        }
-
-        stderr: StdioCollector {
-            onStreamFinished: {
-                if (text.length > 0) {
-                    console.warn("Error opening file:", text);
-                }
             }
         }
     }

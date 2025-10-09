@@ -5,6 +5,7 @@ import Quickshell.Wayland
 import Quickshell.Io
 import qs.modules.theme
 import qs.modules.components
+import qs.modules.services
 import qs.config
 
 PanelWindow {
@@ -14,6 +15,7 @@ PanelWindow {
     property var customItems: []
     property int menuWidth: 160
     property int itemHeight: 32
+    property string menuType: ""
 
     anchors {
         top: true
@@ -213,19 +215,24 @@ PanelWindow {
         console.log("Opening context menu");
         menuHandle = handle;
         customItems = [];
+        menuType = "";
         visible = true;
         WlrLayershell.keyboardFocus = WlrKeyboardFocus.Exclusive;
         cursorPos.running = true;
     }
 
-    function openCustomMenu(items, width, height) {
+    function openCustomMenu(items, width, height, type) {
         console.log("Opening custom context menu with", items.length, "items");
         menuHandle = null;
         customItems = items;
+        menuType = type || "";
         if (width !== undefined) menuWidth = width;
         if (height !== undefined) itemHeight = height;
         visible = true;
         WlrLayershell.keyboardFocus = WlrKeyboardFocus.Exclusive;
+        if (menuType === "player") {
+            Visibilities.playerMenuOpen = true;
+        }
         cursorPos.running = true;
     }
 
@@ -233,14 +240,22 @@ PanelWindow {
         console.log("Closing context menu");
         visible = false;
         WlrLayershell.keyboardFocus = WlrKeyboardFocus.None;
+        if (menuType === "player") {
+            Visibilities.playerMenuOpen = false;
+        }
         menuHandle = null;
         customItems = [];
+        menuType = "";
     }
 
     onVisibleChanged: {
         if (!visible) {
+            if (menuType === "player") {
+                Visibilities.playerMenuOpen = false;
+            }
             menuHandle = null;
             customItems = [];
+            menuType = "";
         }
     }
 

@@ -47,7 +47,7 @@ Item {
         id: contentHoverHandler
     }
 
-    readonly property bool expandedState: contentHoverHandler.hovered || notchHovered || isNavigating
+    readonly property bool expandedState: contentHoverHandler.hovered || notchHovered || isNavigating || Visibilities.playerMenuOpen
 
     Keys.onPressed: event => {
         if (expandedState && activePlayer) {

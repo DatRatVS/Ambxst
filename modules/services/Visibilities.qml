@@ -15,6 +15,7 @@ Singleton {
     property string currentActiveModule: ""
     property string lastFocusedScreen: ""
     property var contextMenu: null
+    property bool playerMenuOpen: false
 
     function setContextMenu(menu) {
         contextMenu = menu;

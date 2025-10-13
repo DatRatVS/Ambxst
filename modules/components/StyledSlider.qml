@@ -1,4 +1,4 @@
- pragma ComponentBehavior: Bound
+pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -16,7 +16,7 @@ RowLayout {
     implicitHeight: 4
     spacing: 4
 
-    signal iconClicked()
+    signal iconClicked
 
     property string icon: ""
     property real value: 0
@@ -139,7 +139,7 @@ RowLayout {
             width: root.isDragging ? 4 : 4
             height: root.isDragging ? 20 : 16
             radius: width / 2
-            color: Colors.whiteSource
+            color: Colors.overBackground
             z: 2
 
             Behavior on x {

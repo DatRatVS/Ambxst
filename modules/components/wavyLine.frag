@@ -22,47 +22,40 @@ float waveY(float x, float centerY) {
     return centerY + ubuf.amplitude * sin(k * x + ubuf.phase);
 }
 
-// Calcula la derivada de la onda (útil para mejorar la búsqueda del punto más cercano)
-float waveDerivative(float x) {
-    float k = ubuf.frequency * 2.0 * PI / ubuf.fullLength;
-    return ubuf.amplitude * k * cos(k * x + ubuf.phase);
+// Distancia a la curva de la onda usando búsqueda directa (método robusto)
+float distanceToWave(vec2 pos, float centerY) {
+    // --- PASO 1: Definir la ventana de búsqueda ---
+    // El punto más cercano en la onda no estará más lejos horizontalmente
+    // que la amplitud. Usamos un margen de seguridad (ej. 1.2).
+    float searchRadius = ubuf.amplitude * 1.2 + ubuf.lineWidth;
+    float searchStart = max(0.0, pos.x - searchRadius);
+    float searchEnd = min(ubuf.canvasWidth, pos.x + searchRadius);
+
+    // --- PASO 2: Muestrear puntos y encontrar la distancia mínima ---
+    // Un número fijo de pasos. 30-50 es un buen rango. Más pasos = más precisión
+    // pero menos rendimiento. 40 es un excelente punto de equilibrio.
+    const int numSteps = 40;
+    
+    float minDistanceSq = 1.0e+20; // Empezar con un número muy grande
+
+    for (int i = 0; i <= numSteps; ++i) {
+        float t = float(i) / float(numSteps);
+        float sampleX = mix(searchStart, searchEnd, t);
+        
+        vec2 wavePoint = vec2(sampleX, waveY(sampleX, centerY));
+        
+        // Calcular la distancia al cuadrado (más rápido dentro de un bucle)
+        vec2 vecToPixel = pos - wavePoint;
+        float distSq = dot(vecToPixel, vecToPixel);
+        
+        // Actualizar el mínimo
+        minDistanceSq = min(minDistanceSq, distSq);
+    }
+
+    // Devolver la distancia real (raíz cuadrada)
+    return sqrt(minDistanceSq);
 }
 
-// Distancia a la curva de la onda usando búsqueda optimizada
-float distanceToWave(vec2 pos, float centerY) {
-    float startX = 0.0;
-    float endX = ubuf.canvasWidth;
-    
-    // Comenzar la búsqueda desde la X del pixel
-    float testX = clamp(pos.x, startX, endX);
-    
-    // Iteración de Newton-Raphson para encontrar el punto más cercano
-    // Esto es mucho más eficiente que buscar en todo el rango
-    for (int iter = 0; iter < 5; iter++) {
-        float y = waveY(testX, centerY);
-        float dy = waveDerivative(testX);
-        
-        vec2 curvePoint = vec2(testX, y);
-        vec2 toPixel = pos - curvePoint;
-        
-        // Tangente a la curva
-        vec2 tangent = normalize(vec2(1.0, dy));
-        
-        // Proyectar el vector hacia el pixel sobre la tangente
-        float projection = dot(toPixel, tangent);
-        
-        // Actualizar posición de búsqueda
-        testX += projection;
-        testX = clamp(testX, startX, endX);
-        
-        // Si llegamos al límite, salir
-        if (testX <= startX || testX >= endX) break;
-    }
-    
-    // Calcular distancia final
-    vec2 closestPoint = vec2(testX, waveY(testX, centerY));
-    return distance(pos, closestPoint);
-}
 
 // Calcula el factor de reducción del grosor en los extremos
 float edgeTaper(float x) {
@@ -70,14 +63,12 @@ float edgeTaper(float x) {
     float endX = ubuf.canvasWidth;
     float taperDistance = ubuf.lineWidth * 0.5;
     
-    // Fade en el extremo izquierdo
     if (x < startX + taperDistance) {
         float t = (x - startX) / taperDistance;
         float u = 1.0 - t;
         return sqrt(max(0.0, 1.0 - u * u));
     }
     
-    // Fade en el extremo derecho
     if (x > endX - taperDistance) {
         float t = (endX - x) / taperDistance;
         float u = 1.0 - t;
@@ -91,24 +82,18 @@ void main() {
     vec2 pixelPos = qt_TexCoord0 * vec2(ubuf.canvasWidth, ubuf.canvasHeight);
     float centerY = ubuf.canvasHeight * 0.5;
     
-    // Verificar si estamos dentro del canvas en X
     if (pixelPos.x < 0.0 || pixelPos.x > ubuf.canvasWidth) {
         discard;
     }
     
-    // Calcular distancia a la línea central de la onda (grosor infinitesimal)
     float dist = distanceToWave(pixelPos, centerY);
     
-    // Aplicar el taper en los extremos
     float taper = edgeTaper(pixelPos.x);
     float effectiveRadius = (ubuf.lineWidth * 0.5) * taper;
     
-    // Calcular alpha usando antialiasing suave
-    // El grosor del antialiasing es proporcional al tamaño del pixel
-    float aaWidth = 1.0;
+    float aaWidth = 1.0; // Antialiasing de 1px
     float alpha = 1.0 - smoothstep(effectiveRadius - aaWidth, effectiveRadius + aaWidth, dist);
     
-    // Descartar pixels completamente transparentes
     if (alpha < 0.01) {
         discard;
     }

@@ -260,28 +260,13 @@ PaneRect {
                     }
                 }
 
-                StyledSlider {
-                    id: positionSlider
-                    Layout.fillWidth: true
-                    Layout.preferredHeight: 4
+                 PositionSlider {
+                     id: positionSlider
+                     Layout.fillWidth: true
+                     Layout.preferredHeight: 4
 
-                    value: player.length > 0 ? Math.min(1.0, player.position / player.length) : 0
-                    progressColor: player.hasArtwork && player.playerColors ? player.playerColors.primary : Colors.primaryFixed
-                    backgroundColor: player.hasArtwork && player.playerColors ? player.playerColors.shadow : Colors.shadow
-                    wavy: player.isPlaying
-                    wavyAmplitude: player.isPlaying ? 0.5 : 0.0
-                    wavyFrequency: player.isPlaying ? 8 : 0
-                    heightMultiplier: MprisController.activePlayer ? 8 : 4
-                    resizeAnim: false
-                    scroll: false
-                    tooltip: false
-
-                    onValueChanged: {
-                        if (isDragging && MprisController.activePlayer && MprisController.activePlayer.canSeek) {
-                            MprisController.activePlayer.position = value * player.length;
-                        }
-                    }
-                }
+                     player: MprisController.activePlayer
+                 }
 
                 Text {
                     id: nextBtn

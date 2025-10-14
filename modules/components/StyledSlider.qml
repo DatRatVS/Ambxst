@@ -150,7 +150,7 @@ RowLayout {
             id: dragHandle
             anchors.verticalCenter: parent.verticalCenter
             x: Math.max(0, Math.min(parent.width - width, parent.width * root.progressRatio - width / 2))
-            width: root.isDragging ? 4 : 4
+            width: root.isDragging ? 2 : 4
             height: root.isDragging ? 20 : 16
             radius: width / 2
             color: Colors.overBackground

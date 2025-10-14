@@ -239,31 +239,16 @@ Item {
                 }
             }
 
-            StyledSlider {
-                id: positionSlider
-                Layout.fillWidth: true
-                Layout.preferredHeight: 4
-                Layout.leftMargin: compactPlayer.notchHovered ? 0 : 8
-                Layout.rightMargin: compactPlayer.notchHovered ? 0 : 8
-                visible: compactPlayer.player !== null
+             PositionSlider {
+                 id: positionSlider
+                 Layout.fillWidth: true
+                 Layout.preferredHeight: 4
+                 Layout.leftMargin: compactPlayer.notchHovered ? 0 : 8
+                 Layout.rightMargin: compactPlayer.notchHovered ? 0 : 8
+                 visible: compactPlayer.player !== null
 
-                value: compactPlayer.length > 0 ? Math.min(1.0, compactPlayer.position / compactPlayer.length) : 0
-                progressColor: compactPlayer.hasArtwork && compactPlayer.playerColors ? compactPlayer.playerColors.primary : Colors.primaryFixed
-                backgroundColor: compactPlayer.hasArtwork && compactPlayer.playerColors ? compactPlayer.playerColors.shadow : Colors.shadow
-                wavy: compactPlayer.isPlaying
-                wavyAmplitude: compactPlayer.isPlaying ? 0.5 : 0.0
-                wavyFrequency: compactPlayer.isPlaying ? 8 : 0
-                heightMultiplier: compactPlayer.player ? 8 : 4
-                resizeAnim: false
-                scroll: false
-                tooltip: false
-
-                onValueChanged: {
-                    if (isDragging && compactPlayer.player && compactPlayer.player.canSeek) {
-                        compactPlayer.player.position = value * compactPlayer.length;
-                    }
-                }
-            }
+                 player: compactPlayer.player
+             }
 
             Text {
                 id: nextBtn

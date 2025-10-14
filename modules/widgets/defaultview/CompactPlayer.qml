@@ -265,26 +265,6 @@ Item {
                 }
             }
 
-            WavyLine {
-                Layout.fillWidth: true
-                Layout.preferredHeight: 16
-                Layout.leftMargin: 4
-                Layout.rightMargin: 4
-                visible: compactPlayer.player === null
-                frequency: 2
-                color: Colors.outline
-                amplitudeMultiplier: 1
-                height: 16
-                lineWidth: 4
-                fullLength: width
-                opacity: 1.0
-
-                FrameAnimation {
-                    running: parent.visible
-                    onTriggered: parent.requestPaint()
-                }
-            }
-
             Text {
                 id: nextBtn
                 text: Icons.next

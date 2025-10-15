@@ -19,8 +19,7 @@ Rectangle {
     property string searchText: ""
     readonly property int gridRows: 3
     readonly property int gridColumns: 5
-     property int selectedIndex: GlobalStates.wallpaperSelectedIndex
-
+    property int selectedIndex: GlobalStates.wallpaperSelectedIndex
 
     // Función para enfocar el campo de búsqueda.
     function focusSearch() {
@@ -193,9 +192,7 @@ Rectangle {
                         width: parent.width
                         spacing: 4
 
-                         SchemeSelector {
-                             Layout.fillWidth: true
-                         }
+                        SchemeSelector {}
                     }
                 }
             }

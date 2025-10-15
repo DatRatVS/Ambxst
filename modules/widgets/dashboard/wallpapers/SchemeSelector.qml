@@ -25,8 +25,12 @@ Item {
         return map[scheme] || scheme;
     }
 
+    Layout.fillWidth: true
+
     ColumnLayout {
+        id: mainLayout
         anchors.fill: parent
+        Layout.margins: 4
         spacing: 4
 
         // Top row with scheme button and dark/light button

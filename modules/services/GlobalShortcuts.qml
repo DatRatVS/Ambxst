@@ -201,24 +201,66 @@ Item {
         }
     }
 
-    GlobalShortcut {
-        id: launcherEmojiShortcut
-        appid: "ambxst"
-        name: "launcher-emoji"
-        description: "Open launcher emoji tab"
+     GlobalShortcut {
+         id: launcherEmojiShortcut
+         appid: "ambxst"
+         name: "launcher-emoji"
+         description: "Open launcher emoji tab"
 
-        onPressed: {
-            if (Visibilities.currentActiveModule === "launcher" && GlobalStates.launcherCurrentTab === 3) {
-                GlobalStates.clearLauncherState();
-                Visibilities.setActiveModule("");
-            } else if (Visibilities.currentActiveModule === "launcher") {
-                // Solo navegar a la pestaña sin cerrar/abrir
-                GlobalStates.launcherCurrentTab = 3;
-            } else {
-                // Actualizar la pestaña ANTES de abrir el módulo
-                GlobalStates.launcherCurrentTab = 3;
-                Visibilities.setActiveModule("launcher");
-            }
-        }
-    }
+         onPressed: {
+             if (Visibilities.currentActiveModule === "launcher" && GlobalStates.launcherCurrentTab === 3) {
+                 GlobalStates.clearLauncherState();
+                 Visibilities.setActiveModule("");
+             } else if (Visibilities.currentActiveModule === "launcher") {
+                 // Solo navegar a la pestaña sin cerrar/abrir
+                 GlobalStates.launcherCurrentTab = 3;
+             } else {
+                 // Actualizar la pestaña ANTES de abrir el módulo
+                 GlobalStates.launcherCurrentTab = 3;
+                 Visibilities.setActiveModule("launcher");
+             }
+         }
+     }
+
+     // Media player shortcuts
+     GlobalShortcut {
+         id: mediaSeekBackwardShortcut
+         appid: "ambxst"
+         name: "media-seek-backward"
+         description: "Seek backward in media player"
+
+         onPressed: {
+             if (MprisController.activePlayer && MprisController.activePlayer.canSeek) {
+                 const seekAmount = 5000; // Seek 5 seconds backward
+                 MprisController.activePlayer.position = Math.max(0, MprisController.activePlayer.position - seekAmount);
+             }
+         }
+     }
+
+     GlobalShortcut {
+         id: mediaSeekForwardShortcut
+         appid: "ambxst"
+         name: "media-seek-forward"
+         description: "Seek forward in media player"
+
+         onPressed: {
+             if (MprisController.activePlayer && MprisController.activePlayer.canSeek) {
+                 const seekAmount = 5000; // Seek 5 seconds forward
+                 MprisController.activePlayer.position = Math.min(MprisController.activePlayer.length, MprisController.activePlayer.position + seekAmount);
+             }
+         }
+     }
+
+     GlobalShortcut {
+         id: mediaPlayPauseShortcut
+         appid: "ambxst"
+         name: "media-play-pause"
+         description: "Toggle play/pause in media player"
+
+         onPressed: {
+             if (MprisController.canTogglePlaying) {
+                 MprisController.togglePlaying();
+             }
+         }
+     }
 }

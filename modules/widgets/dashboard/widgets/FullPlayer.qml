@@ -32,17 +32,26 @@ PaneRect {
         }
     }
 
-    Timer {
-        running: player.isPlaying
-        interval: 1000
-        repeat: true
-        onTriggered: {
-            if (!positionSlider.isDragging) {
-                positionSlider.value = player.length > 0 ? Math.min(1.0, player.position / player.length) : 0;
-            }
-            MprisController.activePlayer?.positionChanged();
-        }
-    }
+     Timer {
+         running: player.isPlaying
+         interval: 1000
+         repeat: true
+         onTriggered: {
+             if (!positionSlider.isDragging) {
+                 positionSlider.value = player.length > 0 ? Math.min(1.0, player.position / player.length) : 0;
+             }
+             MprisController.activePlayer?.positionChanged();
+         }
+     }
+
+     Connections {
+         target: MprisController.activePlayer
+         function onPositionChanged() {
+             if (!positionSlider.isDragging && MprisController.activePlayer) {
+                 positionSlider.value = player.length > 0 ? Math.min(1.0, player.position / player.length) : 0;
+             }
+         }
+     }
 
     ClippingRectangle {
         anchors.fill: parent

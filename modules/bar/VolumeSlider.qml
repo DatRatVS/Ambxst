@@ -68,8 +68,8 @@ Item {
             smoothDrag: true
             value: 0
             wavy: true
-            wavyAmplitude: (root.isHovered || volumeSlider.isDragging) ? (Audio.sink?.audio?.muted ? 0.5 : 1.5 * value / (root.vertical ? 1.5 : 1)) : 0
-            wavyFrequency: (root.isHovered || volumeSlider.isDragging) ? (Audio.sink?.audio?.muted ? 1.0 : 8.0 * value / (root.vertical ? 1.5 : 1)) : 0
+            wavyAmplitude: (root.isHovered || volumeSlider.isDragging) ? (Audio.sink?.audio?.muted ? 0.5 : 1.5 * value) : 0
+            wavyFrequency: (root.isHovered || volumeSlider.isDragging) ? (Audio.sink?.audio?.muted ? 1.0 : 8.0 * value) : 0
             iconPos: root.vertical ? "end" : "start"
             icon: {
                 if (Audio.sink?.audio?.muted)

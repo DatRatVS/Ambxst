@@ -60,10 +60,11 @@ Singleton {
                  property real shadowBlur: 1
                  property list<var> bgColor: [["background", 0.0]]
                  property string bgOrientation: "vertical"
-                 property list<var> paneColor: [["surface", 0.0]]
-                 property string paneOrientation: "vertical"
+                  property list<var> paneColor: [["surface", 0.0]]
+                  property string paneOrientation: "vertical"
+                  property string separatorColor: "surfaceBright"
 
-             }
+              }
 
             property JsonObject bar: JsonObject {
                 property string position: "top"

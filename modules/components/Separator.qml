@@ -4,7 +4,7 @@ import qs.modules.theme
 
 Rectangle {
     property bool vert: false
-    property color lineColor: Colors.surfaceBright
+     property color lineColor: Colors[Config.theme.separatorColor]
 
     color: lineColor
 

@@ -22,6 +22,13 @@ Singleton {
             screen
         }))
 
+    function isInternalScreen(screen: ShellScreen): bool {
+        if (!screen || !screen.name)
+            return false;
+        const lower = screen.name.toLowerCase();
+        return lower.includes("edp") || lower.includes("lvds") || lower.includes("dsi");
+    }
+
     function getMonitorForScreen(screen: ShellScreen): var {
         return monitors.find(m => m.screen === screen);
     }
@@ -54,13 +61,41 @@ Singleton {
         stdout: SplitParser {
             splitMarker: "\n\n"
             onRead: data => {
-                if (data.startsWith("Display ")) {
-                    const lines = data.split("\n").map(l => l.trim());
-                    root.ddcMonitors.push({
-                        model: lines.find(l => l.startsWith("Monitor:")).split(":")[2],
-                        busNum: lines.find(l => l.startsWith("I2C bus:")).split("/dev/i2c-")[1]
-                    });
+                const trimmed = data.trim();
+                if (!trimmed.startsWith("Display "))
+                    return;
+
+                const lines = trimmed.split("\n").map(l => l.trim()).filter(l => l.length > 0);
+                const busLine = lines.find(l => l.startsWith("I2C bus:"));
+                if (!busLine)
+                    return;
+
+                const busSplit = busLine.split("/dev/i2c-");
+                const busNum = busSplit.length > 1 ? busSplit[1] : "";
+                if (!busNum)
+                    return;
+
+                const modelLine = lines.find(l => l.startsWith("Model:"));
+                const monitorLine = lines.find(l => l.startsWith("Monitor:"));
+                const manufacturerLine = lines.find(l => l.startsWith("Mfg id:"));
+
+                let model = "";
+                if (modelLine) {
+                    model = modelLine.split(":").slice(1).join(":").trim();
+                } else if (monitorLine) {
+                    model = monitorLine.split(":").slice(1).join(":").trim();
                 }
+
+                if (manufacturerLine && model) {
+                    const manufacturer = manufacturerLine.split(":").slice(1).join(":").trim();
+                    if (manufacturer && !model.startsWith(manufacturer))
+                        model = `${manufacturer} ${model}`;
+                }
+
+                root.ddcMonitors.push({
+                    model,
+                    busNum
+                });
             }
         }
         onExited: root.ddcMonitorsChanged()
@@ -74,14 +109,36 @@ Singleton {
         id: monitor
 
         required property ShellScreen screen
-        readonly property bool isDdc: {
-            const match = root.ddcMonitors.find(m => m.model === screen.model && !root.monitors.slice(0, root.monitors.indexOf(this)).some(mon => mon.busNum === m.busNum));
-            return !!match;
+        readonly property int monitorIndex: root.monitors.indexOf(this)
+        readonly property bool useBrightnessctl: root.isInternalScreen(screen)
+        readonly property var ddcEntry: {
+            if (useBrightnessctl || root.ddcMonitors.length === 0)
+                return null;
+
+            const usedBuses = [];
+            for (let i = 0; i < monitorIndex; ++i) {
+                const mon = root.monitors[i];
+                if (mon && mon.ddcEntry && mon.ddcEntry.busNum && !usedBuses.includes(mon.ddcEntry.busNum))
+                    usedBuses.push(mon.ddcEntry.busNum);
+            }
+
+            const screenModel = screen && screen.model ? screen.model.toLowerCase() : "";
+            if (screenModel) {
+                const modelMatch = root.ddcMonitors.find(entry => entry.model && entry.model.toLowerCase() === screenModel && !usedBuses.includes(entry.busNum));
+                if (modelMatch)
+                    return modelMatch;
+            }
+
+            for (let i = 0; i < root.ddcMonitors.length; ++i) {
+                const entry = root.ddcMonitors[i];
+                if (entry && entry.busNum && !usedBuses.includes(entry.busNum))
+                    return entry;
+            }
+
+            return null;
         }
-        readonly property string busNum: {
-            const match = root.ddcMonitors.find(m => m.model === screen.model && !root.monitors.slice(0, root.monitors.indexOf(this)).some(mon => mon.busNum === m.busNum));
-            return match?.busNum ?? "";
-        }
+        readonly property bool isDdc: !useBrightnessctl && !!ddcEntry
+        readonly property string busNum: isDdc ? ddcEntry.busNum : ""
         property int rawMaxBrightness: 100
         property real brightness
         property bool ready: false
@@ -94,6 +151,10 @@ Singleton {
 
         function initialize() {
             monitor.ready = false;
+            if (!useBrightnessctl && !isDdc)
+                return;
+            if (isDdc && !busNum)
+                return;
             initProc.command = isDdc ? ["ddcutil", "-b", busNum, "getvcp", "10", "--brief"] : ["sh", "-c", `echo "a b c $(brightnessctl g) $(brightnessctl m)"`];
             initProc.running = true;
         }
@@ -101,10 +162,17 @@ Singleton {
         readonly property Process initProc: Process {
             stdout: SplitParser {
                 onRead: data => {
-                    const [, , , current, max] = data.split(" ");
-                    monitor.rawMaxBrightness = parseInt(max);
-                    monitor.brightness = parseInt(current) / monitor.rawMaxBrightness;
+                    const tokens = data.trim().split(/\s+/);
+                    if (tokens.length < 2)
+                        return;
+                    const currentRaw = parseInt(tokens[tokens.length - 2]);
+                    const maxRaw = parseInt(tokens[tokens.length - 1]);
+                    if (isNaN(currentRaw) || isNaN(maxRaw) || maxRaw <= 0)
+                        return;
+                    monitor.rawMaxBrightness = maxRaw;
+                    monitor.brightness = currentRaw / monitor.rawMaxBrightness;
                     monitor.ready = true;
+                    root.brightnessChanged();
                 }
             }
         }
@@ -119,6 +187,8 @@ Singleton {
         }
 
         function syncBrightness() {
+            if (isDdc && !busNum)
+                return;
             const rounded = Math.round(monitor.brightness * monitor.rawMaxBrightness);
             setProc.command = isDdc ? ["ddcutil", "-b", busNum, "setvcp", "10", rounded] : ["brightnessctl", "--class", "backlight", "s", rounded, "--quiet"];
             setProc.startDetached();

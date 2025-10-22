@@ -18,6 +18,16 @@ Item {
     property real iconRotation: (brightnessSlider.value / 1.0) * 180
     property real iconScale: 0.8 + (brightnessSlider.value / 1.0) * 0.2
 
+    function updateSliderFromMonitor(forceAnimation: bool): void {
+        if (!currentMonitor || !currentMonitor.ready || brightnessSlider.isDragging)
+            return;
+        brightnessSlider.value = currentMonitor.brightness;
+        if (forceAnimation) {
+            root.externalBrightnessChange = true;
+            externalChangeTimer.restart();
+        }
+    }
+
     Behavior on iconRotation {
         NumberAnimation {
             duration: 400
@@ -70,11 +80,9 @@ Item {
 
     property var currentMonitor: Brightness.getMonitorForScreen(bar.screen)
 
-    Component.onCompleted: {
-        if (currentMonitor) {
-            brightnessSlider.value = currentMonitor.brightness;
-        }
-    }
+    Component.onCompleted: updateSliderFromMonitor(false)
+
+    onCurrentMonitorChanged: updateSliderFromMonitor(false)
 
     BgRect {
         anchors.fill: parent
@@ -119,7 +127,7 @@ Item {
             progressColor: Colors.primary
 
             onValueChanged: {
-                if (currentMonitor) {
+                if (currentMonitor && currentMonitor.ready) {
                     currentMonitor.setBrightness(value);
                 }
             }
@@ -128,12 +136,12 @@ Item {
 
             Connections {
                 target: currentMonitor
+                ignoreUnknownSignals: true
                 function onBrightnessChanged() {
-                    if (currentMonitor && !brightnessSlider.isDragging) {
-                        brightnessSlider.value = currentMonitor.brightness;
-                        root.externalBrightnessChange = true;
-                        externalChangeTimer.restart();
-                    }
+                    root.updateSliderFromMonitor(true);
+                }
+                function onReadyChanged() {
+                    root.updateSliderFromMonitor(false);
                 }
             }
 

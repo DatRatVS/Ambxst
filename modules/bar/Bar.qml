@@ -188,13 +188,16 @@ PanelWindow {
                     anchors.fill: parent
                     contentWidth: rightContent.width
                     contentHeight: 36
+                    contentX: rightContent.width
                     flickableDirection: Flickable.HorizontalFlick
-                    rotation: 180
 
                     RowLayout {
                         id: rightContent
                         spacing: 4
-                        rotation: 180
+
+                        Item {
+                            Layout.preferredWidth: 800
+                        }
 
                         MicSlider {
                             bar: panel
@@ -280,13 +283,16 @@ PanelWindow {
                     anchors.fill: parent
                     contentWidth: 36
                     contentHeight: bottomContent.height
+                    contentY: bottomContent.height
                     flickableDirection: Flickable.VerticalFlick
-                    rotation: 180
 
                     ColumnLayout {
                         id: bottomContent
                         spacing: 4
-                        rotation: 180
+
+                        Item {
+                            Layout.preferredHeight: 800
+                        }
 
                         MicSlider {
                             bar: panel

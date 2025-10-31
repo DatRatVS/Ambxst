@@ -14,71 +14,94 @@
     nixpkgs,
     nixgl,
   }: let
-    system = "x86_64-linux";
-    pkgs = import nixpkgs {
-      inherit system;
-      config.allowUnfree = true;
-    };
+    linuxSystems = [
+      "x86_64-linux"
+      "aarch64-linux"
+      "i686-linux"
+    ];
 
-    nixGL = nixgl.packages.${system}.nixGLDefault;
-
-    wrapWithNixGL = pkg:
-      pkgs.symlinkJoin {
-        name = "${pkg.pname or pkg.name}-nixGL";
-        paths = [pkg];
-        buildInputs = [pkgs.makeWrapper];
-        postBuild = ''
-          for bin in $out/bin/*; do
-            if [ -x "$bin" ]; then
-              mv "$bin" "$bin.orig"
-              makeWrapper ${nixGL}/bin/nixGL "$bin" --add-flags "$bin.orig"
-            fi
-          done
-        '';
-      };
-
-    # Entorno con todos los binarios
-    env = pkgs.buildEnv {
-      name = "ambxst-env";
-      paths = with pkgs; [
-        (wrapWithNixGL quickshell)
-        (wrapWithNixGL gpu-screen-recorder)
-        (wrapWithNixGL mpvpaper)
-        wl-clipboard
-        cliphist
-        nixGL
-        mesa
-        libglvnd
-        egl-wayland
-        wayland
-        qt6.qtbase
-        qt6.qtsvg
-        qt6.qttools
-        qt6.qtwayland
-        qt6.qtdeclarative
-        qt6.qtimageformats
-        qt6.qtwebengine
-        kdePackages.breeze-icons
-        hicolor-icon-theme
-        fuzzel
-        wtype
-        imagemagick
-        matugen
-        ffmpeg
-      ];
-    };
-
-    # Wrapper que lanza la shell desde el flake
-    launcher = pkgs.writeShellScriptBin "ambxst" ''
-      set -e
-      cd ${self}
-      exec ${nixGL}/bin/nixGL ${pkgs.quickshell}/bin/qs -p ${self}/shell.qml
-    '';
+    forAllSystems = f:
+      builtins.foldl' (acc: system: acc // {${system} = f system;}) {} linuxSystems;
   in {
-    # Combina entorno + launcher
-    packages.${system}.default = pkgs.buildEnv {
-      name = "ambxst";
-      paths = [env launcher];
-    };
+    packages = forAllSystems (
+      system: let
+        pkgs = import nixpkgs {
+          inherit system;
+          config.allowUnfree = true;
+        };
+
+        nixGL = nixgl.packages.${system}.nixGLDefault;
+
+        wrapWithNixGL = pkg:
+          pkgs.symlinkJoin {
+            name = "${pkg.pname or pkg.name}-nixGL";
+            paths = [pkg];
+            buildInputs = [pkgs.makeWrapper];
+            postBuild = ''
+              for bin in $out/bin/*; do
+                if [ -x "$bin" ]; then
+                  mv "$bin" "$bin.orig"
+                  makeWrapper ${nixGL}/bin/nixGL "$bin" --add-flags "$bin.orig"
+                fi
+              done
+            '';
+          };
+
+        env = pkgs.buildEnv {
+          name = "ambxst-env";
+          paths = with pkgs; [
+            # Env core
+            (wrapWithNixGL quickshell)
+            (wrapWithNixGL gpu-screen-recorder)
+            (wrapWithNixGL mpvpaper)
+
+            # Brightness utils
+            brightnessctl
+            ddcutil
+
+            # Wayland / basics
+            wl-clipboard
+            cliphist
+            nixGL
+            mesa
+            libglvnd
+            egl-wayland
+            wayland
+
+            # Qt
+            qt6.qtbase
+            qt6.qtsvg
+            qt6.qttools
+            qt6.qtwayland
+            qt6.qtdeclarative
+            qt6.qtimageformats
+            qt6.qtwebengine
+
+            # UI / tools
+            kdePackages.breeze-icons
+            hicolor-icon-theme
+            fuzzel
+            wtype
+            imagemagick
+            matugen
+            ffmpeg
+          ];
+        };
+
+        launcher = pkgs.writeShellScriptBin "ambxst" ''
+          set -e
+          cd ${self}
+          exec ${nixGL}/bin/nixGL ${pkgs.quickshell}/bin/qs -p ${self}/shell.qml
+        '';
+
+        ambxst = pkgs.buildEnv {
+          name = "ambxst";
+          paths = [env launcher];
+        };
+      in {
+        default = ambxst;
+        ambxst = ambxst;
+      }
+    );
   };
 }

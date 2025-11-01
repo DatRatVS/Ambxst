@@ -29,8 +29,8 @@ Item {
         progressColor: PlayerColors.primary
         backgroundColor: PlayerColors.shadow
         wavy: true
-        wavyAmplitude: root.isPlaying ? 1 : 0.0
-        wavyFrequency: root.isPlaying ? 4 : 0
+        wavyAmplitude: root.isPlaying ? 0.75 : 0.0
+        wavyFrequency: root.isPlaying ? 8 : 0
         heightMultiplier: root.player ? 8 : 4
         smoothDrag: true
         scroll: false

@@ -168,12 +168,12 @@ Item {
                             }
                             event.accepted = true;
                         } else if (event.key === Qt.Key_Escape) {
+                            keyboardNavigationActive = false;
+                            schemeButton.focus = false;
                             if (schemeListExpanded) {
                                 schemeListExpanded = false;
-                            } else {
-                                keyboardNavigationActive = false;
-                                escapePressedOnScheme();
                             }
+                            escapePressedOnScheme();
                             event.accepted = true;
                         }
                     }

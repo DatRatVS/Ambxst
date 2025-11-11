@@ -43,11 +43,43 @@ if [ ! -f /etc/NIXOS ]; then
       sudo xbps-install -y power-profiles-daemon
     elif command -v apk >/dev/null 2>&1; then
       sudo apk add power-profiles-daemon
+      sudo rc-update add power-profiles-daemon default
     else
       echo "❌ Your package manager is not supported. Please install power-profiles-daemon manually."
       exit 1
     fi
     echo "✅ power-profiles-daemon installed"
+    
+    # Enable and start the daemon based on init system
+    if command -v systemctl >/dev/null 2>&1; then
+      echo "🔌 Enabling and starting power-profiles-daemon service (systemd)..."
+      sudo systemctl enable --now power-profiles-daemon
+      echo "✅ power-profiles-daemon service enabled and started"
+    elif command -v rc-update >/dev/null 2>&1; then
+      echo "🔌 Enabling and starting power-profiles-daemon service (OpenRC)..."
+      sudo rc-update add power-profiles-daemon default
+      sudo rc-service power-profiles-daemon start
+      echo "✅ power-profiles-daemon service enabled and started"
+    elif command -v sv >/dev/null 2>&1; then
+      echo "🔌 Enabling power-profiles-daemon service (runit)..."
+      if [ -d /etc/runit/sv/power-profiles-daemon ]; then
+        sudo ln -sf /etc/runit/sv/power-profiles-daemon /var/service/
+        echo "✅ power-profiles-daemon service enabled"
+      else
+        echo "⚠️ runit service directory not found. Please enable manually."
+      fi
+    elif command -v s6-rc >/dev/null 2>&1; then
+      echo "🔌 Enabling power-profiles-daemon service (s6)..."
+      if [ -d /etc/s6/sv/power-profiles-daemon ]; then
+        sudo s6-rc-bundle-update add default power-profiles-daemon
+        sudo s6-svscanctl -an /run/service
+        echo "✅ power-profiles-daemon service enabled"
+      else
+        echo "⚠️ s6 service directory not found. Please enable manually."
+      fi
+    else
+      echo "⚠️ No supported init system detected. Please start power-profiles-daemon manually."
+    fi
   else
     echo "✅ power-profiles-daemon already installed"
   fi

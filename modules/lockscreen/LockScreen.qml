@@ -109,6 +109,101 @@ WlSessionLockSurface {
         }
     }
 
+    // Clock (center)
+    Item {
+        id: clockContainer
+        anchors.centerIn: parent
+        width: clockRow.width
+        height: hoursText.height + (hoursText.height * 0.5)
+
+        Row {
+            id: clockRow
+            spacing: 0
+            anchors.top: parent.top
+
+            Text {
+                id: hoursText
+                text: Qt.formatTime(new Date(), "hh")
+                font.family: "Universal Accreditation"
+                font.pixelSize: 240
+                font.weight: Font.Bold
+                color: Colors.primary
+                antialiasing: true
+                opacity: startAnim ? 1 : 0
+
+                property real slideOffset: startAnim ? 0 : -150
+
+                transform: Translate {
+                    y: hoursText.slideOffset
+                }
+
+                layer.enabled: true
+                layer.effect: BgShadow {}
+
+                Behavior on opacity {
+                    NumberAnimation {
+                        duration: Config.animDuration * 1.1
+                        easing.type: Easing.OutExpo
+                    }
+                }
+
+                Behavior on slideOffset {
+                    NumberAnimation {
+                        duration: Config.animDuration * 1.3
+                        easing.type: Easing.OutExpo
+                    }
+                }
+            }
+
+            Text {
+                id: minutesText
+                text: Qt.formatTime(new Date(), "mm")
+                font.family: "Universal Accreditation"
+                font.pixelSize: 240
+                font.weight: Font.Bold
+                color: Colors.overBackground
+                antialiasing: true
+                anchors.verticalCenter: undefined
+                anchors.top: hoursText.top
+                anchors.topMargin: hoursText.height * 0.5
+                opacity: startAnim ? 1 : 0
+
+                property real slideOffset: startAnim ? 0 : 150
+
+                transform: Translate {
+                    y: minutesText.slideOffset
+                }
+
+                layer.enabled: true
+                layer.effect: BgShadow {}
+
+                Behavior on opacity {
+                    NumberAnimation {
+                        duration: Config.animDuration * 1.1
+                        easing.type: Easing.OutExpo
+                    }
+                }
+
+                Behavior on slideOffset {
+                    NumberAnimation {
+                        duration: Config.animDuration * 1.3
+                        easing.type: Easing.OutExpo
+                    }
+                }
+            }
+        }
+
+        Timer {
+            interval: 1000
+            running: true
+            repeat: true
+            onTriggered: {
+                hoursText.text = Qt.formatTime(new Date(), "hh");
+                minutesText.text = Qt.formatTime(new Date(), "mm");
+            }
+        }
+    }
+
     // Music player (slides from left)
     Item {
         id: playerContainer

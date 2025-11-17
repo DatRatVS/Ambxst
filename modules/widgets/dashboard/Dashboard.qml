@@ -81,8 +81,8 @@ NotchAnimationBehavior {
                 focusEmojiTimer.restart();
             }
         } else {
-            // Reset launcher selected index when dashboard closes
-            GlobalStates.launcherSelectedIndex = -1;
+            // Reset launcher state when dashboard closes
+            GlobalStates.clearLauncherState();
         }
     }
 
@@ -328,9 +328,9 @@ NotchAnimationBehavior {
 
                         stack.replace(targetComponent, {}, direction);
 
-                        // Reset launcher index when leaving widgets tab (tab 0)
+                        // Reset launcher state when leaving widgets tab (tab 0)
                         if (root.state.currentTab === 0 && index !== 0) {
-                            GlobalStates.launcherSelectedIndex = -1;
+                            GlobalStates.clearLauncherState();
                         }
 
                         root.state.currentTab = index;

@@ -1927,8 +1927,7 @@ Item {
                                 Text {
                                     text: {
                                         if (!previewPanel.currentItem) return "";
-                                        var content = root.currentFullContent || previewPanel.currentItem.preview;
-                                        var bytes = content.length;
+                                        var bytes = previewPanel.currentItem.size || 0;
                                         if (bytes < 1024) return bytes + " B";
                                         if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + " KB";
                                         return (bytes / (1024 * 1024)).toFixed(1) + " MB";

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Insert clipboard item into database
-# Usage: clipboard_insert.sh <db_path> <hash> <mime_type> <is_image> <binary_path>
+# Usage: clipboard_insert.sh <db_path> <hash> <mime_type> <is_image> <binary_path> <size>
 # Content is read from stdin
 
 set -euo pipefail
@@ -10,6 +10,7 @@ HASH="$2"
 MIME_TYPE="$3"
 IS_IMAGE="$4"
 BINARY_PATH="$5"
+SIZE="${6:-0}"
 
 # Read content from stdin and strip carriage returns
 CONTENT=$(cat | tr -d '\r')
@@ -38,8 +39,8 @@ ESCAPED_CONTENT="${CONTENT//\'/\'\'}"
 sqlite3 "$DB_PATH" <<EOSQL
 .timeout 5000
 INSERT INTO clipboard_items 
-(content_hash, mime_type, preview, full_content, is_image, binary_path, created_at, updated_at) 
-VALUES ('$HASH', '$MIME_TYPE', '$ESCAPED_PREVIEW', '$ESCAPED_CONTENT', $IS_IMAGE, '$BINARY_PATH', $TIMESTAMP, $TIMESTAMP)
+(content_hash, mime_type, preview, full_content, is_image, binary_path, size, created_at, updated_at) 
+VALUES ('$HASH', '$MIME_TYPE', '$ESCAPED_PREVIEW', '$ESCAPED_CONTENT', $IS_IMAGE, '$BINARY_PATH', $SIZE, $TIMESTAMP, $TIMESTAMP)
 ON CONFLICT(content_hash) DO UPDATE SET
 updated_at = $TIMESTAMP;
 EOSQL

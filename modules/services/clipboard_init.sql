@@ -9,6 +9,7 @@ CREATE TABLE IF NOT EXISTS clipboard_items (
     full_content TEXT,
     is_image INTEGER NOT NULL DEFAULT 0,
     binary_path TEXT,
+    size INTEGER NOT NULL DEFAULT 0,
     created_at INTEGER NOT NULL,
     updated_at INTEGER NOT NULL
 );

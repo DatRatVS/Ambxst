@@ -300,8 +300,20 @@ Item {
             selectedIndex = 0;
             resultsList.currentIndex = 0;
         } else if (searchText.length === 0) {
-            selectedIndex = -1;
-            resultsList.currentIndex = -1;
+            // When clearing search, only reset if we haven't navigated or if list is empty
+            if (!hasNavigatedFromSearch || allItems.length === 0) {
+                selectedIndex = -1;
+                resultsList.currentIndex = -1;
+            } else {
+                // Keep current selection valid, or default to first item
+                if (selectedIndex >= allItems.length) {
+                    selectedIndex = Math.max(0, allItems.length - 1);
+                    resultsList.currentIndex = selectedIndex;
+                } else if (selectedIndex < 0 && allItems.length > 0) {
+                    selectedIndex = 0;
+                    resultsList.currentIndex = 0;
+                }
+            }
         }
     }
 

@@ -19,12 +19,52 @@ Item {
 
     function toggleDashboardTab(tabIndex) {
         const isActive = Visibilities.currentActiveModule === "dashboard";
+        
+        // Special handling for widgets tab (launcher)
+        if (tabIndex === 0) {
+            if (isActive && GlobalStates.dashboardCurrentTab === 0 && GlobalStates.launcherSearchText === "") {
+                // Only toggle off if we're already in launcher without prefix
+                Visibilities.setActiveModule("");
+                return;
+            }
+            
+            // Otherwise, always go to launcher (clear any prefix and ensure tab 0)
+            GlobalStates.dashboardCurrentTab = 0;
+            GlobalStates.launcherSearchText = "";
+            GlobalStates.launcherSelectedIndex = -1;
+            if (!isActive) {
+                Visibilities.setActiveModule("dashboard");
+            }
+            return;
+        }
+        
+        // For other tabs, normal toggle behavior
         if (isActive && GlobalStates.dashboardCurrentTab === tabIndex) {
             Visibilities.setActiveModule("");
             return;
         }
 
         GlobalStates.dashboardCurrentTab = tabIndex;
+        if (!isActive) {
+            Visibilities.setActiveModule("dashboard");
+        }
+    }
+
+    function toggleDashboardWithPrefix(prefix) {
+        const isActive = Visibilities.currentActiveModule === "dashboard";
+        
+        // Check if dashboard is already open with this prefix
+        if (isActive && GlobalStates.dashboardCurrentTab === 0 && GlobalStates.launcherSearchText === prefix) {
+            // Toggle off - close dashboard
+            Visibilities.setActiveModule("");
+            GlobalStates.clearLauncherState();
+            return;
+        }
+
+        // Open dashboard with the prefix
+        GlobalStates.dashboardCurrentTab = 0; // Always go to widgets tab
+        GlobalStates.launcherSearchText = prefix; // Set the prefix
+        
         if (!isActive) {
             Visibilities.setActiveModule("dashboard");
         }
@@ -71,25 +111,25 @@ Item {
     GlobalShortcut {
         appid: root.appId
         name: "dashboard-clipboard"
-        description: "Open dashboard clipboard tab"
+        description: "Open dashboard clipboard (via prefix)"
 
-        onPressed: toggleDashboardTab(1)
+        onPressed: toggleDashboardWithPrefix("clip ")
     }
 
     GlobalShortcut {
         appid: root.appId
         name: "dashboard-emoji"
-        description: "Open dashboard emoji tab"
+        description: "Open dashboard emoji picker (via prefix)"
 
-        onPressed: toggleDashboardTab(2)
+        onPressed: toggleDashboardWithPrefix("emoji ")
     }
 
     GlobalShortcut {
         appid: root.appId
         name: "dashboard-tmux"
-        description: "Open dashboard tmux sessions tab"
+        description: "Open dashboard tmux sessions (via prefix)"
 
-        onPressed: toggleDashboardTab(3)
+        onPressed: toggleDashboardWithPrefix("tmux ")
     }
 
     GlobalShortcut {
@@ -97,15 +137,15 @@ Item {
         name: "dashboard-kanban"
         description: "Open dashboard kanban tab"
 
-        onPressed: toggleDashboardTab(4)
+        onPressed: toggleDashboardTab(1)
     }
 
     GlobalShortcut {
         appid: root.appId
         name: "dashboard-wallpapers"
-        description: "Open dashboard wallpapers tab"
+        description: "Open dashboard wallpapers (via prefix)"
 
-        onPressed: toggleDashboardTab(5)
+        onPressed: toggleDashboardWithPrefix("wall ")
     }
 
     GlobalShortcut {
@@ -113,7 +153,7 @@ Item {
         name: "dashboard-assistant"
         description: "Open dashboard assistant tab"
 
-        onPressed: toggleDashboardTab(6)
+        onPressed: toggleDashboardTab(2)
     }
 
     // Media player shortcuts

@@ -96,6 +96,13 @@ NotchAnimationBehavior {
                 stack.navigateToTab(GlobalStates.dashboardCurrentTab);
             }
         }
+        
+        // Focus cuando cambia el texto del launcher (por shortcuts con prefix)
+        function onLauncherSearchTextChanged() {
+            if (isVisible && GlobalStates.dashboardCurrentTab === 0) {
+                focusUnifiedLauncherTimer.restart();
+            }
+        }
     }
 
     Row {

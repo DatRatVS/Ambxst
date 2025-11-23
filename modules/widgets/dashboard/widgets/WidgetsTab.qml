@@ -103,43 +103,53 @@ Rectangle {
             onSearchTextChanged: {
                 // Detect prefix and switch tab if needed
                 let detectedTab = detectPrefix(searchText);
-                if (detectedTab !== currentTab && detectedTab !== 0) {
-                    currentTab = detectedTab;
-                    
-                    // Extract the text after the prefix
-                    let prefixLength = 0;
-                    if (searchText.startsWith("clip ")) prefixLength = 5;
-                    else if (searchText.startsWith("emoji ")) prefixLength = 6;
-                    else if (searchText.startsWith("tmux ")) prefixLength = 5;
-                    else if (searchText.startsWith("wall ")) prefixLength = 5;
-                    
-                    let remainingText = searchText.substring(prefixLength);
-                    
-                    // Focus the new tab after a brief delay to ensure it's loaded
-                    Qt.callLater(() => {
-                        let targetItem = null;
+                if (detectedTab !== currentTab) {
+                    if (detectedTab === 0) {
+                        // Return to launcher
+                        currentTab = 0;
+                        prefixDisabled = false;
+                        Qt.callLater(() => {
+                            appLauncher.focusSearchInput();
+                        });
+                    } else {
+                        // Switch to prefix tab
+                        currentTab = detectedTab;
                         
-                        if (detectedTab === 1 && clipboardLoader.item) {
-                            targetItem = clipboardLoader.item;
-                        } else if (detectedTab === 2 && emojiLoader.item) {
-                            targetItem = emojiLoader.item;
-                        } else if (detectedTab === 3 && tmuxLoader.item) {
-                            targetItem = tmuxLoader.item;
-                        } else if (detectedTab === 4 && wallpapersLoader.item) {
-                            targetItem = wallpapersLoader.item;
-                        }
+                        // Extract the text after the prefix
+                        let prefixLength = 0;
+                        if (searchText.startsWith("clip ")) prefixLength = 5;
+                        else if (searchText.startsWith("emoji ")) prefixLength = 6;
+                        else if (searchText.startsWith("tmux ")) prefixLength = 5;
+                        else if (searchText.startsWith("wall ")) prefixLength = 5;
                         
-                        if (targetItem) {
-                            // Set the search text in the new tab
-                            if (targetItem.searchText !== undefined) {
-                                targetItem.searchText = remainingText;
+                        let remainingText = searchText.substring(prefixLength);
+                        
+                        // Focus the new tab after a brief delay to ensure it's loaded
+                        Qt.callLater(() => {
+                            let targetItem = null;
+                            
+                            if (detectedTab === 1 && clipboardLoader.item) {
+                                targetItem = clipboardLoader.item;
+                            } else if (detectedTab === 2 && emojiLoader.item) {
+                                targetItem = emojiLoader.item;
+                            } else if (detectedTab === 3 && tmuxLoader.item) {
+                                targetItem = tmuxLoader.item;
+                            } else if (detectedTab === 4 && wallpapersLoader.item) {
+                                targetItem = wallpapersLoader.item;
                             }
-                            // Focus the search input
-                            if (targetItem.focusSearchInput) {
-                                targetItem.focusSearchInput();
+                            
+                            if (targetItem) {
+                                // Set the search text in the new tab
+                                if (targetItem.searchText !== undefined) {
+                                    targetItem.searchText = remainingText;
+                                }
+                                // Focus the search input
+                                if (targetItem.focusSearchInput) {
+                                    targetItem.focusSearchInput();
+                                }
                             }
-                        }
-                    });
+                        });
+                    }
                 }
             }
 

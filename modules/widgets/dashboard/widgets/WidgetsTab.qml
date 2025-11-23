@@ -9,6 +9,10 @@ import qs.modules.components
 import qs.modules.services
 import qs.modules.globals
 import qs.config
+import "../clipboard"
+import "../emoji"
+import "../tmux"
+import "../wallpapers"
 import "calendar"
 
 Rectangle {
@@ -16,21 +20,67 @@ Rectangle {
     implicitWidth: 600
     implicitHeight: 300
 
+    property int currentTab: 0  // 0=launcher, 1=clip, 2=emoji, 3=tmux, 4=wall
+    property bool prefixDisabled: false  // Flag to prevent re-activation after backspace
+    
     // Function to focus app search when tab becomes active
     function focusAppSearch() {
-        if (appLauncherItem && appLauncherItem.focusSearchInput) {
-            appLauncherItem.focusSearchInput();
+        Qt.callLater(() => {
+            if (currentTab === 0) {
+                appLauncher.focusSearchInput();
+            } else {
+                let currentItem = internalStack.itemAt(currentTab);
+                if (currentItem && currentItem.focusSearchInput) {
+                    currentItem.focusSearchInput();
+                }
+            }
+        });
+    }
+
+    // Expose this for Dashboard compatibility
+    function focusSearchInput() {
+        focusAppSearch();
+    }
+
+    // Handle prefix detection in launcher
+    function detectPrefix(text) {
+        // If prefix was manually disabled, don't re-enable until conditions are met
+        if (prefixDisabled) {
+            // Only re-enable prefix if user deletes the prefix text or adds valid content
+            if (text === "clip " || text === "emoji " || text === "tmux " || text === "wall ") {
+                // Still at exact prefix - keep disabled
+                return 0;
+            } else if (!text.startsWith("clip ") && !text.startsWith("emoji ") && 
+                       !text.startsWith("tmux ") && !text.startsWith("wall ")) {
+                // User deleted the prefix - re-enable detection
+                prefixDisabled = false;
+                return 0;
+            } else {
+                // User typed something after the prefix but it's still disabled
+                return 0;
+            }
         }
+        
+        // Normal prefix detection - only activate if exactly "prefix " (nothing after)
+        if (text === "clip ") {
+            return 1;
+        } else if (text === "emoji ") {
+            return 2;
+        } else if (text === "tmux ") {
+            return 3;
+        } else if (text === "wall ") {
+            return 4;
+        }
+        return 0;
     }
 
     RowLayout {
         anchors.fill: parent
         spacing: 8
 
-        // App Launcher (primera columna) - Inline desde LauncherAppsTab
+        // App Launcher - shown only when currentTab === 0
         Rectangle {
-            id: appLauncherItem
-            Layout.fillWidth: false
+            id: appLauncher
             Layout.preferredWidth: {
                 var remainingWidth = parent.width - parent.spacing * 2 - 2; // Total - separators - separator width
                 var gridRows = 3;
@@ -40,6 +90,8 @@ Rectangle {
                 return remainingWidth - rightPanelWidth;
             }
             Layout.fillHeight: true
+            visible: currentTab === 0
+            color: "transparent"
 
             property string searchText: GlobalStates.launcherSearchText
             property bool showResults: searchText.length > 0
@@ -47,6 +99,49 @@ Rectangle {
             property bool optionsMenuOpen: false
             property int menuItemIndex: -1
             property bool menuJustClosed: false
+
+            onSearchTextChanged: {
+                // Detect prefix and switch tab if needed
+                let detectedTab = detectPrefix(searchText);
+                if (detectedTab !== currentTab && detectedTab !== 0) {
+                    currentTab = detectedTab;
+                    
+                    // Extract the text after the prefix
+                    let prefixLength = 0;
+                    if (searchText.startsWith("clip ")) prefixLength = 5;
+                    else if (searchText.startsWith("emoji ")) prefixLength = 6;
+                    else if (searchText.startsWith("tmux ")) prefixLength = 5;
+                    else if (searchText.startsWith("wall ")) prefixLength = 5;
+                    
+                    let remainingText = searchText.substring(prefixLength);
+                    
+                    // Focus the new tab after a brief delay to ensure it's loaded
+                    Qt.callLater(() => {
+                        let targetItem = null;
+                        
+                        if (detectedTab === 1 && clipboardLoader.item) {
+                            targetItem = clipboardLoader.item;
+                        } else if (detectedTab === 2 && emojiLoader.item) {
+                            targetItem = emojiLoader.item;
+                        } else if (detectedTab === 3 && tmuxLoader.item) {
+                            targetItem = tmuxLoader.item;
+                        } else if (detectedTab === 4 && wallpapersLoader.item) {
+                            targetItem = wallpapersLoader.item;
+                        }
+                        
+                        if (targetItem) {
+                            // Set the search text in the new tab
+                            if (targetItem.searchText !== undefined) {
+                                targetItem.searchText = remainingText;
+                            }
+                            // Focus the search input
+                            if (targetItem.focusSearchInput) {
+                                targetItem.focusSearchInput();
+                            }
+                        }
+                    });
+                }
+            }
 
             onSelectedIndexChanged: {
                 if (selectedIndex === -1 && resultsList.count > 0) {
@@ -62,10 +157,6 @@ Rectangle {
             function focusSearchInput() {
                 searchInput.focusInput();
             }
-
-            implicitWidth: 400
-            implicitHeight: mainLayout.implicitHeight
-            color: "transparent"
 
             Behavior on height {
                 enabled: Config.animDuration > 0
@@ -90,21 +181,21 @@ Rectangle {
 
                     onSearchTextChanged: text => {
                         GlobalStates.launcherSearchText = text;
-                        appLauncherItem.searchText = text;
+                        appLauncher.searchText = text;
                         if (text.length > 0) {
                             GlobalStates.launcherSelectedIndex = 0;
-                            appLauncherItem.selectedIndex = 0;
+                            appLauncher.selectedIndex = 0;
                             resultsList.currentIndex = 0;
                         } else {
                             GlobalStates.launcherSelectedIndex = -1;
-                            appLauncherItem.selectedIndex = -1;
+                            appLauncher.selectedIndex = -1;
                             resultsList.currentIndex = -1;
                         }
                     }
 
                     onAccepted: {
-                        if (appLauncherItem.selectedIndex >= 0 && appLauncherItem.selectedIndex < resultsList.count) {
-                            let selectedApp = resultsList.model[appLauncherItem.selectedIndex];
+                        if (appLauncher.selectedIndex >= 0 && appLauncher.selectedIndex < resultsList.count) {
+                            let selectedApp = resultsList.model[appLauncher.selectedIndex];
                             if (selectedApp) {
                                 selectedApp.execute();
                                 Visibilities.setActiveModule("");
@@ -113,32 +204,31 @@ Rectangle {
                     }
 
                     onEscapePressed: {
-                        // Cerrar el dashboard
                         Visibilities.setActiveModule("");
                     }
 
                     onDownPressed: {
                         if (resultsList.count > 0) {
-                            if (appLauncherItem.selectedIndex === -1) {
+                            if (appLauncher.selectedIndex === -1) {
                                 GlobalStates.launcherSelectedIndex = 0;
-                                appLauncherItem.selectedIndex = 0;
+                                appLauncher.selectedIndex = 0;
                                 resultsList.currentIndex = 0;
-                            } else if (appLauncherItem.selectedIndex < resultsList.count - 1) {
+                            } else if (appLauncher.selectedIndex < resultsList.count - 1) {
                                 GlobalStates.launcherSelectedIndex++;
-                                appLauncherItem.selectedIndex++;
-                                resultsList.currentIndex = appLauncherItem.selectedIndex;
+                                appLauncher.selectedIndex++;
+                                resultsList.currentIndex = appLauncher.selectedIndex;
                             }
                         }
                     }
 
                     onUpPressed: {
-                        if (appLauncherItem.selectedIndex > 0) {
+                        if (appLauncher.selectedIndex > 0) {
                             GlobalStates.launcherSelectedIndex--;
-                            appLauncherItem.selectedIndex--;
-                            resultsList.currentIndex = appLauncherItem.selectedIndex;
-                        } else if (appLauncherItem.selectedIndex === 0 && appLauncherItem.searchText.length === 0) {
+                            appLauncher.selectedIndex--;
+                            resultsList.currentIndex = appLauncher.selectedIndex;
+                        } else if (appLauncher.selectedIndex === 0 && appLauncher.searchText.length === 0) {
                             GlobalStates.launcherSelectedIndex = -1;
-                            appLauncherItem.selectedIndex = -1;
+                            appLauncher.selectedIndex = -1;
                             resultsList.currentIndex = -1;
                         }
                     }
@@ -146,33 +236,33 @@ Rectangle {
                     onPageDownPressed: {
                         if (resultsList.count > 0) {
                             let visibleItems = Math.floor(resultsList.height / 48);
-                            let newIndex = Math.min(appLauncherItem.selectedIndex + visibleItems, resultsList.count - 1);
-                            if (appLauncherItem.selectedIndex === -1) {
+                            let newIndex = Math.min(appLauncher.selectedIndex + visibleItems, resultsList.count - 1);
+                            if (appLauncher.selectedIndex === -1) {
                                 newIndex = Math.min(visibleItems - 1, resultsList.count - 1);
                             }
                             GlobalStates.launcherSelectedIndex = newIndex;
-                            appLauncherItem.selectedIndex = newIndex;
-                            resultsList.currentIndex = appLauncherItem.selectedIndex;
+                            appLauncher.selectedIndex = newIndex;
+                            resultsList.currentIndex = appLauncher.selectedIndex;
                         }
                     }
 
                     onPageUpPressed: {
                         if (resultsList.count > 0) {
                             let visibleItems = Math.floor(resultsList.height / 48);
-                            let newIndex = Math.max(appLauncherItem.selectedIndex - visibleItems, 0);
-                            if (appLauncherItem.selectedIndex === -1) {
+                            let newIndex = Math.max(appLauncher.selectedIndex - visibleItems, 0);
+                            if (appLauncher.selectedIndex === -1) {
                                 newIndex = Math.max(resultsList.count - visibleItems, 0);
                             }
                             GlobalStates.launcherSelectedIndex = newIndex;
-                            appLauncherItem.selectedIndex = newIndex;
-                            resultsList.currentIndex = appLauncherItem.selectedIndex;
+                            appLauncher.selectedIndex = newIndex;
+                            resultsList.currentIndex = appLauncher.selectedIndex;
                         }
                     }
 
                     onHomePressed: {
                         if (resultsList.count > 0) {
                             GlobalStates.launcherSelectedIndex = 0;
-                            appLauncherItem.selectedIndex = 0;
+                            appLauncher.selectedIndex = 0;
                             resultsList.currentIndex = 0;
                         }
                     }
@@ -180,8 +270,8 @@ Rectangle {
                     onEndPressed: {
                         if (resultsList.count > 0) {
                             GlobalStates.launcherSelectedIndex = resultsList.count - 1;
-                            appLauncherItem.selectedIndex = resultsList.count - 1;
-                            resultsList.currentIndex = appLauncherItem.selectedIndex;
+                            appLauncher.selectedIndex = resultsList.count - 1;
+                            resultsList.currentIndex = appLauncher.selectedIndex;
                         }
                     }
                 }
@@ -193,17 +283,17 @@ Rectangle {
                     Layout.preferredHeight: 7 * 48
                     visible: true
                     clip: true
-                    interactive: !appLauncherItem.optionsMenuOpen
+                    interactive: !appLauncher.optionsMenuOpen
                     cacheBuffer: 96
                     reuseItems: true
 
-                    model: appLauncherItem.searchText.length > 0 ? AppSearch.fuzzyQuery(appLauncherItem.searchText) : AppSearch.getAllApps()
-                    currentIndex: appLauncherItem.selectedIndex
+                    model: appLauncher.searchText.length > 0 ? AppSearch.fuzzyQuery(appLauncher.searchText) : AppSearch.getAllApps()
+                    currentIndex: appLauncher.selectedIndex
 
                     onCurrentIndexChanged: {
-                        if (currentIndex !== appLauncherItem.selectedIndex) {
+                        if (currentIndex !== appLauncher.selectedIndex) {
                             GlobalStates.launcherSelectedIndex = currentIndex;
-                            appLauncherItem.selectedIndex = currentIndex;
+                            appLauncher.selectedIndex = currentIndex;
                         }
                     }
 
@@ -223,14 +313,14 @@ Rectangle {
                             acceptedButtons: Qt.LeftButton | Qt.RightButton
 
                             onEntered: {
-                                if (!appLauncherItem.optionsMenuOpen) {
+                                if (!appLauncher.optionsMenuOpen) {
                                     GlobalStates.launcherSelectedIndex = index;
-                                    appLauncherItem.selectedIndex = index;
+                                    appLauncher.selectedIndex = index;
                                     resultsList.currentIndex = index;
                                 }
                             }
                             onClicked: mouse => {
-                                if (appLauncherItem.menuJustClosed) {
+                                if (appLauncher.menuJustClosed) {
                                     return;
                                 }
 
@@ -238,8 +328,8 @@ Rectangle {
                                     modelData.execute();
                                     Visibilities.setActiveModule("");
                                 } else if (mouse.button === Qt.RightButton) {
-                                    appLauncherItem.menuItemIndex = index;
-                                    appLauncherItem.optionsMenuOpen = true;
+                                    appLauncher.menuItemIndex = index;
+                                    appLauncher.optionsMenuOpen = true;
                                     contextMenu.popup(mouse.x, mouse.y);
                                 }
                             }
@@ -248,9 +338,9 @@ Rectangle {
                                 id: contextMenu
 
                                 onClosed: {
-                                    appLauncherItem.optionsMenuOpen = false;
-                                    appLauncherItem.menuItemIndex = -1;
-                                    appLauncherItem.menuJustClosed = true;
+                                    appLauncher.optionsMenuOpen = false;
+                                    appLauncher.menuItemIndex = -1;
+                                    appLauncher.menuJustClosed = true;
                                     menuClosedTimer.start();
                                 }
 
@@ -259,7 +349,7 @@ Rectangle {
                                     interval: 100
                                     repeat: false
                                     onTriggered: {
-                                        appLauncherItem.menuJustClosed = false;
+                                        appLauncher.menuJustClosed = false;
                                     }
                                 }
 
@@ -357,7 +447,7 @@ Rectangle {
                                 Text {
                                     width: parent.width
                                     text: modelData.name
-                                    color: appLauncherItem.selectedIndex === index ? Colors.overPrimary : Colors.overBackground
+                                    color: appLauncher.selectedIndex === index ? Colors.overPrimary : Colors.overBackground
                                     font.family: Config.theme.font
                                     font.pixelSize: Config.theme.fontSize
                                     font.weight: Font.Bold
@@ -375,7 +465,7 @@ Rectangle {
                                 Text {
                                     width: parent.width
                                     text: modelData.comment || ""
-                                    color: appLauncherItem.selectedIndex === index ? Colors.overPrimary : Colors.outline
+                                    color: appLauncher.selectedIndex === index ? Colors.overPrimary : Colors.outline
                                     font.family: Config.theme.font
                                     font.pixelSize: Math.max(8, Config.theme.fontSize - 2)
                                     elide: Text.ElideRight
@@ -396,7 +486,7 @@ Rectangle {
                     highlight: Rectangle {
                         color: Colors.primary
                         radius: Config.roundness > 0 ? Config.roundness + 4 : 0
-                        visible: appLauncherItem.selectedIndex >= 0 && (appLauncherItem.optionsMenuOpen ? appLauncherItem.selectedIndex === appLauncherItem.menuItemIndex : true)
+                        visible: appLauncher.selectedIndex >= 0 && (appLauncher.optionsMenuOpen ? appLauncher.selectedIndex === appLauncher.menuItemIndex : true)
                     }
 
                     highlightMoveDuration: Config.animDuration > 0 ? Config.animDuration / 2 : 0
@@ -413,65 +503,132 @@ Rectangle {
                 running: false
 
                 onExited: function (code) {
-                    // No cerrar el dashboard después de crear shortcut
                 }
             }
         }
 
-        // Separator
-        Separator {
-            Layout.preferredWidth: 2
-            Layout.fillHeight: true
-            vert: true
-            gradient: null
-            color: Colors.surface
-        }
-
-        ClippingRectangle {
-            Layout.fillWidth: false
-            Layout.preferredWidth: {
-                var gridRows = 3;
-                var gridColumns = 5;
-                var wallpaperHeight = (parent.height + 4 * 2) / gridRows;
-                return (wallpaperHeight * gridColumns) - 8;
-            }
-            Layout.fillHeight: true
-            radius: Config.roundness > 0 ? Config.roundness + 4 : 0
-
-            color: "transparent"
-
-            Flickable {
-                anchors.fill: parent
-                contentWidth: width
-                contentHeight: columnLayout.implicitHeight
-                clip: true
-
-                ColumnLayout {
-                    id: columnLayout
-                    width: parent.width
-                    spacing: 8
-
-                    FullPlayer {
-                        Layout.fillWidth: true
-                    }
-
-                    Calendar {
-                        Layout.fillWidth: true
-                        Layout.preferredHeight: width
-                    }
-
-                    PaneRect {
-                        Layout.fillWidth: true
-                        Layout.preferredHeight: 150
-                    }
-                }
-            }
-        }
-
-        NotificationHistory {
+        // StackLayout for other tabs (clipboard, emoji, tmux, wallpapers)
+        StackLayout {
+            id: internalStack
             Layout.fillWidth: true
             Layout.fillHeight: true
+            visible: currentTab !== 0
+            currentIndex: currentTab - 1  // Subtract 1 because launcher is now separate
+
+            // Tab 1: Clipboard (with prefix "clip ")
+            Loader {
+                id: clipboardLoader
+                active: true
+                sourceComponent: ClipboardTab {
+                    prefixText: "clip "
+                    onBackspaceOnEmpty: {
+                        // Return to launcher with prefix text + space
+                        prefixDisabled = true;
+                        currentTab = 0;
+                        GlobalStates.launcherSearchText = "clip ";
+                        appLauncher.focusSearchInput();
+                    }
+                }
+            }
+
+            // Tab 2: Emoji (with prefix "emoji ")
+            Loader {
+                id: emojiLoader
+                active: true
+                sourceComponent: EmojiTab {
+                    prefixText: "emoji "
+                    onBackspaceOnEmpty: {
+                        prefixDisabled = true;
+                        currentTab = 0;
+                        GlobalStates.launcherSearchText = "emoji ";
+                        appLauncher.focusSearchInput();
+                    }
+                }
+            }
+
+            // Tab 3: Tmux (with prefix "tmux ")
+            Loader {
+                id: tmuxLoader
+                active: true
+                sourceComponent: TmuxTab {
+                    prefixText: "tmux "
+                    onBackspaceOnEmpty: {
+                        prefixDisabled = true;
+                        currentTab = 0;
+                        GlobalStates.launcherSearchText = "tmux ";
+                        appLauncher.focusSearchInput();
+                    }
+                }
+            }
+
+            // Tab 4: Wallpapers (with prefix "wall ")
+            Loader {
+                id: wallpapersLoader
+                active: true
+                sourceComponent: WallpapersTab {
+                    prefixText: "wall "
+                    onBackspaceOnEmpty: {
+                        prefixDisabled = true;
+                        currentTab = 0;
+                        GlobalStates.launcherSearchText = "wall ";
+                        appLauncher.focusSearchInput();
+                    }
+                }
+            }
         }
+
+    // Separator (only visible when in launcher tab)
+    Separator {
+        Layout.preferredWidth: 2
+        Layout.fillHeight: true
+        vert: true
+        gradient: null
+        color: Colors.surface
+        visible: currentTab === 0
+    }
+
+    // Widgets column (only visible when in launcher tab)
+    ClippingRectangle {
+        Layout.fillWidth: true
+        Layout.fillHeight: true
+        radius: Config.roundness > 0 ? Config.roundness + 4 : 0
+        color: "transparent"
+        visible: currentTab === 0
+
+        Flickable {
+            anchors.fill: parent
+            contentWidth: width
+            contentHeight: columnLayout.implicitHeight
+            clip: true
+
+            ColumnLayout {
+                id: columnLayout
+                width: parent.width
+                spacing: 8
+
+                FullPlayer {
+                    Layout.fillWidth: true
+                }
+
+                Calendar {
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: width
+                }
+
+                PaneRect {
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: 150
+                }
+            }
+        }
+    }
+
+    // Notification History (only visible when in launcher tab)
+    NotificationHistory {
+        Layout.fillWidth: true
+        Layout.fillHeight: true
+        visible: currentTab === 0
+    }
     }
 
     Component.onCompleted: {

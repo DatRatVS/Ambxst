@@ -474,7 +474,7 @@ NotchAnimationBehavior {
     // Component definitions for better performance (defined once, reused)
     Component {
         id: unifiedLauncherComponent
-        UnifiedLauncherTab {}
+        WidgetsTab {}
     }
 
     Component {

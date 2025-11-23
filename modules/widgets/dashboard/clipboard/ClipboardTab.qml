@@ -1526,7 +1526,7 @@ Item {
 
                                         QtObject {
                                             id: delegateData
-                                            property var modelData: parent.modelData
+                                            property var modelData: parent ? parent.modelData : null
                                         }
 
                                         width: optionsListView.width
@@ -1542,13 +1542,13 @@ Item {
                                                 spacing: 8
 
                                                 Text {
-                                                    text: modelData.icon
+                                                    text: modelData && modelData.icon ? modelData.icon : ""
                                                     font.family: Icons.font
                                                     font.pixelSize: 14
                                                     font.weight: Font.Bold
                                                     textFormat: Text.RichText
                                                     color: {
-                                                        if (optionsListView.currentIndex === index) {
+                                                        if (optionsListView.currentIndex === index && modelData && modelData.textColor) {
                                                             return modelData.textColor;
                                                         }
                                                         return Colors.overSurface;
@@ -1565,12 +1565,12 @@ Item {
 
                                                 Text {
                                                     Layout.fillWidth: true
-                                                    text: modelData.text
+                                                    text: modelData && modelData.text ? modelData.text : ""
                                                     font.family: Config.theme.font
                                                     font.pixelSize: Config.theme.fontSize
                                                     font.weight: optionsListView.currentIndex === index ? Font.Bold : Font.Normal
                                                     color: {
-                                                        if (optionsListView.currentIndex === index) {
+                                                        if (optionsListView.currentIndex === index && modelData && modelData.textColor) {
                                                             return modelData.textColor;
                                                         }
                                                         return Colors.overSurface;
@@ -1600,7 +1600,7 @@ Item {
                                                 }
 
                                                 onClicked: {
-                                                    if (modelData.action) {
+                                                    if (modelData && modelData.action) {
                                                         modelData.action();
                                                     }
                                                 }

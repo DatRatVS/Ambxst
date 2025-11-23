@@ -10,6 +10,7 @@ PaneRect {
     property alias text: textField.text
     property alias placeholderText: textField.placeholderText
     property string iconText: ""
+    property string prefixText: ""  // Prefix indicator (e.g., "clip ")
     property bool clearOnEscape: true
     property bool handleTabNavigation: false  // Si true, captura Tab y emite señales. Si false, usa navegación normal.
     property bool passwordMode: false  // Si true, muestra círculos en lugar del texto
@@ -18,6 +19,7 @@ PaneRect {
     signal searchTextChanged(string text)
     signal accepted
     signal shiftAccepted
+    signal backspaceOnEmpty  // Signal when backspace is pressed on empty text
     signal tabPressed
     signal shiftTabPressed
     signal ctrlRPressed
@@ -58,6 +60,25 @@ PaneRect {
             visible: root.iconText.length > 0
         }
 
+        // Prefix indicator
+        Rectangle {
+            Layout.preferredWidth: prefixLabel.implicitWidth + 12
+            Layout.preferredHeight: 28
+            radius: Config.roundness > 0 ? Math.max(Config.roundness - 2, 0) : 0
+            color: Colors.primary
+            visible: root.prefixText.length > 0
+
+            Text {
+                id: prefixLabel
+                anchors.centerIn: parent
+                text: root.prefixText.trim()
+                font.family: Config.theme.font
+                font.pixelSize: Config.theme.fontSize - 1
+                font.weight: Font.Bold
+                color: Colors.overPrimary
+            }
+        }
+
         TextField {
             id: textField
             Layout.fillWidth: true
@@ -78,7 +99,10 @@ PaneRect {
             }
 
             Keys.onPressed: event => {
-                if (event.key === Qt.Key_Tab && root.handleTabNavigation) {
+                if (event.key === Qt.Key_Backspace && textField.text.length === 0) {
+                    root.backspaceOnEmpty();
+                    event.accepted = true;
+                } else if (event.key === Qt.Key_Tab && root.handleTabNavigation) {
                     if (event.modifiers & Qt.ShiftModifier) {
                         root.shiftTabPressed();
                     } else {

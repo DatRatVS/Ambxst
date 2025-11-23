@@ -14,6 +14,9 @@ Item {
     id: root
     focus: true
 
+    property string prefixText: ""
+    signal backspaceOnEmpty()
+
     property string searchText: ""
     property bool showResults: searchText.length > 0
     property int selectedIndex: -1
@@ -515,9 +518,14 @@ Item {
             text: root.searchText
             placeholderText: "Search or create tmux session..."
             iconText: ""
+            prefixText: root.prefixText
 
             onSearchTextChanged: text => {
                 root.searchText = text;
+            }
+
+            onBackspaceOnEmpty: {
+                root.backspaceOnEmpty();
             }
 
             onAccepted: {

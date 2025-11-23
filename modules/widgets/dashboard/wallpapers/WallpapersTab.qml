@@ -13,6 +13,9 @@ import qs.config
 FocusScope {
     id: wallpapersTabRoot
 
+    property string prefixText: ""
+    signal backspaceOnEmpty()
+
     // Propiedades personalizadas para la funcionalidad del componente.
     property string searchText: ""
     readonly property int gridRows: 3
@@ -186,6 +189,7 @@ FocusScope {
                     clearOnEscape: false
                     handleTabNavigation: true
                     radius: Config.roundness > 0 ? Config.roundness + 4 : 0
+                    prefixText: wallpapersTabRoot.prefixText
 
                     // Manejo de eventos de búsqueda y teclado.
                     onSearchTextChanged: text => {
@@ -199,6 +203,10 @@ FocusScope {
                             selectedIndex = -1;
                             wallpaperGrid.currentIndex = -1;
                         }
+                    }
+
+                    onBackspaceOnEmpty: {
+                        wallpapersTabRoot.backspaceOnEmpty();
                     }
 
                     onEscapePressed: {

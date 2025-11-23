@@ -23,12 +23,12 @@ NotchAnimationBehavior {
         property int currentTab: GlobalStates.dashboardCurrentTab
     }
 
-    readonly property var tabModel: [Icons.widgets, Icons.clipboard, Icons.emoji, Icons.terminal, Icons.kanban, Icons.wallpapers, Icons.assistant]
+    readonly property var tabModel: [Icons.widgets, Icons.kanban, Icons.wallpapers, Icons.assistant]
     readonly property int tabCount: tabModel.length
     readonly property int tabSpacing: 8
 
     readonly property int tabWidth: 42
-    readonly property real nonAnimWidth: (state.currentTab === 0 ? 600 : 400) + tabWidth + 16 // widgets tab is wider
+    readonly property real nonAnimWidth: (state.currentTab === 0 ? 600 : 400) + tabWidth + 16 // unified launcher tab is wider
 
     implicitWidth: nonAnimWidth
     implicitHeight: 430
@@ -64,19 +64,13 @@ NotchAnimationBehavior {
         root.state.currentTab = GlobalStates.dashboardCurrentTab;
     }
 
-    // Focus search input when dashboard opens to wallpapers tab or widgets tab
+    // Focus search input when dashboard opens to different tabs
     onIsVisibleChanged: {
         if (isVisible) {
             if (GlobalStates.dashboardCurrentTab === 0) {
                 Notifications.hideAllPopups();
-                focusWidgetsTimer.restart();
-            } else if (GlobalStates.dashboardCurrentTab === 1) {
-                focusClipboardTimer.restart();
+                focusUnifiedLauncherTimer.restart();
             } else if (GlobalStates.dashboardCurrentTab === 2) {
-                focusEmojiTimer.restart();
-            } else if (GlobalStates.dashboardCurrentTab === 3) {
-                focusTmuxTimer.restart();
-            } else if (GlobalStates.dashboardCurrentTab === 5) {
                 focusWallpapersTimer.restart();
             }
         } else {
@@ -97,45 +91,9 @@ NotchAnimationBehavior {
         }
     }
 
-    // Timer para focus en widgets tab
+    // Timer para focus en unified launcher tab
     Timer {
-        id: focusWidgetsTimer
-        interval: 50
-        repeat: false
-        onTriggered: {
-            if (stack.currentItem && stack.currentItem.focusAppSearch) {
-                stack.currentItem.focusAppSearch();
-            }
-        }
-    }
-
-    // Timer para focus en tmux tab
-    Timer {
-        id: focusTmuxTimer
-        interval: 50
-        repeat: false
-        onTriggered: {
-            if (stack.currentItem && stack.currentItem.focusSearchInput) {
-                stack.currentItem.focusSearchInput();
-            }
-        }
-    }
-
-    // Timer para focus en clipboard tab
-    Timer {
-        id: focusClipboardTimer
-        interval: 50
-        repeat: false
-        onTriggered: {
-            if (stack.currentItem && stack.currentItem.focusSearchInput) {
-                stack.currentItem.focusSearchInput();
-            }
-        }
-    }
-
-    // Timer para focus en emoji tab
-    Timer {
-        id: focusEmojiTimer
+        id: focusUnifiedLauncherTimer
         interval: 50
         repeat: false
         onTriggered: {
@@ -297,7 +255,7 @@ NotchAnimationBehavior {
                 anchors.fill: parent
 
                 // Array de componentes para cargar dinámicamente
-                property var components: [overviewComponent, clipboardComponent, emojiComponent, tmuxComponent, quickSettingsComponent, wallpapersComponent, assistantComponent]
+                property var components: [unifiedLauncherComponent, quickSettingsComponent, wallpapersComponent, assistantComponent]
 
                 // Cargar directamente el componente correcto según GlobalStates
                 initialItem: components[GlobalStates.dashboardCurrentTab]
@@ -305,15 +263,9 @@ NotchAnimationBehavior {
                 // Handler para cuando el item actual cambia
                 onCurrentItemChanged: {
                     if (currentItem) {
-                        if (root.state.currentTab === 0 && currentItem.focusAppSearch) {
-                            focusWidgetsTimer.restart();
-                        } else if (root.state.currentTab === 1 && currentItem.focusSearchInput) {
-                            focusClipboardTimer.restart();
-                        } else if (root.state.currentTab === 2 && currentItem.focusSearchInput) {
-                            focusEmojiTimer.restart();
-                        } else if (root.state.currentTab === 3 && currentItem.focusSearchInput) {
-                            focusTmuxTimer.restart();
-                        } else if (root.state.currentTab === 5 && currentItem.focusSearch) {
+                        if (root.state.currentTab === 0 && currentItem.focusSearchInput) {
+                            focusUnifiedLauncherTimer.restart();
+                        } else if (root.state.currentTab === 2 && currentItem.focusSearch) {
                             focusWallpapersTimer.restart();
                         }
                     }
@@ -328,7 +280,7 @@ NotchAnimationBehavior {
 
                         stack.replace(targetComponent, {}, direction);
 
-                        // Reset launcher state when leaving widgets tab (tab 0)
+                        // Reset launcher state when leaving unified launcher tab (tab 0)
                         if (root.state.currentTab === 0 && index !== 0) {
                             GlobalStates.clearLauncherState();
                         }
@@ -338,14 +290,8 @@ NotchAnimationBehavior {
 
                         if (index === 0) {
                             Notifications.hideAllPopups();
-                            focusWidgetsTimer.restart();
-                        } else if (index === 1) {
-                            focusClipboardTimer.restart();
+                            focusUnifiedLauncherTimer.restart();
                         } else if (index === 2) {
-                            focusEmojiTimer.restart();
-                        } else if (index === 3) {
-                            focusTmuxTimer.restart();
-                        } else if (index === 5) {
                             focusWallpapersTimer.restart();
                         }
                     }
@@ -527,8 +473,8 @@ NotchAnimationBehavior {
 
     // Component definitions for better performance (defined once, reused)
     Component {
-        id: overviewComponent
-        WidgetsTab {}
+        id: unifiedLauncherComponent
+        UnifiedLauncherTab {}
     }
 
     Component {
@@ -544,20 +490,5 @@ NotchAnimationBehavior {
     Component {
         id: assistantComponent
         AssistantTab {}
-    }
-
-    Component {
-        id: tmuxComponent
-        TmuxTab {}
-    }
-
-    Component {
-        id: clipboardComponent
-        ClipboardTab {}
-    }
-
-    Component {
-        id: emojiComponent
-        EmojiTab {}
     }
 }

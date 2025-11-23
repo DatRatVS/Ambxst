@@ -15,6 +15,10 @@ Rectangle {
     id: root
     focus: true
 
+    // Prefix support
+    property string prefixText: ""
+    signal backspaceOnEmpty
+
     property string searchText: ""
     property bool showResults: searchText.length > 0
     property int selectedIndex: -1
@@ -370,9 +374,15 @@ Rectangle {
                         Layout.fillWidth: true
                         text: root.searchText
                         placeholderText: "Search emojis..."
+                        prefixText: root.prefixText
 
                         onSearchTextChanged: text => {
-                            root.searchText = text;
+                            // Handle backspace on empty to go back to launcher
+                            if (text === "" && root.prefixText !== "") {
+                                root.backspaceOnEmpty();
+                            } else {
+                                root.searchText = text;
+                            }
                         }
 
                         onAccepted: {

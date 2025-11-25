@@ -4,7 +4,7 @@ import qs.modules.services
 
 Item {
     implicitWidth: 1000
-    implicitHeight: 394
+    implicitHeight: 394 + 48 * 0
 
     Dashboard {
         id: dashboardItem

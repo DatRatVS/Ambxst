@@ -361,14 +361,7 @@ Rectangle {
 
             // Columna izquierda: Search + Lista normal de emojis
             Column {
-                width: {
-                    var remainingWidth = parent.width - parent.spacing * 2 - 2; // Total - separators - separator width
-                    var gridRows = 3;
-                    var gridColumns = 5;
-                    var wallpaperHeight = (parent.height + 4 * 2) / gridRows;
-                    var rightPanelWidth = (wallpaperHeight * gridColumns) - 8;
-                    return remainingWidth - rightPanelWidth;
-                }
+                width: LayoutMetrics.calculateLeftPanelWidth(parent.width, parent.height, parent.spacing)
                 height: parent.height
                 spacing: 8
 
@@ -680,12 +673,7 @@ Rectangle {
 
             // Recent emojis vertical list
             Item {
-                width: {
-                    var gridRows = 3;
-                    var gridColumns = 5;
-                    var wallpaperHeight = (parent.height + 4 * 2) / gridRows;
-                    return (wallpaperHeight * gridColumns) - 8;
-                }
+                width: LayoutMetrics.calculateRightPanelWidth(parent.height)
                 height: parent.height
                 visible: recentEmojis.length > 0 && searchText.length === 0
 
@@ -810,12 +798,7 @@ Rectangle {
 
             // Placeholder cuando no hay recientes
             Item {
-                width: {
-                    var gridRows = 3;
-                    var gridColumns = 5;
-                    var wallpaperHeight = (parent.height + 4 * 2) / gridRows;
-                    return (wallpaperHeight * gridColumns) - 8;
-                }
+                width: LayoutMetrics.calculateRightPanelWidth(parent.height)
                 height: parent.height
                 visible: recentEmojis.length === 0 && searchText.length === 0
 

@@ -1,7 +1,6 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
-import Quickshell
 import Quickshell.Widgets
 import qs.modules.theme
 import qs.modules.components
@@ -14,12 +13,10 @@ FocusScope {
     id: wallpapersTabRoot
 
     property string prefixIcon: ""
-    signal backspaceOnEmpty()
+    signal backspaceOnEmpty
 
     // Propiedades personalizadas para la funcionalidad del componente.
     property string searchText: ""
-    readonly property int gridRows: 3
-    readonly property int gridColumns: 5
     property int selectedIndex: GlobalStates.wallpaperSelectedIndex
     property var activeFilters: []  // Lista de tipos de archivo seleccionados para filtrar
 
@@ -92,12 +89,12 @@ FocusScope {
             GlobalStates.wallpaperSelectedIndex = currentIndex;
             selectedIndex = currentIndex;
             wallpaperGrid.currentIndex = currentIndex;
-            
+
             // Calcular la fila del wallpaper actual
-            const currentRow = Math.floor(currentIndex / gridColumns);
+            const currentRow = Math.floor(currentIndex / LayoutMetrics.gridColumns);
             // Calcular el índice del primer item de esa fila
-            const rowStartIndex = currentRow * gridColumns;
-            
+            const rowStartIndex = currentRow * LayoutMetrics.gridColumns;
+
             // Posicionar para que la fila esté centrada verticalmente
             wallpaperGrid.positionViewAtIndex(rowStartIndex, GridView.Center);
         }
@@ -239,7 +236,7 @@ FocusScope {
                     onDownPressed: {
                         if (filteredWallpapers.length > 0) {
                             if (selectedIndex < filteredWallpapers.length - 1) {
-                                let newIndex = selectedIndex + gridColumns;
+                                let newIndex = selectedIndex + LayoutMetrics.gridColumns;
                                 if (newIndex >= filteredWallpapers.length) {
                                     newIndex = filteredWallpapers.length - 1;
                                 }
@@ -255,7 +252,7 @@ FocusScope {
                     }
                     onUpPressed: {
                         if (filteredWallpapers.length > 0 && selectedIndex > 0) {
-                            let newIndex = selectedIndex - gridColumns;
+                            let newIndex = selectedIndex - LayoutMetrics.gridColumns;
                             if (newIndex < 0) {
                                 newIndex = 0;
                             }
@@ -538,7 +535,7 @@ FocusScope {
             // Contenedor para la cuadrícula de fondos de pantalla.
             ClippingRectangle {
                 id: wallpaperGridContainer
-                width: (wallpaperHeight * gridColumns) - 8
+                width: LayoutMetrics.calculateRightPanelWidth(parent.height)
                 height: parent.height
                 color: "transparent"
                 radius: Config.roundness > 0 ? Config.roundness + 4 : 0
@@ -550,9 +547,8 @@ FocusScope {
                 Layout.fillWidth: false
                 Layout.fillHeight: true
 
-                readonly property int wallpaperMargin: 4
-                readonly property int wallpaperHeight: (height + wallpaperMargin * 2) / gridRows
-                readonly property int wallpaperWidth: (width + wallpaperMargin * 2) / gridColumns
+                readonly property int wallpaperHeight: (height + LayoutMetrics.wallpaperMargin * 2) / LayoutMetrics.gridRows
+                readonly property int wallpaperWidth: (width + LayoutMetrics.wallpaperMargin * 2) / LayoutMetrics.gridColumns
 
                 ScrollView {
                     id: scrollView
@@ -617,8 +613,8 @@ FocusScope {
                             ClippingRectangle {
                                 id: highlightRectangle
                                 anchors.centerIn: parent
-                                width: parent.width - wallpaperGridContainer.wallpaperMargin * 2
-                                height: parent.height - wallpaperGridContainer.wallpaperMargin * 2
+                                width: parent.width - LayoutMetrics.wallpaperMargin * 2
+                                height: parent.height - LayoutMetrics.wallpaperMargin * 2
                                 color: "transparent"
                                 border.color: Colors.primary
                                 border.width: 2
@@ -783,7 +779,7 @@ FocusScope {
                             // Contenedor de imagen optimizado con ClippingRectangle para radius
                             Item {
                                 anchors.fill: parent
-                                anchors.margins: wallpaperGridContainer.wallpaperMargin
+                                anchors.margins: LayoutMetrics.wallpaperMargin
 
                                 ClippingRectangle {
                                     anchors.fill: parent

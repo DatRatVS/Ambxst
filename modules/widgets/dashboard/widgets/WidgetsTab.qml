@@ -90,14 +90,7 @@ Rectangle {
         // App Launcher - shown only when currentTab === 0
         Rectangle {
             id: appLauncher
-            Layout.preferredWidth: {
-                var remainingWidth = parent.width - parent.spacing * 2 - 2; // Total - separators - separator width
-                var gridRows = 3;
-                var gridColumns = 5;
-                var wallpaperHeight = (parent.height + 4 * 2) / gridRows;
-                var rightPanelWidth = (wallpaperHeight * gridColumns) - 8;
-                return remainingWidth - rightPanelWidth;
-            }
+            Layout.preferredWidth: LayoutMetrics.calculateLeftPanelWidth(parent.width, parent.height, parent.spacing)
             Layout.fillHeight: true
             visible: currentTab === 0
             color: "transparent"

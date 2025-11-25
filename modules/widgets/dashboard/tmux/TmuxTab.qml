@@ -507,14 +507,7 @@ Item {
 
         // Columna izquierda: Search + Lista
         Column {
-            width: {
-                var remainingWidth = parent.width - parent.spacing * 2 - 2; // Total - separators - separator width
-                var gridRows = 3;
-                var gridColumns = 5;
-                var wallpaperHeight = (parent.height + 4 * 2) / gridRows;
-                var rightPanelWidth = (wallpaperHeight * gridColumns) - 8;
-                return remainingWidth - rightPanelWidth;
-            }
+            width: LayoutMetrics.calculateLeftPanelWidth(parent.width, parent.height, parent.spacing)
             height: parent.height
             spacing: 8
 
@@ -1369,12 +1362,7 @@ Item {
         // Preview panel
         Item {
             id: previewPanel
-            width: {
-                var gridRows = 3;
-                var gridColumns = 5;
-                var wallpaperHeight = (parent.height + 4 * 2) / gridRows;
-                return (wallpaperHeight * gridColumns) - 8;
-            }
+            width: LayoutMetrics.calculateRightPanelWidth(parent.height)
             height: parent.height
 
             property var currentSession: root.selectedIndex >= 0 && root.selectedIndex < root.filteredSessions.length ? root.filteredSessions[root.selectedIndex] : null

@@ -92,6 +92,7 @@ Singleton {
                 property list<var> gradPrimaryFocus: [["overBackground", 0.0]]
                 property list<var> gradSecondary: [["secondary", 0.0]]
                 property list<var> gradSecondaryFocus: [["overBackground", 0.0]]
+                property list<var> gradOverSecondary: [["overSecondary", 0.0]]
                 property list<var> gradTertiary: [["tertiary", 0.0]]
                 property list<var> gradTertiaryFocus: [["overBackground", 0.0]]
                 property list<var> gradError: [["error", 0.0]]
@@ -107,6 +108,7 @@ Singleton {
                 property list<var> borderPrimaryFocus: ["overBackground", 0]
                 property list<var> borderSecondary: ["secondary", 0]
                 property list<var> borderSecondaryFocus: ["overBackground", 0]
+                property list<var> borderOverSecondary: ["overSecondary", 0]
                 property list<var> borderTertiary: ["tertiary", 0]
                 property list<var> borderTertiaryFocus: ["overBackground", 0]
                 property list<var> borderError: ["error", 0]
@@ -122,6 +124,7 @@ Singleton {
                 property string itemPrimaryFocus: "overPrimary"
                 property string itemSecondary: "overSecondary"
                 property string itemSecondaryFocus: "overSecondary"
+                property string itemOverSecondary: "secondary"
                 property string itemTertiary: "overTertiary"
                 property string itemTertiaryFocus: "overTertiary"
                 property string itemError: "overError"

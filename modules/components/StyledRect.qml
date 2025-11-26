@@ -22,6 +22,7 @@ Rectangle {
             case "primaryfocus": return Config.theme.gradPrimaryFocus
             case "secondary": return Config.theme.gradSecondary
             case "secondaryfocus": return Config.theme.gradSecondaryFocus
+            case "oversecondary": return Config.theme.gradOverSecondary
             case "tertiary": return Config.theme.gradTertiary
             case "tertiaryfocus": return Config.theme.gradTertiaryFocus
             case "error": return Config.theme.gradError
@@ -41,6 +42,7 @@ Rectangle {
             case "primaryfocus": return Config.theme.borderPrimaryFocus
             case "secondary": return Config.theme.borderSecondary
             case "secondaryfocus": return Config.theme.borderSecondaryFocus
+            case "oversecondary": return Config.theme.borderOverSecondary
             case "tertiary": return Config.theme.borderTertiary
             case "tertiaryfocus": return Config.theme.borderTertiaryFocus
             case "error": return Config.theme.borderError
@@ -60,6 +62,7 @@ Rectangle {
             case "primaryfocus": return Config.resolveColor(Config.theme.itemPrimaryFocus)
             case "secondary": return Config.resolveColor(Config.theme.itemSecondary)
             case "secondaryfocus": return Config.resolveColor(Config.theme.itemSecondaryFocus)
+            case "oversecondary": return Config.resolveColor(Config.theme.itemOverSecondary)
             case "tertiary": return Config.resolveColor(Config.theme.itemTertiary)
             case "tertiaryfocus": return Config.resolveColor(Config.theme.itemTertiaryFocus)
             case "error": return Config.resolveColor(Config.theme.itemError)

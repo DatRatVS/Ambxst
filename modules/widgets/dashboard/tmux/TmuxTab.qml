@@ -853,9 +853,9 @@ Item {
                         }
                         }
 
-                        Rectangle {
+                        StyledRect {
                         id: renameHighlight
-                        color: Colors.overSecondary
+                        variant: "oversecondary"
                         radius: Config.roundness > 0 ? Math.max(Config.roundness - 4, 0) : 0
                         visible: isInRenameMode
                         z: 0
@@ -925,7 +925,7 @@ Item {
                             Text {
                                 anchors.centerIn: parent
                                 text: Icons.cancel
-                                color: renameCancelButton.isHighlighted ? Colors.secondary : Colors.overSecondary
+                                color: renameCancelButton.isHighlighted ? Colors[Config.theme.itemOverSecondary] : Colors[Config.theme.itemSecondary]
                                 font.pixelSize: 14
                                 font.family: Icons.font
                                 textFormat: Text.RichText
@@ -963,7 +963,7 @@ Item {
                             Text {
                                 anchors.centerIn: parent
                                 text: Icons.accept
-                                color: renameConfirmButton.isHighlighted ? Colors.secondary : Colors.overSecondary
+                                color: renameConfirmButton.isHighlighted ? Colors[Config.theme.itemOverSecondary] : Colors[Config.theme.itemSecondary]
                                 font.pixelSize: 14
                                 font.family: Icons.font
                                 textFormat: Text.RichText
@@ -1174,9 +1174,9 @@ Item {
                         }
                         }
 
-                        Rectangle {
+                        StyledRect {
                         id: deleteHighlight
-                        color: Colors.overError
+                        variant: "overerror"
                         radius: Config.roundness > 0 ? Math.max(Config.roundness - 4, 0) : 0
                         visible: isInDeleteMode
                         z: 0
@@ -1246,7 +1246,7 @@ Item {
                             Text {
                                 anchors.centerIn: parent
                                 text: Icons.cancel
-                                color: cancelButton.isHighlighted ? Colors.error : Colors.overError
+                                color: cancelButton.isHighlighted ? Colors[Config.theme.itemOverError] : Colors[Config.theme.itemError]
                                 font.pixelSize: 14
                                 font.family: Icons.font
                                 textFormat: Text.RichText
@@ -1284,7 +1284,7 @@ Item {
                             Text {
                                 anchors.centerIn: parent
                                 text: Icons.accept
-                                color: confirmButton.isHighlighted ? Colors.error : Colors.overError
+                                color: confirmButton.isHighlighted ? Colors[Config.theme.itemOverError] : Colors[Config.theme.itemError]
                                 font.pixelSize: 14
                                 font.family: Icons.font
                                 textFormat: Text.RichText

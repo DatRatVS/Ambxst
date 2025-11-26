@@ -1004,9 +1004,9 @@ Item {
                                     }
                                 }
 
-                                Rectangle {
+                                StyledRect {
                                     id: deleteHighlight
-                                    color: Colors.overError
+                                    variant: "overerror"
                                     radius: Config.roundness > 0 ? Math.max(Config.roundness - 4, 0) : 0
                                     visible: isInDeleteMode
                                     z: 0
@@ -1075,7 +1075,7 @@ Item {
                                         Text {
                                             anchors.centerIn: parent
                                             text: Icons.cancel
-                                            color: cancelButton.isHighlighted ? Colors.error : Colors.overError
+                                            color: cancelButton.isHighlighted ? Colors[Config.theme.itemOverError] : Colors[Config.theme.itemError]
                                             font.pixelSize: 14
                                             font.family: Icons.font
                                             textFormat: Text.RichText
@@ -1113,7 +1113,7 @@ Item {
                                         Text {
                                             anchors.centerIn: parent
                                             text: Icons.accept
-                                            color: confirmButton.isHighlighted ? Colors.error : Colors.overError
+                                            color: confirmButton.isHighlighted ? Colors[Config.theme.itemOverError] : Colors[Config.theme.itemError]
                                             font.pixelSize: 14
                                             font.family: Icons.font
                                             textFormat: Text.RichText
@@ -1162,9 +1162,9 @@ Item {
                                     }
                                 }
 
-                                Rectangle {
+                                StyledRect {
                                     id: aliasHighlight
-                                    color: Colors.overSecondary
+                                    variant: "oversecondary"
                                     radius: Config.roundness > 0 ? Math.max(Config.roundness - 4, 0) : 0
                                     visible: isInAliasMode
                                     z: 0
@@ -1231,7 +1231,7 @@ Item {
                                         Text {
                                             anchors.centerIn: parent
                                             text: Icons.cancel
-                                            color: aliasCancelButton.isHighlighted ? Colors.secondary : Colors.overSecondary
+                                            color: aliasCancelButton.isHighlighted ? Colors[Config.theme.itemOverSecondary] : Colors[Config.theme.itemSecondary]
                                             font.pixelSize: 14
                                             font.family: Icons.font
                                             textFormat: Text.RichText
@@ -1269,7 +1269,7 @@ Item {
                                         Text {
                                             anchors.centerIn: parent
                                             text: Icons.accept
-                                            color: aliasConfirmButton.isHighlighted ? Colors.secondary : Colors.overSecondary
+                                            color: aliasConfirmButton.isHighlighted ? Colors[Config.theme.itemOverSecondary] : Colors[Config.theme.itemSecondary]
                                             font.pixelSize: 14
                                             font.family: Icons.font
                                             textFormat: Text.RichText
@@ -1445,27 +1445,21 @@ Item {
                                     preferredHighlightBegin: 0
                                     preferredHighlightEnd: height
 
-                                    highlight: Rectangle {
-                                        color: {
+                                    highlight: StyledRect {
+                                        variant: {
                                             if (optionsListView.currentIndex >= 0 && optionsListView.currentIndex < optionsListView.count) {
                                                 var item = optionsListView.model[optionsListView.currentIndex];
                                                 if (item && item.highlightColor) {
-                                                    return item.highlightColor;
+                                                    if (item.highlightColor === Colors.error) return "error";
+                                                    if (item.highlightColor === Colors.secondary) return "secondary";
+                                                    return "primary";
                                                 }
                                             }
-                                            return Colors.primary;
+                                            return "primary";
                                         }
                                         radius: Config.roundness
                                         visible: optionsListView.currentIndex >= 0
                                         z: -1
-
-                                        Behavior on color {
-                                            enabled: Config.animDuration > 0
-                                            ColorAnimation {
-                                                duration: Config.animDuration / 2
-                                                easing.type: Easing.OutQuart
-                                            }
-                                        }
 
                                         Behavior on opacity {
                                             enabled: Config.animDuration > 0

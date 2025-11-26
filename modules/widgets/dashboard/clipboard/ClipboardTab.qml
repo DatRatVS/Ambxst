@@ -658,30 +658,22 @@ Item {
                 }
 
                 // Botón de limpiar historial
-                ClippingRectangle {
+                StyledRect {
                     id: clearButton
                     width: root.clearButtonConfirmState ? 120 : 48
                     height: 48
                     radius: searchInput.radius
-                    color: {
+                    variant: {
                         if (root.clearButtonConfirmState) {
-                            return Colors.error;
+                            return "error";
                         } else if (root.clearButtonFocused || clearButtonMouseArea.containsMouse) {
-                            return Colors.surfaceBright;
+                            return "focus";
                         } else {
-                            return Colors.surface;
+                            return "pane";
                         }
                     }
                     focus: root.clearButtonFocused
                     activeFocusOnTab: true
-
-                    Behavior on color {
-                        enabled: Config.animDuration > 0
-                        ColorAnimation {
-                            duration: Config.animDuration / 2
-                            easing.type: Easing.OutQuart
-                        }
-                    }
 
                     Behavior on width {
                         enabled: Config.animDuration > 0
@@ -727,17 +719,9 @@ Item {
                             textFormat: Text.RichText
                             font.family: Icons.font
                             font.pixelSize: 20
-                            color: root.clearButtonConfirmState ? Colors.overError : Colors.primary
+                            color: clearButton.itemColor
                             horizontalAlignment: Text.AlignHCenter
                             verticalAlignment: Text.AlignVCenter
-
-                            Behavior on color {
-                                enabled: Config.animDuration > 0
-                                ColorAnimation {
-                                    duration: Config.animDuration / 2
-                                    easing.type: Easing.OutQuart
-                                }
-                            }
                         }
 
                         Text {
@@ -747,7 +731,7 @@ Item {
                             font.family: Config.theme.font
                             font.weight: Font.Bold
                             font.pixelSize: Config.theme.fontSize
-                            color: Colors.overError
+                            color: clearButton.itemColor
                             opacity: root.clearButtonConfirmState ? 1.0 : 0.0
                             visible: opacity > 0
                             verticalAlignment: Text.AlignVCenter

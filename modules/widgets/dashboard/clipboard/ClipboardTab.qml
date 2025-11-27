@@ -95,15 +95,6 @@ Item {
             }
         }
 
-        // For files, try to get icon based on extension
-        if (item.isFile) {
-            var content = item.preview || "";
-            var filePath = getFilePathFromUri(content);
-            if (filePath) {
-                return ClipboardUtils.getNerdFontIconForExtension(filePath);
-            }
-        }
-
         // Default icons
         if (item.isImage)
             return Icons.image;
@@ -1698,7 +1689,7 @@ Item {
                                     onStatusChanged: {
                                         if (status === Image.Ready) {
                                             iconBackground.faviconLoaded = true;
-                                        } else if (status === Image.Error || status === Image.Null) {
+                                        } else if (status === Image.Error || status === Image.Null || status === Image.Loading) {
                                             iconBackground.faviconLoaded = false;
                                         }
                                     }
@@ -1724,11 +1715,7 @@ Item {
                                         } else if (isInAliasMode) {
                                             return Icons.edit;
                                         }
-                                        var iconStr = parent.iconType;
-                                        // Check if it's a Nerd Font icon (starts with )
-                                        if (iconStr && iconStr.charCodeAt(0) >= 0xE000 && iconStr.charCodeAt(0) <= 0xF8FF) {
-                                            return iconStr;
-                                        }
+                                        var iconStr = iconBackground.iconType;
                                         // Fallback to Icons object
                                         if (iconStr === "image")
                                             return Icons.image;
@@ -1739,14 +1726,7 @@ Item {
                                         return Icons.clip;
                                     }
                                     color: iconBackground.itemColor
-                                    font.family: {
-                                        var iconStr = parent.iconType;
-                                        // Use Nerd Font for file icons
-                                        if (iconStr && iconStr.charCodeAt(0) >= 0xE000 && iconStr.charCodeAt(0) <= 0xF8FF) {
-                                            return "Symbols Nerd Font Mono";
-                                        }
-                                        return Icons.font;
-                                    }
+                                    font.family: Icons.font
                                     font.pixelSize: 16
                                     textFormat: Text.RichText
                                 }
@@ -2552,8 +2532,8 @@ Item {
                                             Text {
                                                 anchors.centerIn: parent
                                                 visible: !previewFavicon.visible || previewFavicon.status === Image.Error
-                                                text: "󰖟" // Nerd Font link icon
-                                                font.family: "Symbols Nerd Font Mono"
+                                                text: Icons.globe
+                                                font.family: Icons.font
                                                 font.pixelSize: 20
                                                 color: Colors.primary
                                                 textFormat: Text.RichText
@@ -2652,32 +2632,9 @@ Item {
 
                                 Text {
                                     anchors.centerIn: parent
-                                    text: {
-                                        if (!previewPanel.currentItem)
-                                            return Icons.file;
-                                        var content = root.currentFullContent || previewPanel.currentItem.preview;
-                                        var filePath = root.getFilePathFromUri(content);
-                                        if (filePath) {
-                                            var nerdIcon = ClipboardUtils.getNerdFontIconForExtension(filePath);
-                                            if (nerdIcon)
-                                                return nerdIcon;
-                                        }
-                                        return Icons.file;
-                                    }
+                                    text: Icons.file
                                     textFormat: Text.RichText
-                                    font.family: {
-                                        if (!previewPanel.currentItem)
-                                            return Icons.font;
-                                        var content = root.currentFullContent || previewPanel.currentItem.preview;
-                                        var filePath = root.getFilePathFromUri(content);
-                                        if (filePath) {
-                                            var nerdIcon = ClipboardUtils.getNerdFontIconForExtension(filePath);
-                                            if (nerdIcon && nerdIcon.charCodeAt(0) >= 0xE000 && nerdIcon.charCodeAt(0) <= 0xF8FF) {
-                                                return "Symbols Nerd Font Mono";
-                                            }
-                                        }
-                                        return Icons.font;
-                                    }
+                                    font.family: Icons.font
                                     font.pixelSize: 48
                                     color: Colors.primary
                                 }

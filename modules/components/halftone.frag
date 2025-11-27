@@ -24,8 +24,8 @@ void main() {
     
     float angleRad = radians(ubuf.angle);
     
-    // Tamaño de celda basado en spread
-    float cellSize = ubuf.dotMaxSize * ubuf.dotSpread;
+    // Tamaño de celda basado en el tamaño máximo de los dots
+    float cellSize = ubuf.dotMaxSize * 2.0;
     
     // Matriz de rotación
     mat2 rotation = mat2(
@@ -34,27 +34,22 @@ void main() {
     );
     
     vec2 center = vec2(ubuf.canvasWidth * 0.5, ubuf.canvasHeight * 0.5);
+    vec2 relativePos = pixelPos - center;
     
-    // Rotar posición para la grilla
-    vec2 rotatedPos = rotation * (pixelPos - center);
+    // Rotar posición alrededor del centro
+    vec2 rotatedPos = rotation * relativePos;
     
-    // Grid y celda
+    // Calcular grid en espacio rotado
     vec2 gridPos = rotatedPos / cellSize;
-    vec2 cellIndex = floor(gridPos);
-    vec2 cellCenter = (cellIndex + 0.5) * cellSize;
+    vec2 cellIndex = floor(gridPos + 0.5);
+    vec2 cellCenter = cellIndex * cellSize;
     vec2 posInCell = rotatedPos - cellCenter;
     
     float distToCenter = length(posInCell);
     
-    // Calcular posición del gradiente
-    // El gradiente debe rotar con el ángulo
+    // Vector del gradiente en dirección Y rotada
     // angle=0 -> vertical (arriba a abajo), angle=90 -> horizontal (izq a der)
-    // Vector del gradiente perpendicular al ángulo
     vec2 gradientDir = vec2(sin(angleRad), cos(angleRad));
-    
-    // Proyectar el pixel en la dirección del gradiente
-    vec2 relativePos = pixelPos - center;
-    float projection = dot(relativePos, gradientDir);
     
     // Calcular el rango de proyección proyectando las esquinas del canvas
     vec2 corners[4];
@@ -71,18 +66,34 @@ void main() {
         maxProj = max(maxProj, proj);
     }
     
-    // Normalizar: 0 = inicio del canvas, 1 = final del canvas
-    float gradientPos = (projection - minProj) / (maxProj - minProj);
+    float totalRange = maxProj - minProj;
     
-    // Aplicar start y end
-    float adjustedPos = (gradientPos - ubuf.gradientStart) / (ubuf.gradientEnd - ubuf.gradientStart);
-    adjustedPos = clamp(adjustedPos, 0.0, 1.0);
+    // Calcular el rango activo considerando start y end
+    float activeStart = minProj + ubuf.gradientStart * totalRange;
+    float activeEnd = minProj + ubuf.gradientEnd * totalRange;
+    float activeRange = max(activeEnd - activeStart, 0.001);
     
-    // Interpolar tamaño del dot: start = max, end = min
-    float dotRadius = mix(ubuf.dotMaxSize, ubuf.dotMinSize, adjustedPos);
+    // Proyección del pixel en la dirección del gradiente
+    float projection = dot(relativePos, gradientDir);
     
-    // Antialiasing muy fino solo en el borde para círculos suaves pero sólidos
-    // Usar fwidth para calcular el ancho de un pixel en el espacio de la textura
+    // Calcular tamaño del dot según la región
+    float dotRadius;
+    
+    if (projection < activeStart) {
+        // Antes del start: los dots crecen proporcionalmente más allá del máximo
+        float distanceBeforeStart = activeStart - projection;
+        float growthFactor = distanceBeforeStart / activeRange;
+        dotRadius = ubuf.dotMaxSize * (1.0 + growthFactor);
+    } else if (projection > activeEnd) {
+        // Después del end: no dibujar dots (radio 0)
+        dotRadius = 0.0;
+    } else {
+        // Dentro del rango activo: interpolación normal de max a min
+        float gradientPos = (projection - activeStart) / activeRange;
+        dotRadius = mix(ubuf.dotMaxSize, ubuf.dotMinSize, gradientPos);
+    }
+    
+    // Antialiasing
     float edgeWidth = length(vec2(dFdx(distToCenter), dFdy(distToCenter))) * 0.5;
     float alpha = 1.0 - smoothstep(dotRadius - edgeWidth, dotRadius + edgeWidth, distToCenter);
     

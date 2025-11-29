@@ -188,7 +188,7 @@ Item {
                 
                 radius: Config.roundness > 0 ? Math.max(Config.roundness - widgetPadding, 0) : 0
 
-                opacity: Config.opacity
+                opacity: Config.theme.srFocus.opacity
 
                 x: modelData.start * workspaceButtonWidth
                 y: 0
@@ -239,7 +239,7 @@ Item {
                 
                 radius: Config.roundness > 0 ? Math.max(Config.roundness - widgetPadding, 0) : 0
 
-                opacity: Config.opacity
+                opacity: Config.theme.srFocus.opacity
 
                 x: 0
                 y: modelData.start * workspaceButtonWidth

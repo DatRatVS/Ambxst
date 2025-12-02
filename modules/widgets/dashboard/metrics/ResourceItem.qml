@@ -31,16 +31,21 @@ Item {
         // Progress bar
         Rectangle {
             Layout.fillWidth: true
-            Layout.preferredHeight: 6
+            Layout.preferredHeight: 16
             Layout.alignment: Qt.AlignVCenter
-            radius: Styling.radius(1)
-            color: Colors.surfaceDim
+            radius: Styling.radius(0)
+            color: Colors.surface
+            border.width: 2
+            border.color: root.barColor
 
             Rectangle {
-                width: parent.width * Math.max(0, Math.min(1, root.value))
-                height: parent.height
+                width: (parent.width - 8) * Math.max(0, Math.min(1, root.value))
+                height: parent.height - 8
                 radius: parent.radius
                 color: root.barColor
+                anchors.verticalCenter: parent.verticalCenter
+                anchors.left: parent.left
+                anchors.leftMargin: 4
 
                 Behavior on width {
                     enabled: Config.animDuration > 0

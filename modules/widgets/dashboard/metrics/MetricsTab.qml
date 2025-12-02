@@ -128,18 +128,56 @@ Rectangle {
                             barColor: Colors.green
                         }
 
+                        // Separator before disks
+                        Separator {
+                            width: parent.width
+                            height: 2
+                        }
+
                         // Disks
                         Repeater {
                             id: diskRepeater
                             model: SystemResources.validDisks
 
-                            ResourceItem {
+                            Column {
                                 required property string modelData
                                 width: parent.width
-                                icon: Icons.disk
-                                label: modelData
-                                value: SystemResources.diskUsage[modelData] ? SystemResources.diskUsage[modelData] / 100 : 0
-                                barColor: Colors.yellow
+                                spacing: 4
+
+                                ResourceItem {
+                                    width: parent.width
+                                    icon: Icons.disk
+                                    label: modelData
+                                    value: SystemResources.diskUsage[modelData] ? SystemResources.diskUsage[modelData] / 100 : 0
+                                    barColor: Colors.yellow
+                                }
+
+                                RowLayout {
+                                    width: parent.width
+                                    spacing: 8
+
+                                    Text {
+                                        text: modelData
+                                        font.family: Config.theme.font
+                                        font.pixelSize: Config.theme.fontSize - 2
+                                        color: Colors.outline
+                                        elide: Text.ElideMiddle
+                                    }
+
+                                    Separator {
+                                        vert: false
+                                        Layout.preferredHeight: 2
+                                        Layout.fillWidth: true
+                                    }
+
+                                    Text {
+                                        text: `${Math.round((SystemResources.diskUsage[modelData] || 0))}%`
+                                        font.family: Config.theme.font
+                                        font.pixelSize: Config.theme.fontSize - 2
+                                        font.weight: Font.Medium
+                                        color: Colors.outline
+                                    }
+                                }
                             }
                         }
                     }
@@ -151,168 +189,175 @@ Rectangle {
         StyledRect {
             Layout.fillWidth: true
             Layout.fillHeight: true
-            radius: Styling.radius(0)
-            variant: "internalbg"
+            radius: Styling.radius(4)
+            variant: "pane"
 
-            ColumnLayout {
+            StyledRect {
                 anchors.fill: parent
-                spacing: 0
+                anchors.margins: 4
+                radius: Styling.radius(0)
+                variant: "internalbg"
 
-                // Chart area
-                Canvas {
-                    id: chartCanvas
-                    Layout.fillWidth: true
-                    Layout.fillHeight: true
-                    Layout.margins: 8
+                ColumnLayout {
+                    anchors.fill: parent
+                    spacing: 0
 
-                    onPaint: {
-                        const ctx = getContext("2d");
-                        const w = width;
-                        const h = height;
+                    // Chart area
+                    Canvas {
+                        id: chartCanvas
+                        Layout.fillWidth: true
+                        Layout.fillHeight: true
+                        Layout.margins: 8
 
-                        // Clear canvas
-                        ctx.clearRect(0, 0, w, h);
+                        onPaint: {
+                            const ctx = getContext("2d");
+                            const w = width;
+                            const h = height;
 
-                        // Draw background grid lines
-                        ctx.strokeStyle = Colors.surfaceBright;
-                        ctx.lineWidth = 1;
-                        ctx.setLineDash([4, 4]);
+                            // Clear canvas
+                            ctx.clearRect(0, 0, w, h);
 
-                        // Horizontal grid lines (25%, 50%, 75%)
-                        for (let i = 1; i < 4; i++) {
-                            const y = h * (i / 4);
-                            ctx.beginPath();
-                            ctx.moveTo(0, y);
-                            ctx.lineTo(w, y);
-                            ctx.stroke();
-                        }
+                            // Draw background grid lines
+                            ctx.strokeStyle = Colors.surfaceBright;
+                            ctx.lineWidth = 1;
+                            ctx.setLineDash([4, 4]);
 
-                        ctx.setLineDash([]);
+                            // Horizontal grid lines (25%, 50%, 75%)
+                            for (let i = 1; i < 4; i++) {
+                                const y = h * (i / 4);
+                                ctx.beginPath();
+                                ctx.moveTo(0, y);
+                                ctx.lineTo(w, y);
+                                ctx.stroke();
+                            }
 
-                        if (SystemResources.cpuHistory.length < 2)
-                            return;
+                            ctx.setLineDash([]);
 
-                        const pointSpacing = w / (SystemResources.maxHistoryPoints - 1);
-
-                        // Helper function to draw a line chart
-                        function drawLine(history, color) {
-                            if (history.length < 2)
+                            if (SystemResources.cpuHistory.length < 2)
                                 return;
 
-                            ctx.strokeStyle = color;
-                            ctx.lineWidth = 2;
-                            ctx.lineCap = "round";
-                            ctx.lineJoin = "round";
-                            ctx.beginPath();
+                            const pointSpacing = w / (SystemResources.maxHistoryPoints - 1);
 
-                            const startIndex = Math.max(0, SystemResources.maxHistoryPoints - history.length);
+                            // Helper function to draw a line chart
+                            function drawLine(history, color) {
+                                if (history.length < 2)
+                                    return;
 
-                            for (let i = 0; i < history.length; i++) {
-                                const x = (startIndex + i) * pointSpacing;
-                                const y = h - (history[i] * h);
+                                ctx.strokeStyle = color;
+                                ctx.lineWidth = 2;
+                                ctx.lineCap = "round";
+                                ctx.lineJoin = "round";
+                                ctx.beginPath();
 
-                                if (i === 0) {
-                                    ctx.moveTo(x, y);
-                                } else {
-                                    ctx.lineTo(x, y);
+                                const startIndex = Math.max(0, SystemResources.maxHistoryPoints - history.length);
+
+                                for (let i = 0; i < history.length; i++) {
+                                    const x = (startIndex + i) * pointSpacing;
+                                    const y = h - (history[i] * h);
+
+                                    if (i === 0) {
+                                        ctx.moveTo(x, y);
+                                    } else {
+                                        ctx.lineTo(x, y);
+                                    }
+                                }
+
+                                ctx.stroke();
+                            }
+
+                            // Draw CPU line (red)
+                            drawLine(SystemResources.cpuHistory, Colors.red);
+
+                            // Draw RAM line (blue)
+                            drawLine(SystemResources.ramHistory, Colors.blue);
+
+                            // Draw GPU line (green) if available
+                            if (SystemResources.gpuDetected && SystemResources.gpuHistory.length > 0) {
+                                drawLine(SystemResources.gpuHistory, Colors.green);
+                            }
+                        }
+                    }
+
+                    // Controls at bottom right
+                    RowLayout {
+                        Layout.alignment: Qt.AlignRight | Qt.AlignBottom
+                        Layout.margins: 4
+                        spacing: 8
+
+                        // Decrease interval button
+                        StyledRect {
+                            Layout.preferredWidth: 32
+                            Layout.preferredHeight: 32
+                            radius: Styling.radius(-4)
+                            variant: "pane"
+
+                            Text {
+                                anchors.centerIn: parent
+                                text: Icons.minus
+                                font.family: Icons.font
+                                font.pixelSize: 18
+                                color: Colors.overBackground
+                            }
+
+                            MouseArea {
+                                anchors.fill: parent
+                                cursorShape: Qt.PointingHandCursor
+                                onClicked: {
+                                    const newInterval = Math.max(100, SystemResources.updateInterval - 100);
+                                    SystemResources.updateInterval = newInterval;
+                                    StateService.set("metricsRefreshInterval", newInterval);
                                 }
                             }
 
-                            ctx.stroke();
+                            Behavior on color {
+                                enabled: Config.animDuration > 0
+                                ColorAnimation {
+                                    duration: Config.animDuration
+                                    easing.type: Easing.OutCubic
+                                }
+                            }
                         }
 
-                        // Draw CPU line (red)
-                        drawLine(SystemResources.cpuHistory, Colors.red);
-
-                        // Draw RAM line (blue)
-                        drawLine(SystemResources.ramHistory, Colors.blue);
-
-                        // Draw GPU line (green) if available
-                        if (SystemResources.gpuDetected && SystemResources.gpuHistory.length > 0) {
-                            drawLine(SystemResources.gpuHistory, Colors.green);
-                        }
-                    }
-                }
-
-                // Controls at bottom right
-                RowLayout {
-                    Layout.alignment: Qt.AlignRight | Qt.AlignBottom
-                    Layout.margins: 8
-                    spacing: 8
-
-                    // Decrease interval button
-                    StyledRect {
-                        Layout.preferredWidth: 32
-                        Layout.preferredHeight: 32
-                        radius: Styling.radius(-4)
-                        variant: "pane"
-
+                        // Interval display
                         Text {
-                            anchors.centerIn: parent
-                            text: Icons.minus
-                            font.family: Icons.font
-                            font.pixelSize: 18
+                            text: `${SystemResources.updateInterval}ms`
+                            font.family: Config.theme.font
+                            font.pixelSize: Config.theme.fontSize
+                            font.weight: Font.Bold
                             color: Colors.overBackground
                         }
 
-                        MouseArea {
-                            anchors.fill: parent
-                            cursorShape: Qt.PointingHandCursor
-                            onClicked: {
-                                const newInterval = Math.max(100, SystemResources.updateInterval - 100);
-                                SystemResources.updateInterval = newInterval;
-                                StateService.set("metricsRefreshInterval", newInterval);
+                        // Increase interval button
+                        StyledRect {
+                            Layout.preferredWidth: 32
+                            Layout.preferredHeight: 32
+                            radius: Styling.radius(-4)
+                            variant: "pane"
+
+                            Text {
+                                anchors.centerIn: parent
+                                text: Icons.plus
+                                font.family: Icons.font
+                                font.pixelSize: 18
+                                color: Colors.overBackground
                             }
-                        }
 
-                        Behavior on color {
-                            enabled: Config.animDuration > 0
-                            ColorAnimation {
-                                duration: Config.animDuration
-                                easing.type: Easing.OutCubic
+                            MouseArea {
+                                anchors.fill: parent
+                                cursorShape: Qt.PointingHandCursor
+                                onClicked: {
+                                    const newInterval = SystemResources.updateInterval + 100;
+                                    SystemResources.updateInterval = newInterval;
+                                    StateService.set("metricsRefreshInterval", newInterval);
+                                }
                             }
-                        }
-                    }
 
-                    // Interval display
-                    Text {
-                        text: `${SystemResources.updateInterval}ms`
-                        font.family: Config.theme.font
-                        font.pixelSize: Config.theme.fontSize
-                        font.weight: Font.Bold
-                        color: Colors.overBackground
-                    }
-
-                    // Increase interval button
-                    StyledRect {
-                        Layout.preferredWidth: 32
-                        Layout.preferredHeight: 32
-                        radius: Styling.radius(-4)
-                        variant: "pane"
-
-                        Text {
-                            anchors.centerIn: parent
-                            text: Icons.plus
-                            font.family: Icons.font
-                            font.pixelSize: 18
-                            color: Colors.overBackground
-                        }
-
-                        MouseArea {
-                            anchors.fill: parent
-                            cursorShape: Qt.PointingHandCursor
-                            onClicked: {
-                                const newInterval = SystemResources.updateInterval + 100;
-                                SystemResources.updateInterval = newInterval;
-                                StateService.set("metricsRefreshInterval", newInterval);
-                            }
-                        }
-
-                        Behavior on color {
-                            enabled: Config.animDuration > 0
-                            ColorAnimation {
-                                duration: Config.animDuration
-                                easing.type: Easing.OutCubic
+                            Behavior on color {
+                                enabled: Config.animDuration > 0
+                                ColorAnimation {
+                                    duration: Config.animDuration
+                                    easing.type: Easing.OutCubic
+                                }
                             }
                         }
                     }

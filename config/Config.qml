@@ -525,6 +525,10 @@ Singleton {
                 property string tmux: "tmx"
                 property string wallpapers: "wpp"
             }
+
+            property JsonObject system: JsonObject {
+                property list<string> disks: ["/"]
+            }
         }
     }
 
@@ -1030,6 +1034,9 @@ Singleton {
 
     // Prefix configuration
     property QtObject prefix: loader.adapter.prefix
+
+    // System configuration
+    property QtObject system: loader.adapter.system
 
     // Helper functions for color handling (HEX or named colors)
     function isHexColor(colorValue) {

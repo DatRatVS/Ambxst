@@ -391,5 +391,8 @@ var data = {
         "emoji": "emo",
         "tmux": "tmx",
         "wallpapers": "wpp"
+    },
+    "system": {
+        "disks": ["/"]
     }
 }

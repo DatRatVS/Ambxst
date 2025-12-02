@@ -145,6 +145,7 @@ ShellRoot {
             _ = GameModeService.toggled
             _ = CaffeineService.inhibit
             _ = WeatherService.dataAvailable
+            _ = SystemResources.cpuUsage
         }
     }
 }

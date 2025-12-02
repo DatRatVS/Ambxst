@@ -146,7 +146,8 @@ QtObject {
     // Misc
     readonly property string accept: ""
     readonly property string cancel: ""
-    readonly property string add: ""
+    readonly property string plus: ""
+    readonly property string minus: ""
     readonly property string alert: ""
     readonly property string edit: ""
     readonly property string trash: ""

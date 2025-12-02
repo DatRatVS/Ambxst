@@ -12,42 +12,27 @@ Item {
     property real value: 0.0
     property color barColor: Colors.primary
 
-    implicitHeight: contentColumn.height
+    implicitHeight: 24
 
-    Column {
-        id: contentColumn
-        width: parent.width
-        spacing: 4
+    RowLayout {
+        anchors.fill: parent
+        spacing: 8
 
-        // Icon and label
-        Row {
-            width: parent.width
-            spacing: 6
-
-            Text {
-                text: root.icon
-                font.family: Icons.font
-                font.pixelSize: 16
-                color: Colors.overBackground
-                anchors.verticalCenter: parent.verticalCenter
-            }
-
-            Text {
-                text: root.label
-                font.family: Config.theme.font
-                font.pixelSize: 12
-                font.weight: Font.Medium
-                color: Colors.overSurfaceVariant
-                anchors.verticalCenter: parent.verticalCenter
-                elide: Text.ElideRight
-                width: parent.width - 28
-            }
+        // Icon
+        Text {
+            text: root.icon
+            font.family: Icons.font
+            font.pixelSize: 18
+            color: Colors.overBackground
+            Layout.alignment: Qt.AlignVCenter
+            Layout.preferredWidth: 20
         }
 
         // Progress bar
         Rectangle {
-            width: parent.width
-            height: 6
+            Layout.fillWidth: true
+            Layout.preferredHeight: 6
+            Layout.alignment: Qt.AlignVCenter
             radius: Styling.radius(1)
             color: Colors.surfaceDim
 
@@ -69,12 +54,14 @@ Item {
 
         // Percentage text
         Text {
-            width: parent.width
+            visible: false
             text: `${Math.round(root.value * 100)}%`
             font.family: Config.theme.font
-            font.pixelSize: 11
-            font.weight: Font.Normal
+            font.pixelSize: Config.theme.fontSize
+            font.weight: Font.Medium
             color: Colors.overSurfaceVariant
+            Layout.alignment: Qt.AlignVCenter
+            Layout.preferredWidth: 35
             horizontalAlignment: Text.AlignRight
         }
     }

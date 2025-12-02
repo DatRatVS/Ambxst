@@ -15,7 +15,7 @@ Item {
     focus: true
 
     property string prefixIcon: ""
-    signal backspaceOnEmpty()
+    signal backspaceOnEmpty
 
     property int leftPanelWidth: 0
 
@@ -24,7 +24,7 @@ Item {
     property int selectedIndex: -1
     property var tmuxSessions: []
     property var filteredSessions: []
-    
+
     // List model
     ListModel {
         id: sessionsModel
@@ -49,40 +49,40 @@ Item {
     property int selectedOptionIndex: 0
     property bool keyboardNavigation: false
     property bool isFiltering: false
-    
+
     // Session preview state
     property var sessionWindows: []
     property var sessionPanes: []
     property bool loadingSessionInfo: false
 
-    
-    onExpandedItemIndexChanged: {
-        // Close expanded options when selection changes to a different item is handled in onSelectedIndexChanged
-    }
-    
+    onExpandedItemIndexChanged:
+    // Close expanded options when selection changes to a different item is handled in onSelectedIndexChanged
+    {}
+
     function adjustScrollForExpandedItem(index) {
-        if (index < 0 || index >= sessionsModel.count) return;
-        
+        if (index < 0 || index >= sessionsModel.count)
+            return;
+
         // Calculate Y position of the item
         var itemY = 0;
         for (var i = 0; i < index; i++) {
             itemY += 48; // All items before are collapsed (base height)
         }
-        
+
         // Calculate expanded item height - always 3 options (Open, Rename, Quit)
         var listHeight = 36 * 3;
         var expandedHeight = 48 + 4 + listHeight + 8;
-        
+
         // Calculate max valid scroll position
         var maxContentY = Math.max(0, resultsList.contentHeight - resultsList.height);
-        
+
         // Current viewport bounds
         var viewportTop = resultsList.contentY;
         var viewportBottom = viewportTop + resultsList.height;
-        
+
         // Only scroll if item is not fully visible
         var itemBottom = itemY + expandedHeight;
-        
+
         if (itemY < viewportTop) {
             // Item top is above viewport - scroll up to show it
             resultsList.contentY = itemY;
@@ -90,21 +90,21 @@ Item {
             // Item bottom is below viewport - scroll down to show it
             resultsList.contentY = Math.min(itemBottom - resultsList.height, maxContentY);
         }
-        // Otherwise, item is already fully visible - no scroll needed
+    // Otherwise, item is already fully visible - no scroll needed
     }
 
     onSelectedIndexChanged: {
         if (selectedIndex === -1 && resultsList.count > 0) {
             resultsList.positionViewAtIndex(0, ListView.Beginning);
         }
-        
+
         // Close expanded options when selection changes to a different item
         if (expandedItemIndex >= 0 && selectedIndex !== expandedItemIndex) {
             expandedItemIndex = -1;
             selectedOptionIndex = 0;
             keyboardNavigation = false;
         }
-        
+
         // Load session info when selection changes
         if (selectedIndex >= 0 && selectedIndex < filteredSessions.length) {
             let session = filteredSessions[selectedIndex];
@@ -184,12 +184,12 @@ Item {
         filteredSessions = newFilteredSessions;
         resultsList.enableScrollAnimation = false;
         resultsList.contentY = 0;
-        
+
         sessionsModel.clear();
         for (var i = 0; i < newFilteredSessions.length; i++) {
             var session = newFilteredSessions[i];
             var sessionId = (session.isCreateButton || session.isCreateSpecificButton) ? "__create__" : session.name;
-            
+
             sessionsModel.append({
                 sessionId: sessionId,
                 sessionData: session
@@ -257,8 +257,7 @@ Item {
         newSessionName = sessionName;
         renameButtonIndex = 1;
         root.forceActiveFocus();
-        Qt.callLater(() => {
-        });
+        Qt.callLater(() => {});
     }
 
     function cancelRenameMode() {
@@ -289,27 +288,26 @@ Item {
     function refreshTmuxSessions() {
         tmuxProcess.running = true;
     }
-    
+
     function loadSessionInfo(sessionName) {
-        if (!sessionName) return;
+        if (!sessionName)
+            return;
         loadingSessionInfo = true;
         sessionWindows = [];
         sessionPanes = [];
-        
+
         // Get windows for this session
         windowsProcess.command = ["tmux", "list-windows", "-t", sessionName, "-F", "#{window_index}:#{window_name}:#{window_active}"];
         windowsProcess.running = true;
-        
+
         // Get panes layout and info: pane_index, width, height, top, left, active, command
         panesProcess.command = ["tmux", "list-panes", "-t", sessionName, "-F", "#{pane_index}:#{pane_width}:#{pane_height}:#{pane_top}:#{pane_left}:#{pane_active}:#{pane_current_command}"];
         panesProcess.running = true;
     }
-    
+
     function stripAnsiCodes(text) {
         // Remove ANSI escape sequences (CSI sequences)
-        return text.replace(/\x1b\[[0-9;]*[a-zA-Z]/g, '')
-                   .replace(/\x1b\][0-9;]*;[^\x07]*\x07/g, '')
-                   .replace(/\x1b[=>]/g, '');
+        return text.replace(/\x1b\[[0-9;]*[a-zA-Z]/g, '').replace(/\x1b\][0-9;]*;[^\x07]*\x07/g, '').replace(/\x1b[=>]/g, '');
     }
 
     function createTmuxSession(sessionName) {
@@ -327,15 +325,17 @@ Item {
         attachProcess.command = ["bash", "-c", `cd "$HOME" && setsid kitty -e tmux attach-session -t "${sessionName}" < /dev/null > /dev/null 2>&1 &`];
         attachProcess.running = true;
     }
-    
+
     function switchToWindow(sessionName, windowIndex) {
-        if (!sessionName || windowIndex === undefined) return;
+        if (!sessionName || windowIndex === undefined)
+            return;
         switchWindowProcess.command = ["tmux", "select-window", "-t", `${sessionName}:${windowIndex}`];
         switchWindowProcess.running = true;
     }
-    
+
     function focusPane(sessionName, paneIndex) {
-        if (!sessionName || paneIndex === undefined) return;
+        if (!sessionName || paneIndex === undefined)
+            return;
         focusPaneProcess.command = ["tmux", "select-pane", "-t", `${sessionName}.${paneIndex}`];
         focusPaneProcess.running = true;
     }
@@ -445,15 +445,15 @@ Item {
             root.cancelRenameMode();
         }
     }
-    
+
     Process {
         id: windowsProcess
         running: false
-        
+
         stdout: StdioCollector {
             id: windowsCollector
             waitForEnd: true
-            
+
             onStreamFinished: {
                 let windows = [];
                 let lines = text.trim().split('\n');
@@ -473,23 +473,23 @@ Item {
             }
         }
     }
-    
+
     Process {
         id: panesProcess
         running: false
-        
+
         stdout: StdioCollector {
             id: panesCollector
             waitForEnd: true
-            
+
             onStreamFinished: {
                 let panes = [];
                 let lines = text.trim().split('\n');
-                
+
                 // First pass: collect all pane data and find max dimensions
                 let maxWidth = 0;
                 let maxHeight = 0;
-                
+
                 for (let line of lines) {
                     if (line.trim().length > 0) {
                         let parts = line.split(':');
@@ -498,10 +498,10 @@ Item {
                             let height = parseInt(parts[2]);
                             let top = parseInt(parts[3]);
                             let left = parseInt(parts[4]);
-                            
+
                             maxWidth = Math.max(maxWidth, left + width);
                             maxHeight = Math.max(maxHeight, top + height);
-                            
+
                             panes.push({
                                 index: parts[0],
                                 width: width,
@@ -514,18 +514,18 @@ Item {
                         }
                     }
                 }
-                
+
                 // Store total dimensions and panes
                 for (let pane of panes) {
                     pane.totalWidth = maxWidth;
                     pane.totalHeight = maxHeight;
                 }
-                
+
                 root.sessionPanes = panes;
                 root.loadingSessionInfo = false;
             }
         }
-        
+
         onExited: function (code) {
             if (code !== 0) {
                 root.sessionPanes = [];
@@ -533,11 +533,11 @@ Item {
             }
         }
     }
-    
+
     Process {
         id: switchWindowProcess
         running: false
-        
+
         onExited: function (code) {
             if (code === 0) {
                 // Refresh session info to update active window
@@ -548,11 +548,11 @@ Item {
             }
         }
     }
-    
+
     Process {
         id: focusPaneProcess
         running: false
-        
+
         onExited: function (code) {
             if (code === 0) {
                 // Refresh session info to update active pane
@@ -574,407 +574,411 @@ Item {
             Layout.preferredWidth: root.leftPanelWidth
             Layout.fillHeight: true
 
-        // Search input
-        SearchInput {
-            id: searchInput
-            width: parent.width
-            height: 48
-            anchors.top: parent.top
-            text: root.searchText
-            placeholderText: "Search or create tmux session..."
-            iconText: ""
-            prefixIcon: root.prefixIcon
+            // Search input
+            SearchInput {
+                id: searchInput
+                width: parent.width
+                height: 48
+                anchors.top: parent.top
+                text: root.searchText
+                placeholderText: "Search or create tmux session..."
+                iconText: ""
+                prefixIcon: root.prefixIcon
 
-            onSearchTextChanged: text => {
-                root.searchText = text;
-            }
+                onSearchTextChanged: text => {
+                    root.searchText = text;
+                }
 
-            onBackspaceOnEmpty: {
-                root.backspaceOnEmpty();
-            }
+                onBackspaceOnEmpty: {
+                    root.backspaceOnEmpty();
+                }
 
-            onAccepted: {
-                if (root.deleteMode) {
-                    root.cancelDeleteMode();
-                } else if (root.expandedItemIndex >= 0) {
-                    // Execute selected option when menu is expanded
-                    let session = root.filteredSessions[root.expandedItemIndex];
-                    if (session && !session.isCreateButton && !session.isCreateSpecificButton) {
-                        // Build options array (Open, Rename, Quit)
-                        let options = [
-                            function() { root.attachToSession(session.name); },
-                            function() { root.enterRenameMode(session.name); root.expandedItemIndex = -1; },
-                            function() { root.enterDeleteMode(session.name); root.expandedItemIndex = -1; }
-                        ];
-                        
-                        if (root.selectedOptionIndex >= 0 && root.selectedOptionIndex < options.length) {
-                            options[root.selectedOptionIndex]();
-                        }
-                    }
-                } else {
-                    if (root.selectedIndex >= 0 && root.selectedIndex < resultsList.count) {
-                        let selectedSession = root.filteredSessions[root.selectedIndex];
-                        if (selectedSession) {
-                            if (selectedSession.isCreateSpecificButton) {
-                                root.createTmuxSession(selectedSession.sessionNameToCreate);
-                            } else if (selectedSession.isCreateButton) {
-                                root.createTmuxSession();
-                            } else {
-                                root.attachToSession(selectedSession.name);
+                onAccepted: {
+                    if (root.deleteMode) {
+                        root.cancelDeleteMode();
+                    } else if (root.expandedItemIndex >= 0) {
+                        // Execute selected option when menu is expanded
+                        let session = root.filteredSessions[root.expandedItemIndex];
+                        if (session && !session.isCreateButton && !session.isCreateSpecificButton) {
+                            // Build options array (Open, Rename, Quit)
+                            let options = [function () {
+                                    root.attachToSession(session.name);
+                                }, function () {
+                                    root.enterRenameMode(session.name);
+                                    root.expandedItemIndex = -1;
+                                }, function () {
+                                    root.enterDeleteMode(session.name);
+                                    root.expandedItemIndex = -1;
+                                }];
+
+                            if (root.selectedOptionIndex >= 0 && root.selectedOptionIndex < options.length) {
+                                options[root.selectedOptionIndex]();
                             }
                         }
                     } else {
-                        console.log("DEBUG: No action taken - selectedIndex:", root.selectedIndex, "count:", resultsList.count);
+                        if (root.selectedIndex >= 0 && root.selectedIndex < resultsList.count) {
+                            let selectedSession = root.filteredSessions[root.selectedIndex];
+                            if (selectedSession) {
+                                if (selectedSession.isCreateSpecificButton) {
+                                    root.createTmuxSession(selectedSession.sessionNameToCreate);
+                                } else if (selectedSession.isCreateButton) {
+                                    root.createTmuxSession();
+                                } else {
+                                    root.attachToSession(selectedSession.name);
+                                }
+                            }
+                        } else {
+                            console.log("DEBUG: No action taken - selectedIndex:", root.selectedIndex, "count:", resultsList.count);
+                        }
                     }
                 }
-            }
 
-            onShiftAccepted: {
-                if (!root.deleteMode && !root.renameMode) {
-                    if (root.selectedIndex >= 0 && root.selectedIndex < resultsList.count) {
-                        let selectedSession = root.filteredSessions[root.selectedIndex];
-                        if (selectedSession && !selectedSession.isCreateButton && !selectedSession.isCreateSpecificButton) {
-                            // Toggle expanded state
-                            if (root.expandedItemIndex === root.selectedIndex) {
-                                root.expandedItemIndex = -1;
-                                root.selectedOptionIndex = 0;
-                                root.keyboardNavigation = false;
-                            } else {
-                                root.expandedItemIndex = root.selectedIndex;
-                                root.selectedOptionIndex = 0;
-                                root.keyboardNavigation = true;
+                onShiftAccepted: {
+                    if (!root.deleteMode && !root.renameMode) {
+                        if (root.selectedIndex >= 0 && root.selectedIndex < resultsList.count) {
+                            let selectedSession = root.filteredSessions[root.selectedIndex];
+                            if (selectedSession && !selectedSession.isCreateButton && !selectedSession.isCreateSpecificButton) {
+                                // Toggle expanded state
+                                if (root.expandedItemIndex === root.selectedIndex) {
+                                    root.expandedItemIndex = -1;
+                                    root.selectedOptionIndex = 0;
+                                    root.keyboardNavigation = false;
+                                } else {
+                                    root.expandedItemIndex = root.selectedIndex;
+                                    root.selectedOptionIndex = 0;
+                                    root.keyboardNavigation = true;
+                                }
                             }
                         }
                     }
                 }
-            }
 
-            onCtrlRPressed: {
-                if (!root.deleteMode && !root.renameMode && root.selectedIndex >= 0 && root.selectedIndex < resultsList.count) {
-                    let selectedSession = root.filteredSessions[root.selectedIndex];
-                    if (selectedSession && !selectedSession.isCreateButton && !selectedSession.isCreateSpecificButton) {
-                        root.enterRenameMode(selectedSession.name);
+                onCtrlRPressed: {
+                    if (!root.deleteMode && !root.renameMode && root.selectedIndex >= 0 && root.selectedIndex < resultsList.count) {
+                        let selectedSession = root.filteredSessions[root.selectedIndex];
+                        if (selectedSession && !selectedSession.isCreateButton && !selectedSession.isCreateSpecificButton) {
+                            root.enterRenameMode(selectedSession.name);
+                        }
                     }
                 }
-            }
 
-            onEscapePressed: {
-                if (root.expandedItemIndex >= 0) {
-                    root.expandedItemIndex = -1;
-                    root.selectedOptionIndex = 0;
-                    root.keyboardNavigation = false;
-                } else if (!root.deleteMode && !root.renameMode) {
-                    Visibilities.setActiveModule("");
-                }
-            }
-
-            onDownPressed: {
-                if (root.expandedItemIndex >= 0) {
-                    // Navigate options when menu is expanded - always 3 options
-                    if (root.selectedOptionIndex < 2) {
-                        root.selectedOptionIndex++;
-                        root.keyboardNavigation = true;
+                onEscapePressed: {
+                    if (root.expandedItemIndex >= 0) {
+                        root.expandedItemIndex = -1;
+                        root.selectedOptionIndex = 0;
+                        root.keyboardNavigation = false;
+                    } else if (!root.deleteMode && !root.renameMode) {
+                        Visibilities.setActiveModule("");
                     }
-                } else if (!root.deleteMode && !root.renameMode && resultsList.count > 0) {
-                    if (root.selectedIndex === -1) {
+                }
+
+                onDownPressed: {
+                    if (root.expandedItemIndex >= 0) {
+                        // Navigate options when menu is expanded - always 3 options
+                        if (root.selectedOptionIndex < 2) {
+                            root.selectedOptionIndex++;
+                            root.keyboardNavigation = true;
+                        }
+                    } else if (!root.deleteMode && !root.renameMode && resultsList.count > 0) {
+                        if (root.selectedIndex === -1) {
+                            root.selectedIndex = 0;
+                            resultsList.currentIndex = 0;
+                        } else if (root.selectedIndex < resultsList.count - 1) {
+                            root.selectedIndex++;
+                            resultsList.currentIndex = root.selectedIndex;
+                        }
+                    }
+                }
+
+                onUpPressed: {
+                    if (root.expandedItemIndex >= 0) {
+                        // Navigate options when menu is expanded
+                        if (root.selectedOptionIndex > 0) {
+                            root.selectedOptionIndex--;
+                            root.keyboardNavigation = true;
+                        }
+                    } else if (!root.deleteMode && !root.renameMode) {
+                        if (root.selectedIndex > 0) {
+                            root.selectedIndex--;
+                            resultsList.currentIndex = root.selectedIndex;
+                        } else if (root.selectedIndex === 0 && root.searchText.length === 0) {
+                            root.selectedIndex = -1;
+                            resultsList.currentIndex = -1;
+                        }
+                    }
+                }
+
+                onPageDownPressed: {
+                    if (!root.deleteMode && !root.renameMode && resultsList.count > 0) {
+                        let visibleItems = Math.floor(resultsList.height / 28);
+                        let newIndex = Math.min(root.selectedIndex + visibleItems, resultsList.count - 1);
+                        if (root.selectedIndex === -1) {
+                            newIndex = Math.min(visibleItems - 1, resultsList.count - 1);
+                        }
+                        root.selectedIndex = newIndex;
+                        resultsList.currentIndex = root.selectedIndex;
+                    }
+                }
+
+                onPageUpPressed: {
+                    if (!root.deleteMode && !root.renameMode && resultsList.count > 0) {
+                        let visibleItems = Math.floor(resultsList.height / 28);
+                        let newIndex = Math.max(root.selectedIndex - visibleItems, 0);
+                        if (root.selectedIndex === -1) {
+                            newIndex = Math.max(resultsList.count - visibleItems, 0);
+                        }
+                        root.selectedIndex = newIndex;
+                        resultsList.currentIndex = root.selectedIndex;
+                    }
+                }
+
+                onHomePressed: {
+                    if (!root.deleteMode && !root.renameMode && resultsList.count > 0) {
                         root.selectedIndex = 0;
                         resultsList.currentIndex = 0;
-                    } else if (root.selectedIndex < resultsList.count - 1) {
-                        root.selectedIndex++;
+                    }
+                }
+
+                onEndPressed: {
+                    if (!root.deleteMode && !root.renameMode && resultsList.count > 0) {
+                        root.selectedIndex = resultsList.count - 1;
                         resultsList.currentIndex = root.selectedIndex;
                     }
                 }
             }
 
-            onUpPressed: {
-                if (root.expandedItemIndex >= 0) {
-                    // Navigate options when menu is expanded
-                    if (root.selectedOptionIndex > 0) {
-                        root.selectedOptionIndex--;
-                        root.keyboardNavigation = true;
-                    }
-                } else if (!root.deleteMode && !root.renameMode) {
-                    if (root.selectedIndex > 0) {
-                        root.selectedIndex--;
-                        resultsList.currentIndex = root.selectedIndex;
-                    } else if (root.selectedIndex === 0 && root.searchText.length === 0) {
-                        root.selectedIndex = -1;
-                        resultsList.currentIndex = -1;
-                    }
-                }
-            }
+            ListView {
+                id: resultsList
+                width: parent.width
+                anchors.top: searchInput.bottom
+                anchors.bottom: parent.bottom
+                anchors.topMargin: 8
+                visible: true
+                clip: true
+                interactive: !root.deleteMode && !root.renameMode && root.expandedItemIndex === -1
+                cacheBuffer: 96
+                reuseItems: false
 
-            onPageDownPressed: {
-                if (!root.deleteMode && !root.renameMode && resultsList.count > 0) {
-                    let visibleItems = Math.floor(resultsList.height / 28);
-                    let newIndex = Math.min(root.selectedIndex + visibleItems, resultsList.count - 1);
-                    if (root.selectedIndex === -1) {
-                        newIndex = Math.min(visibleItems - 1, resultsList.count - 1);
-                    }
-                    root.selectedIndex = newIndex;
-                    resultsList.currentIndex = root.selectedIndex;
-                }
-            }
+                model: sessionsModel
+                currentIndex: root.selectedIndex
 
-            onPageUpPressed: {
-                if (!root.deleteMode && !root.renameMode && resultsList.count > 0) {
-                    let visibleItems = Math.floor(resultsList.height / 28);
-                    let newIndex = Math.max(root.selectedIndex - visibleItems, 0);
-                    if (root.selectedIndex === -1) {
-                        newIndex = Math.max(resultsList.count - visibleItems, 0);
-                    }
-                    root.selectedIndex = newIndex;
-                    resultsList.currentIndex = root.selectedIndex;
-                }
-            }
+                property bool enableScrollAnimation: true
 
-            onHomePressed: {
-                if (!root.deleteMode && !root.renameMode && resultsList.count > 0) {
-                    root.selectedIndex = 0;
-                    resultsList.currentIndex = 0;
-                }
-            }
-
-            onEndPressed: {
-                if (!root.deleteMode && !root.renameMode && resultsList.count > 0) {
-                    root.selectedIndex = resultsList.count - 1;
-                    resultsList.currentIndex = root.selectedIndex;
-                }
-            }
-        }
-
-        ListView {
-            id: resultsList
-            width: parent.width
-            anchors.top: searchInput.bottom
-            anchors.bottom: parent.bottom
-            anchors.topMargin: 8
-            visible: true
-            clip: true
-            interactive: !root.deleteMode && !root.renameMode && root.expandedItemIndex === -1
-            cacheBuffer: 96
-            reuseItems: false
-
-            model: sessionsModel
-            currentIndex: root.selectedIndex
-            
-            property bool enableScrollAnimation: true
-            
-            Behavior on contentY {
-                enabled: Config.animDuration > 0 && resultsList.enableScrollAnimation && !resultsList.moving
-                NumberAnimation {
-                    duration: Config.animDuration / 2
-                    easing.type: Easing.OutCubic
-                }
-            }
-            
-            onCurrentIndexChanged: {
-                if (currentIndex !== root.selectedIndex) {
-                    root.selectedIndex = currentIndex;
-                }
-                
-                // Manual smooth auto-scroll (accounting for variable height items)
-                if (currentIndex >= 0) {
-                    var itemY = 0;
-                    for (var i = 0; i < currentIndex && i < sessionsModel.count; i++) {
-                        var itemHeight = 48;
-                        if (i === root.expandedItemIndex && !root.deleteMode && !root.renameMode) {
-                            var listHeight = 36 * 3; // Always 3 options
-                            itemHeight = 48 + 4 + listHeight + 8;
-                        }
-                        itemY += itemHeight;
-                    }
-                    
-                    var currentItemHeight = 48;
-                    if (currentIndex === root.expandedItemIndex && !root.deleteMode && !root.renameMode) {
-                        var listHeight = 36 * 3;
-                        currentItemHeight = 48 + 4 + listHeight + 8;
-                    }
-                    
-                    var viewportTop = resultsList.contentY;
-                    var viewportBottom = viewportTop + resultsList.height;
-                    
-                    if (itemY < viewportTop) {
-                        // Item is above viewport, scroll up
-                        resultsList.contentY = itemY;
-                    } else if (itemY + currentItemHeight > viewportBottom) {
-                        // Item is below viewport, scroll down
-                        resultsList.contentY = itemY + currentItemHeight - resultsList.height;
-                    }
-                }
-            }
-
-            delegate: Rectangle {
-                required property string sessionId
-                required property var sessionData
-                required property int index
-
-                property var modelData: sessionData
-
-                width: resultsList.width
-                height: {
-                    let baseHeight = 48;
-                    if (index === root.expandedItemIndex && !isInDeleteMode && !isInRenameMode) {
-                        var listHeight = 36 * 3; // Always 3 options: Open, Rename, Quit
-                        return baseHeight + 4 + listHeight + 8; // base + spacing + list + bottom margin
-                    }
-                    return baseHeight;
-                }
-                color: "transparent"
-                radius: 16
-                
-                Behavior on y {
-                    enabled: Config.animDuration > 0
+                Behavior on contentY {
+                    enabled: Config.animDuration > 0 && resultsList.enableScrollAnimation && !resultsList.moving
                     NumberAnimation {
                         duration: Config.animDuration / 2
                         easing.type: Easing.OutCubic
                     }
                 }
-                
-                Behavior on height {
-                    enabled: Config.animDuration > 0
-                    NumberAnimation {
-                        duration: Config.animDuration
-                        easing.type: Easing.OutQuart
+
+                onCurrentIndexChanged: {
+                    if (currentIndex !== root.selectedIndex) {
+                        root.selectedIndex = currentIndex;
+                    }
+
+                    // Manual smooth auto-scroll (accounting for variable height items)
+                    if (currentIndex >= 0) {
+                        var itemY = 0;
+                        for (var i = 0; i < currentIndex && i < sessionsModel.count; i++) {
+                            var itemHeight = 48;
+                            if (i === root.expandedItemIndex && !root.deleteMode && !root.renameMode) {
+                                var listHeight = 36 * 3; // Always 3 options
+                                itemHeight = 48 + 4 + listHeight + 8;
+                            }
+                            itemY += itemHeight;
+                        }
+
+                        var currentItemHeight = 48;
+                        if (currentIndex === root.expandedItemIndex && !root.deleteMode && !root.renameMode) {
+                            var listHeight = 36 * 3;
+                            currentItemHeight = 48 + 4 + listHeight + 8;
+                        }
+
+                        var viewportTop = resultsList.contentY;
+                        var viewportBottom = viewportTop + resultsList.height;
+
+                        if (itemY < viewportTop) {
+                            // Item is above viewport, scroll up
+                            resultsList.contentY = itemY;
+                        } else if (itemY + currentItemHeight > viewportBottom) {
+                            // Item is below viewport, scroll down
+                            resultsList.contentY = itemY + currentItemHeight - resultsList.height;
+                        }
                     }
                 }
-                clip: true
 
-                property bool isInDeleteMode: root.deleteMode && modelData.name === root.sessionToDelete
-                property bool isInRenameMode: root.renameMode && modelData.name === root.sessionToRename
-                property bool isExpanded: index === root.expandedItemIndex
-                property color textColor: {
-                    if (isInDeleteMode) {
-                        return Config.resolveColor(Config.theme.srError.itemColor);
-                    } else if (isInRenameMode) {
-                        return Config.resolveColor(Config.theme.srSecondary.itemColor);
-                    } else if (isExpanded) {
-                        return Config.resolveColor(Config.theme.srPane.itemColor);
-                    } else if (root.selectedIndex === index) {
-                        return Config.resolveColor(Config.theme.srPrimary.itemColor);
-                    } else {
-                        return Colors.overSurface;
+                delegate: Rectangle {
+                    required property string sessionId
+                    required property var sessionData
+                    required property int index
+
+                    property var modelData: sessionData
+
+                    width: resultsList.width
+                    height: {
+                        let baseHeight = 48;
+                        if (index === root.expandedItemIndex && !isInDeleteMode && !isInRenameMode) {
+                            var listHeight = 36 * 3; // Always 3 options: Open, Rename, Quit
+                            return baseHeight + 4 + listHeight + 8; // base + spacing + list + bottom margin
+                        }
+                        return baseHeight;
                     }
-                }
+                    color: "transparent"
+                    radius: 16
 
-                MouseArea {
-                    id: mouseArea
-                    anchors.left: parent.left
-                    anchors.right: parent.right
-                    anchors.top: parent.top
-                    height: isExpanded ? 48 : parent.height
-                    hoverEnabled: true
-                    enabled: !isInDeleteMode && !isInRenameMode
-                    acceptedButtons: Qt.LeftButton | Qt.RightButton
-
-                    property real startX: 0
-                    property real startY: 0
-                    property bool isDragging: false
-                    property bool longPressTriggered: false
-
-                    onEntered: {
-                        if (!root.deleteMode && !root.renameMode && root.expandedItemIndex === -1) {
-                            root.selectedIndex = index;
-                            resultsList.currentIndex = index;
+                    Behavior on y {
+                        enabled: Config.animDuration > 0
+                        NumberAnimation {
+                            duration: Config.animDuration / 2
+                            easing.type: Easing.OutCubic
                         }
                     }
 
-                    onClicked: mouse => {
-                        if (mouse.button === Qt.LeftButton) {
-                            if (root.deleteMode && modelData.name !== root.sessionToDelete) {
-                                root.cancelDeleteMode();
-                                return;
-                            } else if (root.renameMode && modelData.name !== root.sessionToRename) {
-                                root.cancelRenameMode();
-                                return;
-                            }
+                    Behavior on height {
+                        enabled: Config.animDuration > 0
+                        NumberAnimation {
+                            duration: Config.animDuration
+                            easing.type: Easing.OutQuart
+                        }
+                    }
+                    clip: true
 
-                            if (!root.deleteMode && !root.renameMode && !isExpanded) {
-                                if (modelData.isCreateSpecificButton) {
-                                    root.createTmuxSession(modelData.sessionNameToCreate);
-                                } else if (modelData.isCreateButton) {
-                                    root.createTmuxSession();
-                                } else {
-                                    root.attachToSession(modelData.name);
+                    property bool isInDeleteMode: root.deleteMode && modelData.name === root.sessionToDelete
+                    property bool isInRenameMode: root.renameMode && modelData.name === root.sessionToRename
+                    property bool isExpanded: index === root.expandedItemIndex
+                    property color textColor: {
+                        if (isInDeleteMode) {
+                            return Config.resolveColor(Config.theme.srError.itemColor);
+                        } else if (isInRenameMode) {
+                            return Config.resolveColor(Config.theme.srSecondary.itemColor);
+                        } else if (isExpanded) {
+                            return Config.resolveColor(Config.theme.srPane.itemColor);
+                        } else if (root.selectedIndex === index) {
+                            return Config.resolveColor(Config.theme.srPrimary.itemColor);
+                        } else {
+                            return Colors.overSurface;
+                        }
+                    }
+
+                    MouseArea {
+                        id: mouseArea
+                        anchors.left: parent.left
+                        anchors.right: parent.right
+                        anchors.top: parent.top
+                        height: isExpanded ? 48 : parent.height
+                        hoverEnabled: true
+                        enabled: !isInDeleteMode && !isInRenameMode
+                        acceptedButtons: Qt.LeftButton | Qt.RightButton
+
+                        property real startX: 0
+                        property real startY: 0
+                        property bool isDragging: false
+                        property bool longPressTriggered: false
+
+                        onEntered: {
+                            if (!root.deleteMode && !root.renameMode && root.expandedItemIndex === -1) {
+                                root.selectedIndex = index;
+                                resultsList.currentIndex = index;
+                            }
+                        }
+
+                        onClicked: mouse => {
+                            if (mouse.button === Qt.LeftButton) {
+                                if (root.deleteMode && modelData.name !== root.sessionToDelete) {
+                                    root.cancelDeleteMode();
+                                    return;
+                                } else if (root.renameMode && modelData.name !== root.sessionToRename) {
+                                    root.cancelRenameMode();
+                                    return;
                                 }
-                            }
-                        } else if (mouse.button === Qt.RightButton) {
-                            if (root.deleteMode) {
-                                root.cancelDeleteMode();
-                                return;
-                            } else if (root.renameMode) {
-                                root.cancelRenameMode();
-                                return;
-                            }
 
-                            if (!modelData.isCreateButton && !modelData.isCreateSpecificButton) {
-                                // Toggle expanded state instead of opening menu
-                                if (root.expandedItemIndex === index) {
-                                    root.expandedItemIndex = -1;
-                                    root.selectedOptionIndex = 0;
-                                    root.keyboardNavigation = false;
-                                    // Update selection to current hover position after closing
-                                    root.selectedIndex = index;
-                                    resultsList.currentIndex = index;
-                                } else {
-                                    root.expandedItemIndex = index;
-                                    root.selectedIndex = index;
-                                    resultsList.currentIndex = index;
-                                    root.selectedOptionIndex = 0;
-                                    root.keyboardNavigation = false;
+                                if (!root.deleteMode && !root.renameMode && !isExpanded) {
+                                    if (modelData.isCreateSpecificButton) {
+                                        root.createTmuxSession(modelData.sessionNameToCreate);
+                                    } else if (modelData.isCreateButton) {
+                                        root.createTmuxSession();
+                                    } else {
+                                        root.attachToSession(modelData.name);
+                                    }
                                 }
-                            }
-                        }
-                    }
+                            } else if (mouse.button === Qt.RightButton) {
+                                if (root.deleteMode) {
+                                    root.cancelDeleteMode();
+                                    return;
+                                } else if (root.renameMode) {
+                                    root.cancelRenameMode();
+                                    return;
+                                }
 
-                    onPressed: mouse => {
-                        startX = mouse.x;
-                        startY = mouse.y;
-                        isDragging = false;
-                        longPressTriggered = false;
-
-                        if (mouse.button !== Qt.RightButton) {
-                            longPressTimer.start();
-                        }
-                    }
-
-                    onPositionChanged: mouse => {
-                        if (pressed && mouse.button !== Qt.RightButton) {
-                            let deltaX = mouse.x - startX;
-                            let deltaY = mouse.y - startY;
-                            let distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
-
-                            // Si se mueve más de 10 píxeles, considerar como arrastre
-                            if (distance > 10) {
-                                isDragging = true;
-                                longPressTimer.stop();
-
-                                if (deltaX < -50 && Math.abs(deltaY) < 30 && !modelData.isCreateButton && !modelData.isCreateSpecificButton) {
-                                    if (!longPressTriggered) {
-                                        root.enterDeleteMode(modelData.name);
-                                        longPressTriggered = true;
+                                if (!modelData.isCreateButton && !modelData.isCreateSpecificButton) {
+                                    // Toggle expanded state instead of opening menu
+                                    if (root.expandedItemIndex === index) {
+                                        root.expandedItemIndex = -1;
+                                        root.selectedOptionIndex = 0;
+                                        root.keyboardNavigation = false;
+                                        // Update selection to current hover position after closing
+                                        root.selectedIndex = index;
+                                        resultsList.currentIndex = index;
+                                    } else {
+                                        root.expandedItemIndex = index;
+                                        root.selectedIndex = index;
+                                        resultsList.currentIndex = index;
+                                        root.selectedOptionIndex = 0;
+                                        root.keyboardNavigation = false;
                                     }
                                 }
                             }
                         }
-                    }
 
-                    onReleased: mouse => {
-                        longPressTimer.stop();
-                        isDragging = false;
-                        longPressTriggered = false;
-                    }
+                        onPressed: mouse => {
+                            startX = mouse.x;
+                            startY = mouse.y;
+                            isDragging = false;
+                            longPressTriggered = false;
 
-                    Timer {
-                        id: longPressTimer
-                        interval: 800
-                        repeat: false
-                        onTriggered: {
-                            if (!mouseArea.isDragging && !modelData.isCreateButton && !modelData.isCreateSpecificButton) {
-                                root.enterRenameMode(modelData.name);
-                                mouseArea.longPressTriggered = true;
+                            if (mouse.button !== Qt.RightButton) {
+                                longPressTimer.start();
                             }
                         }
+
+                        onPositionChanged: mouse => {
+                            if (pressed && mouse.button !== Qt.RightButton) {
+                                let deltaX = mouse.x - startX;
+                                let deltaY = mouse.y - startY;
+                                let distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+
+                                // Si se mueve más de 10 píxeles, considerar como arrastre
+                                if (distance > 10) {
+                                    isDragging = true;
+                                    longPressTimer.stop();
+
+                                    if (deltaX < -50 && Math.abs(deltaY) < 30 && !modelData.isCreateButton && !modelData.isCreateSpecificButton) {
+                                        if (!longPressTriggered) {
+                                            root.enterDeleteMode(modelData.name);
+                                            longPressTriggered = true;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+                        onReleased: mouse => {
+                            longPressTimer.stop();
+                            isDragging = false;
+                            longPressTriggered = false;
+                        }
+
+                        Timer {
+                            id: longPressTimer
+                            interval: 800
+                            repeat: false
+                            onTriggered: {
+                                if (!mouseArea.isDragging && !modelData.isCreateButton && !modelData.isCreateSpecificButton) {
+                                    root.enterRenameMode(modelData.name);
+                                    mouseArea.longPressTriggered = true;
+                                }
+                            }
                         }
                     }
 
@@ -1024,7 +1028,7 @@ Item {
                                         icon: Icons.popOpen,
                                         highlightColor: Colors.primary,
                                         textColor: Config.resolveColor(Config.theme.srPrimary.itemColor),
-                                        action: function() {
+                                        action: function () {
                                             root.attachToSession(modelData.name);
                                         }
                                     },
@@ -1033,7 +1037,7 @@ Item {
                                         icon: Icons.edit,
                                         highlightColor: Colors.secondary,
                                         textColor: Config.resolveColor(Config.theme.srSecondary.itemColor),
-                                        action: function() {
+                                        action: function () {
                                             root.enterRenameMode(modelData.name);
                                             root.expandedItemIndex = -1;
                                         }
@@ -1043,7 +1047,7 @@ Item {
                                         icon: Icons.alert,
                                         highlightColor: Colors.error,
                                         textColor: Config.resolveColor(Config.theme.srError.itemColor),
-                                        action: function() {
+                                        action: function () {
                                             root.enterDeleteMode(modelData.name);
                                             root.expandedItemIndex = -1;
                                         }
@@ -1188,28 +1192,28 @@ Item {
                         anchors.topMargin: 8
                         width: 68
                         height: 32
-                    color: "transparent"
-                    opacity: isInRenameMode ? 1.0 : 0.0
-                    visible: opacity > 0
+                        color: "transparent"
+                        opacity: isInRenameMode ? 1.0 : 0.0
+                        visible: opacity > 0
 
-                    transform: Translate {
-                        x: isInRenameMode ? 0 : 80
+                        transform: Translate {
+                            x: isInRenameMode ? 0 : 80
 
-                        Behavior on x {
-                            enabled: Config.animDuration > 0
-                            NumberAnimation {
-                                duration: Config.animDuration
-                                easing.type: Easing.OutQuart
+                            Behavior on x {
+                                enabled: Config.animDuration > 0
+                                NumberAnimation {
+                                    duration: Config.animDuration
+                                    easing.type: Easing.OutQuart
+                                }
                             }
                         }
-                    }
 
-                    Behavior on opacity {
-                        enabled: Config.animDuration > 0
-                        NumberAnimation {
-                            duration: Config.animDuration / 2
-                            easing.type: Easing.OutQuart
-                        }
+                        Behavior on opacity {
+                            enabled: Config.animDuration > 0
+                            NumberAnimation {
+                                duration: Config.animDuration / 2
+                                easing.type: Easing.OutQuart
+                            }
                         }
 
                         StyledRect {
@@ -1253,90 +1257,90 @@ Item {
                             }
                         }
 
-                    Row {
-                        id: renameActionButtons
-                        anchors.fill: parent
-                        spacing: 4
+                        Row {
+                            id: renameActionButtons
+                            anchors.fill: parent
+                            spacing: 4
 
-                        // Botón cancelar (cruz) para rename
-                        Rectangle {
-                            id: renameCancelButton
-                            width: 32
-                            height: 32
-                            color: "transparent"
-                            radius: 6
-                            border.width: 0
-                            border.color: Colors.outline
-                            z: 1
+                            // Botón cancelar (cruz) para rename
+                            Rectangle {
+                                id: renameCancelButton
+                                width: 32
+                                height: 32
+                                color: "transparent"
+                                radius: 6
+                                border.width: 0
+                                border.color: Colors.outline
+                                z: 1
 
-                            property bool isHighlighted: root.renameButtonIndex === 0
+                                property bool isHighlighted: root.renameButtonIndex === 0
 
-                            MouseArea {
-                                anchors.fill: parent
-                                hoverEnabled: true
-                                onClicked: root.cancelRenameMode()
-                                onEntered: {
-                                    root.renameButtonIndex = 0;
+                                MouseArea {
+                                    anchors.fill: parent
+                                    hoverEnabled: true
+                                    onClicked: root.cancelRenameMode()
+                                    onEntered: {
+                                        root.renameButtonIndex = 0;
+                                    }
+                                    onExited: parent.color = "transparent"
                                 }
-                                onExited: parent.color = "transparent"
+
+                                Text {
+                                    anchors.centerIn: parent
+                                    text: Icons.cancel
+                                    color: renameCancelButton.isHighlighted ? Colors.overSecondaryContainer : Colors.overSecondary
+                                    font.pixelSize: 14
+                                    font.family: Icons.font
+                                    textFormat: Text.RichText
+
+                                    Behavior on color {
+                                        enabled: Config.animDuration > 0
+                                        ColorAnimation {
+                                            duration: Config.animDuration / 2
+                                            easing.type: Easing.OutQuart
+                                        }
+                                    }
+                                }
                             }
 
-                            Text {
-                                anchors.centerIn: parent
-                                text: Icons.cancel
-                                color: renameCancelButton.isHighlighted ? Colors.overSecondaryContainer : Colors.overSecondary
-                                font.pixelSize: 14
-                                font.family: Icons.font
-                                textFormat: Text.RichText
+                            Rectangle {
+                                id: renameConfirmButton
+                                width: 32
+                                height: 32
+                                color: "transparent"
+                                radius: 6
+                                z: 1
 
-                                Behavior on color {
-                                    enabled: Config.animDuration > 0
-                                    ColorAnimation {
-                                        duration: Config.animDuration / 2
-                                        easing.type: Easing.OutQuart
+                                property bool isHighlighted: root.renameButtonIndex === 1
+
+                                MouseArea {
+                                    anchors.fill: parent
+                                    hoverEnabled: true
+                                    onClicked: root.confirmRenameSession()
+                                    onEntered: {
+                                        root.renameButtonIndex = 1;
+                                    }
+                                    onExited: parent.color = "transparent"
+                                }
+
+                                Text {
+                                    anchors.centerIn: parent
+                                    text: Icons.accept
+                                    color: renameConfirmButton.isHighlighted ? Colors.overSecondaryContainer : Colors.overSecondary
+                                    font.pixelSize: 14
+                                    font.family: Icons.font
+                                    textFormat: Text.RichText
+
+                                    Behavior on color {
+                                        enabled: Config.animDuration > 0
+                                        ColorAnimation {
+                                            duration: Config.animDuration / 2
+                                            easing.type: Easing.OutQuart
+                                        }
                                     }
                                 }
                             }
                         }
-
-                        Rectangle {
-                            id: renameConfirmButton
-                            width: 32
-                            height: 32
-                            color: "transparent"
-                            radius: 6
-                            z: 1
-
-                            property bool isHighlighted: root.renameButtonIndex === 1
-
-                            MouseArea {
-                                anchors.fill: parent
-                                hoverEnabled: true
-                                onClicked: root.confirmRenameSession()
-                                onEntered: {
-                                    root.renameButtonIndex = 1;
-                                }
-                                onExited: parent.color = "transparent"
-                            }
-
-                            Text {
-                                anchors.centerIn: parent
-                                text: Icons.accept
-                                color: renameConfirmButton.isHighlighted ? Colors.overSecondaryContainer : Colors.overSecondary
-                                font.pixelSize: 14
-                                font.family: Icons.font
-                                textFormat: Text.RichText
-
-                                Behavior on color {
-                                    enabled: Config.animDuration > 0
-                                    ColorAnimation {
-                                        duration: Config.animDuration / 2
-                                        easing.type: Easing.OutQuart
-                                    }
-                                }
-                            }
-                        }
-                    }
                     }
 
                     RowLayout {
@@ -1358,122 +1362,122 @@ Item {
                         }
 
                         StyledRect {
-                        id: iconBackground
-                        Layout.preferredWidth: 32
-                        Layout.preferredHeight: 32
-                        variant: {
-                            if (isInDeleteMode) {
-                                return "overerror";
-                            } else if (isInRenameMode) {
-                                return "oversecondary";
-                            } else if (root.selectedIndex === index) {
-                                return "overprimary";
-                            } else if (modelData.isCreateButton) {
-                                return "primary";
-                            } else {
-                                return "common";
-                            }
-                        }
-                        radius: Styling.radius(-4)
-
-                        Text {
-                            anchors.centerIn: parent
-                            text: {
+                            id: iconBackground
+                            Layout.preferredWidth: 32
+                            Layout.preferredHeight: 32
+                            variant: {
                                 if (isInDeleteMode) {
-                                    return Icons.alert;
+                                    return "overerror";
                                 } else if (isInRenameMode) {
-                                    return Icons.edit;
-                                } else if (modelData.isCreateButton || modelData.isCreateSpecificButton) {
-                                    return Icons.add;
+                                    return "oversecondary";
+                                } else if (root.selectedIndex === index) {
+                                    return "overprimary";
+                                } else if (modelData.isCreateButton) {
+                                    return "primary";
                                 } else {
-                                    return Icons.terminalWindow;
+                                    return "common";
                                 }
                             }
-                            color: iconBackground.itemColor
-                            font.family: Icons.font
-                            font.pixelSize: 16
-                            textFormat: Text.RichText
-                        }
+                            radius: Styling.radius(-4)
+
+                            Text {
+                                anchors.centerIn: parent
+                                text: {
+                                    if (isInDeleteMode) {
+                                        return Icons.alert;
+                                    } else if (isInRenameMode) {
+                                        return Icons.edit;
+                                    } else if (modelData.isCreateButton || modelData.isCreateSpecificButton) {
+                                        return Icons.plus;
+                                    } else {
+                                        return Icons.terminalWindow;
+                                    }
+                                }
+                                color: iconBackground.itemColor
+                                font.family: Icons.font
+                                font.pixelSize: 16
+                                textFormat: Text.RichText
+                            }
                         }
 
                         ColumnLayout {
-                        Layout.fillWidth: true
-                        spacing: 2
-
-                        Loader {
                             Layout.fillWidth: true
-                            sourceComponent: {
-                                if (root.renameMode && modelData.name === root.sessionToRename) {
-                                    return renameTextInput;
-                                } else {
-                                    return normalText;
-                                }
-                            }
-                        }
+                            spacing: 2
 
-                        Component {
-                            id: normalText
-                            Text {
-                                text: {
-                                    if (isInDeleteMode && !modelData.isCreateButton && !modelData.isCreateSpecificButton) {
-                                        return `Quit "${root.sessionToDelete}"?`;
+                            Loader {
+                                Layout.fillWidth: true
+                                sourceComponent: {
+                                    if (root.renameMode && modelData.name === root.sessionToRename) {
+                                        return renameTextInput;
                                     } else {
-                                        return modelData.name;
-                                    }
-                                }
-                                color: textColor
-                                font.family: Config.theme.font
-                                font.pixelSize: Config.theme.fontSize
-                                font.weight: isInDeleteMode ? Font.Bold : (modelData.isCreateButton ? Font.Medium : Font.Bold)
-                                elide: Text.ElideRight
-                            }
-                        }
-
-                        Component {
-                            id: renameTextInput
-                            TextField {
-                                text: root.newSessionName
-                                color: Colors.overSecondary
-                                selectionColor: Colors.overSecondary
-                                selectedTextColor: Colors.secondary
-                                font.family: Config.theme.font
-                                font.pixelSize: Config.theme.fontSize
-                                font.weight: Font.Bold
-                                background: Rectangle {
-                                    color: "transparent"
-                                    border.width: 0
-                                }
-                                selectByMouse: true
-
-                                onTextChanged: {
-                                    root.newSessionName = text;
-                                }
-
-                                Component.onCompleted: {
-                                    Qt.callLater(() => {
-                                        forceActiveFocus();
-                                        selectAll();
-                                    });
-                                }
-
-                                Keys.onPressed: event => {
-                                    if (event.key === Qt.Key_Return || event.key === Qt.Key_Enter) {
-                                        root.confirmRenameSession();
-                                        event.accepted = true;
-                                    } else if (event.key === Qt.Key_Escape) {
-                                        root.cancelRenameMode();
-                                        event.accepted = true;
-                                    } else if (event.key === Qt.Key_Left) {
-                                        root.renameButtonIndex = 0;
-                                        event.accepted = true;
-                                    } else if (event.key === Qt.Key_Right) {
-                                        root.renameButtonIndex = 1;
-                                        event.accepted = true;
+                                        return normalText;
                                     }
                                 }
                             }
+
+                            Component {
+                                id: normalText
+                                Text {
+                                    text: {
+                                        if (isInDeleteMode && !modelData.isCreateButton && !modelData.isCreateSpecificButton) {
+                                            return `Quit "${root.sessionToDelete}"?`;
+                                        } else {
+                                            return modelData.name;
+                                        }
+                                    }
+                                    color: textColor
+                                    font.family: Config.theme.font
+                                    font.pixelSize: Config.theme.fontSize
+                                    font.weight: isInDeleteMode ? Font.Bold : (modelData.isCreateButton ? Font.Medium : Font.Bold)
+                                    elide: Text.ElideRight
+                                }
+                            }
+
+                            Component {
+                                id: renameTextInput
+                                TextField {
+                                    text: root.newSessionName
+                                    color: Colors.overSecondary
+                                    selectionColor: Colors.overSecondary
+                                    selectedTextColor: Colors.secondary
+                                    font.family: Config.theme.font
+                                    font.pixelSize: Config.theme.fontSize
+                                    font.weight: Font.Bold
+                                    background: Rectangle {
+                                        color: "transparent"
+                                        border.width: 0
+                                    }
+                                    selectByMouse: true
+
+                                    onTextChanged: {
+                                        root.newSessionName = text;
+                                    }
+
+                                    Component.onCompleted: {
+                                        Qt.callLater(() => {
+                                            forceActiveFocus();
+                                            selectAll();
+                                        });
+                                    }
+
+                                    Keys.onPressed: event => {
+                                        if (event.key === Qt.Key_Return || event.key === Qt.Key_Enter) {
+                                            root.confirmRenameSession();
+                                            event.accepted = true;
+                                        } else if (event.key === Qt.Key_Escape) {
+                                            root.cancelRenameMode();
+                                            event.accepted = true;
+                                        } else if (event.key === Qt.Key_Left) {
+                                            root.renameButtonIndex = 0;
+                                            event.accepted = true;
+                                        } else if (event.key === Qt.Key_Right) {
+                                            root.renameButtonIndex = 1;
+                                            event.accepted = true;
+                                        }
+                                    }
+                                }
+                            }
                         }
-                    }
                     }
 
                     Rectangle {
@@ -1484,29 +1488,29 @@ Item {
                         anchors.topMargin: 8
                         width: 68
                         height: 32
-                    color: "transparent"
-                    opacity: isInDeleteMode ? 1.0 : 0.0
-                    visible: opacity > 0
+                        color: "transparent"
+                        opacity: isInDeleteMode ? 1.0 : 0.0
+                        visible: opacity > 0
 
-                    transform: Translate {
-                        x: isInDeleteMode ? 0 : 80
+                        transform: Translate {
+                            x: isInDeleteMode ? 0 : 80
 
-                        Behavior on x {
+                            Behavior on x {
+                                enabled: Config.animDuration > 0
+                                NumberAnimation {
+                                    duration: Config.animDuration
+                                    easing.type: Easing.OutQuart
+                                }
+                            }
+                        }
+
+                        Behavior on opacity {
                             enabled: Config.animDuration > 0
                             NumberAnimation {
-                                duration: Config.animDuration
+                                duration: Config.animDuration / 2
                                 easing.type: Easing.OutQuart
                             }
                         }
-                    }
-
-                    Behavior on opacity {
-                        enabled: Config.animDuration > 0
-                        NumberAnimation {
-                            duration: Config.animDuration / 2
-                            easing.type: Easing.OutQuart
-                        }
-                    }
 
                         StyledRect {
                             id: deleteHighlight
@@ -1549,236 +1553,237 @@ Item {
                             }
                         }
 
-                    Row {
-                        id: actionButtons
-                        anchors.fill: parent
-                        spacing: 4
+                        Row {
+                            id: actionButtons
+                            anchors.fill: parent
+                            spacing: 4
 
-                        // Botón cancelar (cruz)
-                        Rectangle {
-                            id: cancelButton
-                            width: 32
-                            height: 32
-                            color: "transparent"
-                            radius: 6
-                            border.width: 0
-                            border.color: Colors.outline
-                            z: 1
+                            // Botón cancelar (cruz)
+                            Rectangle {
+                                id: cancelButton
+                                width: 32
+                                height: 32
+                                color: "transparent"
+                                radius: 6
+                                border.width: 0
+                                border.color: Colors.outline
+                                z: 1
 
-                            property bool isHighlighted: root.deleteButtonIndex === 0
+                                property bool isHighlighted: root.deleteButtonIndex === 0
 
-                            MouseArea {
-                                anchors.fill: parent
-                                hoverEnabled: true
-                                onClicked: root.cancelDeleteMode()
-                                onEntered: {
-                                    root.deleteButtonIndex = 0;
+                                MouseArea {
+                                    anchors.fill: parent
+                                    hoverEnabled: true
+                                    onClicked: root.cancelDeleteMode()
+                                    onEntered: {
+                                        root.deleteButtonIndex = 0;
+                                    }
+                                    onExited: parent.color = "transparent"
                                 }
-                                onExited: parent.color = "transparent"
-                            }
 
-                            Text {
-                                anchors.centerIn: parent
-                                text: Icons.cancel
-                                color: cancelButton.isHighlighted ? Colors.overErrorContainer : Colors.overError
-                                font.pixelSize: 14
-                                font.family: Icons.font
-                                textFormat: Text.RichText
+                                Text {
+                                    anchors.centerIn: parent
+                                    text: Icons.cancel
+                                    color: cancelButton.isHighlighted ? Colors.overErrorContainer : Colors.overError
+                                    font.pixelSize: 14
+                                    font.family: Icons.font
+                                    textFormat: Text.RichText
 
-                                Behavior on color {
-                                    enabled: Config.animDuration > 0
-                                    ColorAnimation {
-                                        duration: Config.animDuration / 2
-                                        easing.type: Easing.OutQuart
+                                    Behavior on color {
+                                        enabled: Config.animDuration > 0
+                                        ColorAnimation {
+                                            duration: Config.animDuration / 2
+                                            easing.type: Easing.OutQuart
+                                        }
                                     }
                                 }
                             }
-                        }
 
-                        Rectangle {
-                            id: confirmButton
-                            width: 32
-                            height: 32
-                            color: "transparent"
-                            radius: 6
-                            z: 1
+                            Rectangle {
+                                id: confirmButton
+                                width: 32
+                                height: 32
+                                color: "transparent"
+                                radius: 6
+                                z: 1
 
-                            property bool isHighlighted: root.deleteButtonIndex === 1
+                                property bool isHighlighted: root.deleteButtonIndex === 1
 
-                            MouseArea {
-                                anchors.fill: parent
-                                hoverEnabled: true
-                                onClicked: root.confirmDeleteSession()
-                                onEntered: {
-                                    root.deleteButtonIndex = 1;
+                                MouseArea {
+                                    anchors.fill: parent
+                                    hoverEnabled: true
+                                    onClicked: root.confirmDeleteSession()
+                                    onEntered: {
+                                        root.deleteButtonIndex = 1;
+                                    }
+                                    onExited: parent.color = "transparent"
                                 }
-                                onExited: parent.color = "transparent"
-                            }
 
-                            Text {
-                                anchors.centerIn: parent
-                                text: Icons.accept
-                                color: confirmButton.isHighlighted ? Colors.overErrorContainer : Colors.overError
-                                font.pixelSize: 14
-                                font.family: Icons.font
-                                textFormat: Text.RichText
+                                Text {
+                                    anchors.centerIn: parent
+                                    text: Icons.accept
+                                    color: confirmButton.isHighlighted ? Colors.overErrorContainer : Colors.overError
+                                    font.pixelSize: 14
+                                    font.family: Icons.font
+                                    textFormat: Text.RichText
 
-                                Behavior on color {
-                                    enabled: Config.animDuration > 0
-                                    ColorAnimation {
-                                        duration: Config.animDuration / 2
-                                        easing.type: Easing.OutQuart
+                                    Behavior on color {
+                                        enabled: Config.animDuration > 0
+                                        ColorAnimation {
+                                            duration: Config.animDuration / 2
+                                            easing.type: Easing.OutQuart
+                                        }
                                     }
                                 }
                             }
                         }
                     }
                 }
-            }
 
-            highlight: Item {
-                width: resultsList.width
-                height: {
-                    let baseHeight = 48;
-                    if (resultsList.currentIndex === root.expandedItemIndex && !root.deleteMode && !root.renameMode) {
-                        var listHeight = 36 * 3;
-                        return baseHeight + 4 + listHeight + 8;
-                    }
-                    return baseHeight;
-                }
-                
-                // Calculate Y position based on index, accounting for expanded items
-                y: {
-                    var yPos = 0;
-                    for (var i = 0; i < resultsList.currentIndex && i < sessionsModel.count; i++) {
-                        var itemData = sessionsModel.get(i).sessionData;
-                        var itemHeight = 48;
-                        if (i === root.expandedItemIndex && !root.deleteMode && !root.renameMode) {
+                highlight: Item {
+                    width: resultsList.width
+                    height: {
+                        let baseHeight = 48;
+                        if (resultsList.currentIndex === root.expandedItemIndex && !root.deleteMode && !root.renameMode) {
                             var listHeight = 36 * 3;
-                            itemHeight = 48 + 4 + listHeight + 8;
+                            return baseHeight + 4 + listHeight + 8;
                         }
-                        yPos += itemHeight;
-                    }
-                    return yPos;
-                }
-                
-                Behavior on y {
-                    enabled: Config.animDuration > 0
-                    NumberAnimation {
-                        duration: Config.animDuration / 2
-                        easing.type: Easing.OutCubic
-                    }
-                }
-                
-                Behavior on height {
-                    enabled: Config.animDuration > 0
-                    NumberAnimation {
-                        duration: Config.animDuration
-                        easing.type: Easing.OutQuart
-                    }
-                }
-                
-                onHeightChanged: {
-                    // Adjust scroll immediately when height changes due to expansion
-                    if (root.expandedItemIndex >= 0 && height > 48) {
-                        Qt.callLater(() => {
-                            adjustScrollForExpandedItem(root.expandedItemIndex);
-                        });
-                    }
-                }
-                
-                StyledRect {
-                    anchors.fill: parent
-                    anchors.topMargin: 0
-                    anchors.bottomMargin: 0
-                    variant: {
-                        if (root.deleteMode) {
-                            return "error";
-                        } else if (root.renameMode) {
-                            return "secondary";
-                        } else if (root.expandedItemIndex >= 0 && root.selectedIndex === root.expandedItemIndex) {
-                            return "pane";
-                        } else {
-                            return "primary";
-                        }
-                    }
-                    radius: Styling.radius(4)
-                    visible: root.selectedIndex >= 0
-
-                    Behavior on color {
-                        enabled: Config.animDuration > 0
-                        ColorAnimation {
-                            duration: Config.animDuration / 2
-                            easing.type: Easing.OutQuart
-                        }
+                        return baseHeight;
                     }
 
-                    Behavior on opacity {
+                    // Calculate Y position based on index, accounting for expanded items
+                    y: {
+                        var yPos = 0;
+                        for (var i = 0; i < resultsList.currentIndex && i < sessionsModel.count; i++) {
+                            var itemData = sessionsModel.get(i).sessionData;
+                            var itemHeight = 48;
+                            if (i === root.expandedItemIndex && !root.deleteMode && !root.renameMode) {
+                                var listHeight = 36 * 3;
+                                itemHeight = 48 + 4 + listHeight + 8;
+                            }
+                            yPos += itemHeight;
+                        }
+                        return yPos;
+                    }
+
+                    Behavior on y {
                         enabled: Config.animDuration > 0
                         NumberAnimation {
                             duration: Config.animDuration / 2
+                            easing.type: Easing.OutCubic
+                        }
+                    }
+
+                    Behavior on height {
+                        enabled: Config.animDuration > 0
+                        NumberAnimation {
+                            duration: Config.animDuration
                             easing.type: Easing.OutQuart
+                        }
+                    }
+
+                    onHeightChanged: {
+                        // Adjust scroll immediately when height changes due to expansion
+                        if (root.expandedItemIndex >= 0 && height > 48) {
+                            Qt.callLater(() => {
+                                adjustScrollForExpandedItem(root.expandedItemIndex);
+                            });
+                        }
+                    }
+
+                    StyledRect {
+                        anchors.fill: parent
+                        anchors.topMargin: 0
+                        anchors.bottomMargin: 0
+                        variant: {
+                            if (root.deleteMode) {
+                                return "error";
+                            } else if (root.renameMode) {
+                                return "secondary";
+                            } else if (root.expandedItemIndex >= 0 && root.selectedIndex === root.expandedItemIndex) {
+                                return "pane";
+                            } else {
+                                return "primary";
+                            }
+                        }
+                        radius: Styling.radius(4)
+                        visible: root.selectedIndex >= 0
+
+                        Behavior on color {
+                            enabled: Config.animDuration > 0
+                            ColorAnimation {
+                                duration: Config.animDuration / 2
+                                easing.type: Easing.OutQuart
+                            }
+                        }
+
+                        Behavior on opacity {
+                            enabled: Config.animDuration > 0
+                            NumberAnimation {
+                                duration: Config.animDuration / 2
+                                easing.type: Easing.OutQuart
+                            }
+                        }
+                    }
+                }
+
+                highlightFollowsCurrentItem: false
+
+                MouseArea {
+                    anchors.fill: parent
+                    enabled: root.deleteMode || root.renameMode || root.expandedItemIndex >= 0
+                    z: 1000
+                    acceptedButtons: Qt.LeftButton | Qt.RightButton
+
+                    function isClickInsideExpandedItem(mouseY) {
+                        if (root.expandedItemIndex < 0)
+                            return false;
+
+                        // Calculate Y position of expanded item
+                        var itemY = 0;
+                        for (var i = 0; i < root.expandedItemIndex; i++) {
+                            itemY += 48; // All items before are collapsed
+                        }
+
+                        // Calculate expanded item height - always 3 options
+                        var listHeight = 36 * 3;
+                        var expandedHeight = 48 + 4 + listHeight + 8;
+
+                        var clickY = mouseY + resultsList.contentY;
+                        return clickY >= itemY && clickY < itemY + expandedHeight;
+                    }
+
+                    onClicked: mouse => {
+                        if (root.deleteMode) {
+                            root.cancelDeleteMode();
+                            mouse.accepted = true;
+                        } else if (root.renameMode) {
+                            root.cancelRenameMode();
+                            mouse.accepted = true;
+                        } else if (root.expandedItemIndex >= 0) {
+                            if (!isClickInsideExpandedItem(mouse.y)) {
+                                console.log("DEBUG: Clicked outside expanded item - closing options");
+                                root.expandedItemIndex = -1;
+                                root.selectedOptionIndex = 0;
+                                root.keyboardNavigation = false;
+                                mouse.accepted = true;
+                            }
+                        }
+                    }
+
+                    onPressed: mouse => {
+                        if (root.deleteMode || root.renameMode || (root.expandedItemIndex >= 0 && !isClickInsideExpandedItem(mouse.y))) {
+                            mouse.accepted = true;
+                        }
+                    }
+
+                    onReleased: mouse => {
+                        if (root.deleteMode || root.renameMode || (root.expandedItemIndex >= 0 && !isClickInsideExpandedItem(mouse.y))) {
+                            mouse.accepted = true;
                         }
                     }
                 }
             }
-
-            highlightFollowsCurrentItem: false
-
-             MouseArea {
-                 anchors.fill: parent
-                 enabled: root.deleteMode || root.renameMode || root.expandedItemIndex >= 0
-                 z: 1000
-                 acceptedButtons: Qt.LeftButton | Qt.RightButton
-
-                 function isClickInsideExpandedItem(mouseY) {
-                     if (root.expandedItemIndex < 0) return false;
-                     
-                     // Calculate Y position of expanded item
-                     var itemY = 0;
-                     for (var i = 0; i < root.expandedItemIndex; i++) {
-                         itemY += 48; // All items before are collapsed
-                     }
-                     
-                     // Calculate expanded item height - always 3 options
-                     var listHeight = 36 * 3;
-                     var expandedHeight = 48 + 4 + listHeight + 8;
-                     
-                     var clickY = mouseY + resultsList.contentY;
-                     return clickY >= itemY && clickY < itemY + expandedHeight;
-                 }
-
-                 onClicked: mouse => {
-                     if (root.deleteMode) {
-                         root.cancelDeleteMode();
-                         mouse.accepted = true;
-                     } else if (root.renameMode) {
-                         root.cancelRenameMode();
-                         mouse.accepted = true;
-                     } else if (root.expandedItemIndex >= 0) {
-                         if (!isClickInsideExpandedItem(mouse.y)) {
-                             console.log("DEBUG: Clicked outside expanded item - closing options");
-                             root.expandedItemIndex = -1;
-                             root.selectedOptionIndex = 0;
-                             root.keyboardNavigation = false;
-                             mouse.accepted = true;
-                         }
-                     }
-                 }
-                 
-                 onPressed: mouse => {
-                     if (root.deleteMode || root.renameMode || (root.expandedItemIndex >= 0 && !isClickInsideExpandedItem(mouse.y))) {
-                         mouse.accepted = true;
-                     }
-                 }
-                 
-                 onReleased: mouse => {
-                     if (root.deleteMode || root.renameMode || (root.expandedItemIndex >= 0 && !isClickInsideExpandedItem(mouse.y))) {
-                         mouse.accepted = true;
-                     }
-                 }
-             }
-         }
         }
 
         // Separator
@@ -1801,9 +1806,12 @@ Item {
             Item {
                 anchors.fill: parent
                 visible: {
-                    if (!previewPanel.currentSession) return false;
-                    if (previewPanel.currentSession.isCreateButton === true) return false;
-                    if (previewPanel.currentSession.isCreateSpecificButton === true) return false;
+                    if (!previewPanel.currentSession)
+                        return false;
+                    if (previewPanel.currentSession.isCreateButton === true)
+                        return false;
+                    if (previewPanel.currentSession.isCreateSpecificButton === true)
+                        return false;
                     return true;
                 }
 
@@ -1821,7 +1829,7 @@ Item {
                         // Calculate scale to maximize use of available space
                         property real totalWidth: root.sessionPanes.length > 0 ? root.sessionPanes[0].totalWidth || 1 : 1
                         property real totalHeight: root.sessionPanes.length > 0 ? root.sessionPanes[0].totalHeight || 1 : 1
-                        
+
                         // Use individual scales - stretch to fill
                         property real scaleX: width / totalWidth
                         property real scaleY: height / totalHeight
@@ -1833,34 +1841,34 @@ Item {
                                 required property var modelData
                                 property bool hovered: false
                                 variant: hovered ? "focus" : "pane"
-                                
+
                                 x: Math.floor(modelData.left * parent.scaleX)
                                 y: Math.floor(modelData.top * parent.scaleY)
                                 width: Math.floor(modelData.width * parent.scaleX)
                                 height: Math.floor(modelData.height * parent.scaleY)
-                                
+
                                 radius: Styling.radius(-2)
-                                
+
                                 MouseArea {
                                     anchors.fill: parent
                                     hoverEnabled: true
                                     cursorShape: Qt.PointingHandCursor
-                                    
+
                                     onEntered: {
                                         paneRect.hovered = true;
                                     }
-                                    
+
                                     onExited: {
                                         paneRect.hovered = false;
                                     }
-                                    
+
                                     onClicked: {
                                         let currentSession = previewPanel.currentSession;
                                         if (currentSession && !currentSession.isCreateButton && !currentSession.isCreateSpecificButton) {
                                             root.focusPane(currentSession.name, modelData.index);
                                         }
                                     }
-                                    
+
                                     onDoubleClicked: {
                                         let currentSession = previewPanel.currentSession;
                                         if (currentSession && !currentSession.isCreateButton && !currentSession.isCreateSpecificButton) {
@@ -1868,7 +1876,7 @@ Item {
                                         }
                                     }
                                 }
-                                
+
                                 // Active border overlay
                                 Rectangle {
                                     anchors.fill: parent
@@ -1876,7 +1884,7 @@ Item {
                                     border.width: modelData.active ? 2 : 0
                                     border.color: modelData.active ? Colors.primary : "transparent"
                                     radius: paneRect.radius
-                                    
+
                                     Behavior on border.width {
                                         enabled: Config.animDuration > 0
                                         NumberAnimation {
@@ -1884,7 +1892,7 @@ Item {
                                             easing.type: Easing.OutQuart
                                         }
                                     }
-                                    
+
                                     Behavior on border.color {
                                         enabled: Config.animDuration > 0
                                         ColorAnimation {
@@ -1919,7 +1927,7 @@ Item {
                                             }
                                         }
                                     }
-                                    
+
                                     // Dimensions info
                                     Text {
                                         anchors.horizontalCenter: parent.horizontalCenter
@@ -2051,27 +2059,27 @@ Item {
                                     width: Math.ceil(windowText.width) + 16
                                     height: parent.height
                                     radius: Styling.radius(-4)
-                                    
+
                                     MouseArea {
                                         anchors.fill: parent
                                         hoverEnabled: true
                                         cursorShape: Qt.PointingHandCursor
-                                        
+
                                         onEntered: {
                                             windowRect.hovered = true;
                                         }
-                                        
+
                                         onExited: {
                                             windowRect.hovered = false;
                                         }
-                                        
+
                                         onClicked: {
                                             let currentSession = previewPanel.currentSession;
                                             if (currentSession && !currentSession.isCreateButton && !currentSession.isCreateSpecificButton) {
                                                 root.switchToWindow(currentSession.name, modelData.index);
                                             }
                                         }
-                                        
+
                                         onDoubleClicked: {
                                             let currentSession = previewPanel.currentSession;
                                             if (currentSession && !currentSession.isCreateButton && !currentSession.isCreateSpecificButton) {
@@ -2113,9 +2121,12 @@ Item {
                 anchors.centerIn: parent
                 spacing: 8
                 visible: {
-                    if (!previewPanel.currentSession) return true;
-                    if (previewPanel.currentSession.isCreateButton === true) return true;
-                    if (previewPanel.currentSession.isCreateSpecificButton === true) return true;
+                    if (!previewPanel.currentSession)
+                        return true;
+                    if (previewPanel.currentSession.isCreateButton === true)
+                        return true;
+                    if (previewPanel.currentSession.isCreateSpecificButton === true)
+                        return true;
                     return false;
                 }
 
@@ -2146,7 +2157,7 @@ Item {
                 }
             }
         }
-     }
+    }
 
     Component.onCompleted: {
         refreshTmuxSessions();
@@ -2156,52 +2167,50 @@ Item {
     }
 
     Keys.onPressed: event => {
-                if (root.deleteMode) {
-                    if (event.key === Qt.Key_Left) {
-                        root.deleteButtonIndex = 0;
-                        event.accepted = true;
-                    } else if (event.key === Qt.Key_Right) {
-                        root.deleteButtonIndex = 1;
-                        event.accepted = true;
-                    } else if (event.key === Qt.Key_Return || event.key === Qt.Key_Space) {
-                        if (root.deleteButtonIndex === 0) {
-                            root.cancelDeleteMode();
-                        } else {
-                            root.confirmDeleteSession();
-                        }
-                        event.accepted = true;
-                    } else if (event.key === Qt.Key_Escape) {
-                        root.cancelDeleteMode();
-                        event.accepted = true;
-                    }
-                } else if (root.renameMode) {
-                    if (event.key === Qt.Key_Left) {
-                        root.renameButtonIndex = 0;
-                        event.accepted = true;
-                    } else if (event.key === Qt.Key_Right) {
-                        root.renameButtonIndex = 1;
-                        event.accepted = true;
-                    } else if (event.key === Qt.Key_Return || event.key === Qt.Key_Space) {
-                        if (root.renameButtonIndex === 0) {
-                            root.cancelRenameMode();
-                        } else {
-                            root.confirmRenameSession();
-                        }
-                        event.accepted = true;
-                    } else if (event.key === Qt.Key_Escape) {
-                        root.cancelRenameMode();
-                        event.accepted = true;
-                    }
+        if (root.deleteMode) {
+            if (event.key === Qt.Key_Left) {
+                root.deleteButtonIndex = 0;
+                event.accepted = true;
+            } else if (event.key === Qt.Key_Right) {
+                root.deleteButtonIndex = 1;
+                event.accepted = true;
+            } else if (event.key === Qt.Key_Return || event.key === Qt.Key_Space) {
+                if (root.deleteButtonIndex === 0) {
+                    root.cancelDeleteMode();
+                } else {
+                    root.confirmDeleteSession();
                 }
+                event.accepted = true;
+            } else if (event.key === Qt.Key_Escape) {
+                root.cancelDeleteMode();
+                event.accepted = true;
             }
+        } else if (root.renameMode) {
+            if (event.key === Qt.Key_Left) {
+                root.renameButtonIndex = 0;
+                event.accepted = true;
+            } else if (event.key === Qt.Key_Right) {
+                root.renameButtonIndex = 1;
+                event.accepted = true;
+            } else if (event.key === Qt.Key_Return || event.key === Qt.Key_Space) {
+                if (root.renameButtonIndex === 0) {
+                    root.cancelRenameMode();
+                } else {
+                    root.confirmRenameSession();
+                }
+                event.accepted = true;
+            } else if (event.key === Qt.Key_Escape) {
+                root.cancelRenameMode();
+                event.accepted = true;
+            }
+        }
+    }
 
-            onDeleteModeChanged: {
-                if (!deleteMode) {
-                }
-            }
+    onDeleteModeChanged: {
+        if (!deleteMode) {}
+    }
 
-            onRenameModeChanged: {
-                if (!renameMode) {
-                }
-            }
+    onRenameModeChanged: {
+        if (!renameMode) {}
+    }
 }

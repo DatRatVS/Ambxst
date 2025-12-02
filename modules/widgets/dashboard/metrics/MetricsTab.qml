@@ -126,6 +126,7 @@ Rectangle {
                 Flickable {
                     Layout.fillWidth: true
                     Layout.fillHeight: true
+                    Layout.margins: 16
                     contentHeight: resourcesColumn.height
                     clip: true
                     boundsBehavior: Flickable.StopAtBounds
@@ -218,8 +219,8 @@ Rectangle {
                         ctx.clearRect(0, 0, w, h);
 
                         // Draw background grid lines
-                        ctx.strokeStyle = Config.resolveColor(Colors.surfaceDim);
-                        ctx.lineWidth = 1;
+                        ctx.strokeStyle = Colors.surfaceBright;
+                        ctx.lineWidth = 2;
                         ctx.setLineDash([4, 4]);
 
                         // Horizontal grid lines (25%, 50%, 75%)
@@ -295,10 +296,9 @@ Rectangle {
 
                         Text {
                             anchors.centerIn: parent
-                            text: "−"
-                            font.family: Config.theme.font
-                            font.pixelSize: 20
-                            font.weight: Font.Bold
+                            text: Icons.minus
+                            font.family: Icons.font
+                            font.pixelSize: 18
                             color: Colors.overBackground
                         }
 
@@ -342,10 +342,9 @@ Rectangle {
 
                         Text {
                             anchors.centerIn: parent
-                            text: "+"
-                            font.family: Config.theme.font
-                            font.pixelSize: 20
-                            font.weight: Font.Bold
+                            text: Icons.plus
+                            font.family: Icons.font
+                            font.pixelSize: 18
                             color: Colors.overBackground
                         }
 

@@ -244,7 +244,6 @@ Rectangle {
                         id: chartCanvas
                         Layout.fillWidth: true
                         Layout.fillHeight: true
-                        Layout.margins: 8
 
                         onPaint: {
                             const ctx = getContext("2d");
@@ -254,21 +253,28 @@ Rectangle {
                             // Clear canvas
                             ctx.clearRect(0, 0, w, h);
 
-                            // Draw background grid lines
-                            ctx.strokeStyle = Colors.surfaceBright;
+                            // Draw background grid (solid lines)
+                            ctx.strokeStyle = Colors.surface;
                             ctx.lineWidth = 1;
-                            ctx.setLineDash([4, 4]);
 
                             // Horizontal grid lines (25%, 50%, 75%)
-                            for (let i = 1; i < 4; i++) {
-                                const y = h * (i / 4);
+                            for (let i = 1; i < 8; i++) {
+                                const y = h * (i / 8);
                                 ctx.beginPath();
                                 ctx.moveTo(0, y);
                                 ctx.lineTo(w, y);
                                 ctx.stroke();
                             }
 
-                            ctx.setLineDash([]);
+                            // Vertical grid lines (every 10% of width)
+                            const verticalLines = 10;
+                            for (let i = 1; i < verticalLines; i++) {
+                                const x = w * (i / verticalLines);
+                                ctx.beginPath();
+                                ctx.moveTo(x, 0);
+                                ctx.lineTo(x, h);
+                                ctx.stroke();
+                            }
 
                             if (SystemResources.cpuHistory.length < 2)
                                 return;

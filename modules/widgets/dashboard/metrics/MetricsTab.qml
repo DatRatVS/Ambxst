@@ -3,6 +3,7 @@ import QtQuick
 import QtQuick.Layouts
 import QtQuick.Effects
 import Quickshell
+import Quickshell.Io
 import qs.modules.theme
 import qs.modules.components
 import qs.modules.services
@@ -14,10 +15,30 @@ Rectangle {
     implicitWidth: 400
     implicitHeight: 400
 
+    property string hostname: ""
+
     // Load refresh interval from state
     Component.onCompleted: {
         const savedInterval = StateService.get("metricsRefreshInterval", 2000);
         SystemResources.updateInterval = Math.max(100, savedInterval);
+        hostnameReader.running = true;
+    }
+
+    // Get hostname
+    Process {
+        id: hostnameReader
+        running: false
+        command: ["hostname"]
+
+        stdout: StdioCollector {
+            waitForEnd: true
+            onStreamFinished: {
+                const host = text.trim();
+                if (host) {
+                    root.hostname = host.charAt(0).toUpperCase() + host.slice(1);
+                }
+            }
+        }
     }
 
     // Watch for history changes to repaint chart
@@ -87,10 +108,26 @@ Rectangle {
                     }
                 }
 
+                // Username@Hostname
+                Text {
+                    Layout.alignment: Qt.AlignHCenter
+                    Layout.bottomMargin: 8
+                    text: {
+                        const user = Quickshell.env("USER") || "user";
+                        return root.hostname ? `${user}@${root.hostname.toLowerCase()}` : user;
+                    }
+                    font.family: Config.theme.font
+                    font.pixelSize: Config.theme.fontSize
+                    font.weight: Font.Bold
+                    color: Colors.overBackground
+                    visible: text !== ""
+                }
+
                 Flickable {
                     Layout.fillWidth: true
                     Layout.fillHeight: true
-                    Layout.margins: 16
+                    Layout.leftMargin: 16
+                    Layout.rightMargin: 16
                     contentHeight: resourcesColumn.height
                     clip: true
                     boundsBehavior: Flickable.StopAtBounds

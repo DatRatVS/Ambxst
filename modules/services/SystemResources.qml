@@ -44,8 +44,23 @@ Singleton {
     property int maxHistoryPoints: 50
 
     Component.onCompleted: {
-        validateDisks();
         detectGPU();
+    }
+
+    // Watch for config changes and revalidate disks
+    Connections {
+        target: Config.system
+        function onDisksChanged() {
+            root.validateDisks();
+        }
+    }
+
+    // Validate disks when Config is ready
+    property bool configReady: Config.initialLoadComplete
+    onConfigReadyChanged: {
+        if (configReady) {
+            validateDisks();
+        }
     }
 
     // Detect GPU vendor and availability
@@ -318,7 +333,7 @@ Singleton {
     Process {
         id: diskReader
         running: false
-        command: ["sh", "-c", "df -B1 " + root.validDisks.join(" ") + " 2>/dev/null || df -B1 /"]
+        command: ["sh", "-c", "LANG=C df -B1 " + root.validDisks.join(" ") + " 2>/dev/null || LANG=C df -B1 /"]
         
         stdout: StdioCollector {
             waitForEnd: true
@@ -336,13 +351,19 @@ Singleton {
                     const parts = line.split(/\s+/);
                     if (parts.length < 6) continue;
 
-                    const mountpoint = parts[5];
-                    const total = parseInt(parts[1]) || 0;
+                    // Mountpoint is always the last field
+                    const mountpoint = parts[parts.length - 1];
                     const used = parseInt(parts[2]) || 0;
+                    const available = parseInt(parts[3]) || 0;
 
-                    if (total > 0 && root.validDisks.includes(mountpoint)) {
-                        const usagePercent = (used * 100.0) / total;
-                        newDiskUsage[mountpoint] = Math.max(0, Math.min(100, usagePercent));
+                    if (root.validDisks.includes(mountpoint)) {
+                        // Calculate percentage as df does: used / (used + available)
+                        // This accounts for reserved space not shown in total
+                        const usableSpace = used + available;
+                        if (usableSpace > 0) {
+                            const usagePercent = (used * 100.0) / usableSpace;
+                            newDiskUsage[mountpoint] = Math.max(0, Math.min(100, usagePercent));
+                        }
                     }
                 }
 

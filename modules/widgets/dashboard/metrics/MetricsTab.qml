@@ -166,7 +166,6 @@ Rectangle {
                 // User info section - Avatar left, info right
                 RowLayout {
                     Layout.fillWidth: true
-                    Layout.topMargin: 8
                     Layout.leftMargin: 16
                     Layout.rightMargin: 16
                     spacing: 16
@@ -303,7 +302,6 @@ Rectangle {
                     Layout.fillWidth: true
                     Layout.leftMargin: 16
                     Layout.rightMargin: 16
-                    Layout.topMargin: 4
                     spacing: 8
 
                     Separator {
@@ -316,7 +314,7 @@ Rectangle {
                     Text {
                         text: "System"
                         font.family: Config.theme.font
-                        font.pixelSize: Config.theme.fontSize
+                        font.pixelSize: Math.max(8, Config.theme.fontSize - 2)
                         color: Colors.overBackground
                     }
 

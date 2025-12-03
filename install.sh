@@ -91,7 +91,7 @@ mkdir -p ~/.config/fontconfig/conf.d
 
 if [ ! -f ~/.config/fontconfig/conf.d/10-nix-fonts.conf ]; then
   echo "📝 Creating user fontconfig..."
-  cat > ~/.config/fontconfig/conf.d/10-nix-fonts.conf <<EOF
+  cat >~/.config/fontconfig/conf.d/10-nix-fonts.conf <<EOF
 <?xml version="1.0"?>
 <!DOCTYPE fontconfig SYSTEM "fonts.dtd">
 <fontconfig>
@@ -131,7 +131,7 @@ mkdir -p ~/.config/environment.d
 
 if [ ! -f ~/.config/environment.d/nix-icons.conf ]; then
   echo "📝 Creating environment.d config for Nix icons..."
-  cat > ~/.config/environment.d/nix-icons.conf <<EOF
+  cat >~/.config/environment.d/nix-icons.conf <<EOF
 XDG_DATA_DIRS=$HOME/.nix-profile/share:/nix/var/nix/profiles/default/share:\$XDG_DATA_DIRS
 EOF
   echo "✔ Icon paths configured in environment.d"

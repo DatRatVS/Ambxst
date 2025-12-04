@@ -46,7 +46,7 @@ FloatingWindow {
                     Text {
                         text: "Settings"
                         font.family: Styling.defaultFont
-                        font.pixelSize: 16
+                        font.pixelSize: Config.theme.fontSize
                         font.bold: true
                         color: Colors.primary
                         Layout.alignment: Qt.AlignHCenter
@@ -93,7 +93,7 @@ FloatingWindow {
                                 Text {
                                     text: tabButton.modelData.name
                                     font.family: Styling.defaultFont
-                                    font.pixelSize: 14
+                                    font.pixelSize: Config.theme.fontSize
                                     color: tabButton.isSelected ? Colors.overPrimary : Colors.overBackground
                                     Layout.fillWidth: true
                                     Layout.alignment: Qt.AlignVCenter
@@ -130,7 +130,7 @@ FloatingWindow {
                             Text {
                                 text: "Close"
                                 font.family: Styling.defaultFont
-                                font.pixelSize: 14
+                                font.pixelSize: Config.theme.fontSize
                                 color: closeButton.hovered ? Colors.overError : Colors.overBackground
                                 Layout.fillWidth: true
                                 Layout.alignment: Qt.AlignVCenter
@@ -162,7 +162,7 @@ FloatingWindow {
                         anchors.centerIn: parent
                         text: "Bar Settings (Coming Soon)"
                         font.family: Styling.defaultFont
-                        font.pixelSize: 16
+                        font.pixelSize: Config.theme.fontSize
                         color: Colors.overBackground
                     }
                 }
@@ -175,7 +175,7 @@ FloatingWindow {
                         anchors.centerIn: parent
                         text: "Hyprland Settings (Coming Soon)"
                         font.family: Styling.defaultFont
-                        font.pixelSize: 16
+                        font.pixelSize: Config.theme.fontSize
                         color: Colors.overBackground
                     }
                 }

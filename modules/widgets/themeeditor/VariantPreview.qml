@@ -15,18 +15,18 @@ Item {
 
     signal clicked()
 
-    implicitWidth: 56
-    implicitHeight: 72
+    implicitWidth: 72
+    implicitHeight: 88
 
     ColumnLayout {
         anchors.fill: parent
-        spacing: 4
+        spacing: 6
 
         // Preview box
         StyledRect {
             id: previewRect
-            Layout.preferredWidth: 48
-            Layout.preferredHeight: 48
+            Layout.preferredWidth: 64
+            Layout.preferredHeight: 64
             Layout.alignment: Qt.AlignHCenter
             variant: root.variantId
             enableBorder: true
@@ -83,7 +83,7 @@ Item {
         Text {
             text: root.variantLabel
             font.family: Styling.defaultFont
-            font.pixelSize: 9
+            font.pixelSize: Config.theme.fontSize
             color: root.isSelected ? Colors.primary : Colors.overBackground
             horizontalAlignment: Text.AlignHCenter
             elide: Text.ElideRight

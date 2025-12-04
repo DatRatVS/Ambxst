@@ -96,12 +96,12 @@ StyledRect {
         // Header
         RowLayout {
             Layout.fillWidth: true
-            spacing: 8
+            spacing: 10
 
             // Preview
             StyledRect {
-                Layout.preferredWidth: 48
-                Layout.preferredHeight: 48
+                Layout.preferredWidth: 56
+                Layout.preferredHeight: 56
                 variant: root.variantId
                 enableBorder: true
 
@@ -116,12 +116,12 @@ StyledRect {
 
             ColumnLayout {
                 Layout.fillWidth: true
-                spacing: 2
+                spacing: 4
 
                 Text {
                     text: root.variantDisplayName
                     font.family: Styling.defaultFont
-                    font.pixelSize: 16
+                    font.pixelSize: Config.theme.fontSize
                     font.bold: true
                     color: Colors.primary
                 }
@@ -129,15 +129,15 @@ StyledRect {
                 Text {
                     text: "variant: \"" + root.variantId + "\""
                     font.family: "monospace"
-                    font.pixelSize: 11
+                    font.pixelSize: Config.theme.fontSize
                     color: Colors.overBackground
                     opacity: 0.6
                 }
             }
 
             Button {
-                implicitWidth: 32
-                implicitHeight: 32
+                implicitWidth: 36
+                implicitHeight: 36
 
                 background: StyledRect {
                     variant: parent.hovered ? "error" : "common"
@@ -146,7 +146,7 @@ StyledRect {
                 contentItem: Text {
                     text: Icons.cancel
                     font.family: Icons.font
-                    font.pixelSize: 16
+                    font.pixelSize: 18
                     color: parent.parent.hovered ? Colors.overError : Colors.overBackground
                     horizontalAlignment: Text.AlignHCenter
                     verticalAlignment: Text.AlignVCenter
@@ -179,15 +179,15 @@ StyledRect {
                     label: Text {
                         text: parent.title
                         font.family: Styling.defaultFont
-                        font.pixelSize: 12
+                        font.pixelSize: Config.theme.fontSize
                         font.bold: true
                         color: Colors.primary
-                        leftPadding: 8
+                        leftPadding: 10
                     }
 
                     RowLayout {
                         anchors.fill: parent
-                        spacing: 8
+                        spacing: 10
 
                         Repeater {
                             model: ["linear", "radial", "halftone"]
@@ -198,7 +198,7 @@ StyledRect {
                                 required property int index
 
                                 Layout.fillWidth: true
-                                Layout.preferredHeight: 32
+                                Layout.preferredHeight: 36
 
                                 readonly property bool isSelected: root.variantConfig.gradientType === modelData
 
@@ -209,7 +209,7 @@ StyledRect {
                                 contentItem: Text {
                                     text: typeButton.modelData.charAt(0).toUpperCase() + typeButton.modelData.slice(1)
                                     font.family: Styling.defaultFont
-                                    font.pixelSize: 12
+                                    font.pixelSize: Config.theme.fontSize
                                     color: typeButton.isSelected ? Colors.overPrimary : Colors.overBackground
                                     horizontalAlignment: Text.AlignHCenter
                                     verticalAlignment: Text.AlignVCenter
@@ -233,10 +233,10 @@ StyledRect {
                     label: Text {
                         text: parent.title
                         font.family: Styling.defaultFont
-                        font.pixelSize: 12
+                        font.pixelSize: Config.theme.fontSize
                         font.bold: true
                         color: Colors.primary
-                        leftPadding: 8
+                        leftPadding: 10
                     }
 
                     ColorSelector {
@@ -259,42 +259,45 @@ StyledRect {
                     label: Text {
                         text: parent.title
                         font.family: Styling.defaultFont
-                        font.pixelSize: 12
+                        font.pixelSize: Config.theme.fontSize
                         font.bold: true
                         color: Colors.primary
-                        leftPadding: 8
+                        leftPadding: 10
                     }
 
                     ColumnLayout {
                         anchors.fill: parent
-                        spacing: 12
+                        spacing: 14
 
                         // Border width
                         RowLayout {
                             Layout.fillWidth: true
-                            spacing: 8
+                            spacing: 10
 
                             Text {
                                 text: "Width:"
                                 font.family: Styling.defaultFont
-                                font.pixelSize: 12
+                                font.pixelSize: Config.theme.fontSize
                                 color: Colors.overBackground
-                                Layout.preferredWidth: 60
+                                Layout.preferredWidth: 70
                             }
 
                             SpinBox {
                                 id: borderWidthSpinner
-                                Layout.preferredWidth: 100
+                                Layout.preferredWidth: 120
+                                Layout.preferredHeight: 36
                                 from: 0
                                 to: 10
                                 value: root.variantConfig.border[1]
                                 editable: true
 
-                                onValueModified: {
+                                function applyValue() {
                                     let border = root.variantConfig.border.slice();
                                     border[1] = value;
                                     root.variantConfig.border = border;
                                 }
+
+                                onValueModified: applyValue()
 
                                 background: StyledRect {
                                     variant: "common"
@@ -303,7 +306,7 @@ StyledRect {
                                 contentItem: TextInput {
                                     text: borderWidthSpinner.textFromValue(borderWidthSpinner.value, borderWidthSpinner.locale)
                                     font.family: Styling.defaultFont
-                                    font.pixelSize: 12
+                                    font.pixelSize: Config.theme.fontSize
                                     color: Colors.overBackground
                                     horizontalAlignment: Text.AlignHCenter
                                     verticalAlignment: Text.AlignVCenter
@@ -311,20 +314,29 @@ StyledRect {
                                     validator: borderWidthSpinner.validator
                                     inputMethodHints: Qt.ImhFormattedNumbersOnly
                                     selectByMouse: true
+
+                                    Keys.onReturnPressed: {
+                                        borderWidthSpinner.value = parseInt(text) || 0;
+                                        borderWidthSpinner.applyValue();
+                                    }
+                                    Keys.onEnterPressed: {
+                                        borderWidthSpinner.value = parseInt(text) || 0;
+                                        borderWidthSpinner.applyValue();
+                                    }
                                 }
 
                                 up.indicator: StyledRect {
                                     x: borderWidthSpinner.mirrored ? 0 : parent.width - width
                                     height: parent.height
-                                    implicitWidth: 24
-                                    implicitHeight: 24
+                                    implicitWidth: 28
+                                    implicitHeight: 28
                                     variant: borderWidthSpinner.up.pressed ? "primary" : (borderWidthSpinner.up.hovered ? "focus" : "common")
 
                                     Text {
                                         anchors.centerIn: parent
                                         text: Icons.plus
                                         font.family: Icons.font
-                                        font.pixelSize: 12
+                                        font.pixelSize: 18
                                         color: borderWidthSpinner.up.pressed ? Colors.overPrimary : Colors.overBackground
                                     }
                                 }
@@ -332,15 +344,15 @@ StyledRect {
                                 down.indicator: StyledRect {
                                     x: borderWidthSpinner.mirrored ? parent.width - width : 0
                                     height: parent.height
-                                    implicitWidth: 24
-                                    implicitHeight: 24
+                                    implicitWidth: 28
+                                    implicitHeight: 28
                                     variant: borderWidthSpinner.down.pressed ? "primary" : (borderWidthSpinner.down.hovered ? "focus" : "common")
 
                                     Text {
                                         anchors.centerIn: parent
                                         text: Icons.minus
                                         font.family: Icons.font
-                                        font.pixelSize: 12
+                                        font.pixelSize: 18
                                         color: borderWidthSpinner.down.pressed ? Colors.overPrimary : Colors.overBackground
                                     }
                                 }
@@ -349,7 +361,7 @@ StyledRect {
                             Text {
                                 text: "px"
                                 font.family: Styling.defaultFont
-                                font.pixelSize: 12
+                                font.pixelSize: Config.theme.fontSize
                                 color: Colors.overBackground
                                 opacity: 0.6
                             }
@@ -360,14 +372,14 @@ StyledRect {
                         // Border color
                         RowLayout {
                             Layout.fillWidth: true
-                            spacing: 8
+                            spacing: 10
 
                             Text {
                                 text: "Color:"
                                 font.family: Styling.defaultFont
-                                font.pixelSize: 12
+                                font.pixelSize: Config.theme.fontSize
                                 color: Colors.overBackground
-                                Layout.preferredWidth: 60
+                                Layout.preferredWidth: 70
                             }
 
                             ColorSelector {
@@ -396,15 +408,15 @@ StyledRect {
                     label: Text {
                         text: parent.title
                         font.family: Styling.defaultFont
-                        font.pixelSize: 12
+                        font.pixelSize: Config.theme.fontSize
                         font.bold: true
                         color: Colors.primary
-                        leftPadding: 8
+                        leftPadding: 10
                     }
 
                     RowLayout {
                         anchors.fill: parent
-                        spacing: 8
+                        spacing: 10
 
                         Slider {
                             id: opacitySlider
@@ -420,7 +432,7 @@ StyledRect {
                                 x: opacitySlider.leftPadding
                                 y: opacitySlider.topPadding + opacitySlider.availableHeight / 2 - height / 2
                                 implicitWidth: 200
-                                implicitHeight: 6
+                                implicitHeight: 8
                                 width: opacitySlider.availableWidth
                                 height: implicitHeight
                                 variant: "common"
@@ -436,8 +448,8 @@ StyledRect {
                             handle: StyledRect {
                                 x: opacitySlider.leftPadding + opacitySlider.visualPosition * (opacitySlider.availableWidth - width)
                                 y: opacitySlider.topPadding + opacitySlider.availableHeight / 2 - height / 2
-                                implicitWidth: 16
-                                implicitHeight: 16
+                                implicitWidth: 20
+                                implicitHeight: 20
                                 variant: opacitySlider.pressed ? "primaryfocus" : "primary"
                             }
                         }
@@ -445,9 +457,9 @@ StyledRect {
                         Text {
                             text: (root.variantConfig.opacity * 100).toFixed(0) + "%"
                             font.family: Styling.defaultFont
-                            font.pixelSize: 12
+                            font.pixelSize: Config.theme.fontSize
                             color: Colors.overBackground
-                            Layout.preferredWidth: 40
+                            Layout.preferredWidth: 50
                             horizontalAlignment: Text.AlignRight
                         }
                     }
@@ -458,6 +470,7 @@ StyledRect {
                     Layout.fillWidth: true
                     colorNames: root.colorNames
                     stops: root.variantConfig.gradient
+                    variantId: root.variantId
                     onUpdateStops: newStops => root.variantConfig.gradient = newStops
                 }
 
@@ -474,47 +487,52 @@ StyledRect {
                     label: Text {
                         text: parent.title
                         font.family: Styling.defaultFont
-                        font.pixelSize: 12
+                        font.pixelSize: Config.theme.fontSize
                         font.bold: true
                         color: Colors.primary
-                        leftPadding: 8
+                        leftPadding: 10
                     }
 
                     ColumnLayout {
                         anchors.fill: parent
-                        spacing: 12
+                        spacing: 14
 
                         // Angle (for linear)
                         RowLayout {
                             visible: root.variantConfig.gradientType === "linear"
                             Layout.fillWidth: true
-                            spacing: 8
+                            spacing: 10
 
                             Text {
                                 text: "Angle:"
                                 font.family: Styling.defaultFont
-                                font.pixelSize: 12
+                                font.pixelSize: Config.theme.fontSize
                                 color: Colors.overBackground
-                                Layout.preferredWidth: 80
+                                Layout.preferredWidth: 90
                             }
 
                             SpinBox {
                                 id: angleSpinner
-                                Layout.preferredWidth: 120
+                                Layout.preferredWidth: 140
+                                Layout.preferredHeight: 36
                                 from: 0
                                 to: 360
                                 value: root.variantConfig.gradientAngle
                                 editable: true
                                 wrap: true
 
-                                onValueModified: root.variantConfig.gradientAngle = value
+                                function applyValue() {
+                                    root.variantConfig.gradientAngle = value;
+                                }
+
+                                onValueModified: applyValue()
 
                                 background: StyledRect { variant: "common" }
 
                                 contentItem: TextInput {
                                     text: angleSpinner.textFromValue(angleSpinner.value, angleSpinner.locale)
                                     font.family: Styling.defaultFont
-                                    font.pixelSize: 12
+                                    font.pixelSize: Config.theme.fontSize
                                     color: Colors.overBackground
                                     horizontalAlignment: Text.AlignHCenter
                                     verticalAlignment: Text.AlignVCenter
@@ -522,18 +540,27 @@ StyledRect {
                                     validator: angleSpinner.validator
                                     inputMethodHints: Qt.ImhFormattedNumbersOnly
                                     selectByMouse: true
+
+                                    Keys.onReturnPressed: {
+                                        angleSpinner.value = parseInt(text) || 0;
+                                        angleSpinner.applyValue();
+                                    }
+                                    Keys.onEnterPressed: {
+                                        angleSpinner.value = parseInt(text) || 0;
+                                        angleSpinner.applyValue();
+                                    }
                                 }
 
                                 up.indicator: StyledRect {
                                     x: parent.width - width
                                     height: parent.height
-                                    implicitWidth: 24
+                                    implicitWidth: 28
                                     variant: angleSpinner.up.pressed ? "primary" : (angleSpinner.up.hovered ? "focus" : "common")
                                     Text {
                                         anchors.centerIn: parent
                                         text: Icons.plus
                                         font.family: Icons.font
-                                        font.pixelSize: 12
+                                        font.pixelSize: Config.theme.fontSize
                                         color: angleSpinner.up.pressed ? Colors.overPrimary : Colors.overBackground
                                     }
                                 }
@@ -541,13 +568,13 @@ StyledRect {
                                 down.indicator: StyledRect {
                                     x: 0
                                     height: parent.height
-                                    implicitWidth: 24
+                                    implicitWidth: 28
                                     variant: angleSpinner.down.pressed ? "primary" : (angleSpinner.down.hovered ? "focus" : "common")
                                     Text {
                                         anchors.centerIn: parent
                                         text: Icons.minus
                                         font.family: Icons.font
-                                        font.pixelSize: 12
+                                        font.pixelSize: Config.theme.fontSize
                                         color: angleSpinner.down.pressed ? Colors.overPrimary : Colors.overBackground
                                     }
                                 }
@@ -556,7 +583,7 @@ StyledRect {
                             Text {
                                 text: "degrees"
                                 font.family: Styling.defaultFont
-                                font.pixelSize: 12
+                                font.pixelSize: Config.theme.fontSize
                                 color: Colors.overBackground
                                 opacity: 0.6
                             }
@@ -568,14 +595,14 @@ StyledRect {
                         RowLayout {
                             visible: root.variantConfig.gradientType === "radial"
                             Layout.fillWidth: true
-                            spacing: 8
+                            spacing: 10
 
                             Text {
                                 text: "Center X:"
                                 font.family: Styling.defaultFont
-                                font.pixelSize: 12
+                                font.pixelSize: Config.theme.fontSize
                                 color: Colors.overBackground
-                                Layout.preferredWidth: 60
+                                Layout.preferredWidth: 70
                             }
 
                             Slider {
@@ -591,7 +618,7 @@ StyledRect {
                                 background: StyledRect {
                                     x: centerXSlider.leftPadding
                                     y: centerXSlider.topPadding + centerXSlider.availableHeight / 2 - height / 2
-                                    implicitHeight: 6
+                                    implicitHeight: 8
                                     width: centerXSlider.availableWidth
                                     variant: "common"
 
@@ -606,8 +633,8 @@ StyledRect {
                                 handle: StyledRect {
                                     x: centerXSlider.leftPadding + centerXSlider.visualPosition * (centerXSlider.availableWidth - width)
                                     y: centerXSlider.topPadding + centerXSlider.availableHeight / 2 - height / 2
-                                    implicitWidth: 14
-                                    implicitHeight: 14
+                                    implicitWidth: 18
+                                    implicitHeight: 18
                                     variant: centerXSlider.pressed ? "primaryfocus" : "primary"
                                 }
                             }
@@ -615,23 +642,23 @@ StyledRect {
                             Text {
                                 text: root.variantConfig.gradientCenterX.toFixed(2)
                                 font.family: Styling.defaultFont
-                                font.pixelSize: 12
+                                font.pixelSize: Config.theme.fontSize
                                 color: Colors.overBackground
-                                Layout.preferredWidth: 35
+                                Layout.preferredWidth: 45
                             }
                         }
 
                         RowLayout {
                             visible: root.variantConfig.gradientType === "radial"
                             Layout.fillWidth: true
-                            spacing: 8
+                            spacing: 10
 
                             Text {
                                 text: "Center Y:"
                                 font.family: Styling.defaultFont
-                                font.pixelSize: 12
+                                font.pixelSize: Config.theme.fontSize
                                 color: Colors.overBackground
-                                Layout.preferredWidth: 60
+                                Layout.preferredWidth: 70
                             }
 
                             Slider {
@@ -647,7 +674,7 @@ StyledRect {
                                 background: StyledRect {
                                     x: centerYSlider.leftPadding
                                     y: centerYSlider.topPadding + centerYSlider.availableHeight / 2 - height / 2
-                                    implicitHeight: 6
+                                    implicitHeight: 8
                                     width: centerYSlider.availableWidth
                                     variant: "common"
 
@@ -662,8 +689,8 @@ StyledRect {
                                 handle: StyledRect {
                                     x: centerYSlider.leftPadding + centerYSlider.visualPosition * (centerYSlider.availableWidth - width)
                                     y: centerYSlider.topPadding + centerYSlider.availableHeight / 2 - height / 2
-                                    implicitWidth: 14
-                                    implicitHeight: 14
+                                    implicitWidth: 18
+                                    implicitHeight: 18
                                     variant: centerYSlider.pressed ? "primaryfocus" : "primary"
                                 }
                             }
@@ -671,9 +698,9 @@ StyledRect {
                             Text {
                                 text: root.variantConfig.gradientCenterY.toFixed(2)
                                 font.family: Styling.defaultFont
-                                font.pixelSize: 12
+                                font.pixelSize: Config.theme.fontSize
                                 color: Colors.overBackground
-                                Layout.preferredWidth: 35
+                                Layout.preferredWidth: 45
                             }
                         }
                     }
@@ -692,27 +719,27 @@ StyledRect {
                     label: Text {
                         text: parent.title
                         font.family: Styling.defaultFont
-                        font.pixelSize: 12
+                        font.pixelSize: Config.theme.fontSize
                         font.bold: true
                         color: Colors.primary
-                        leftPadding: 8
+                        leftPadding: 10
                     }
 
                     ColumnLayout {
                         anchors.fill: parent
-                        spacing: 12
+                        spacing: 14
 
                         // Dot color
                         RowLayout {
                             Layout.fillWidth: true
-                            spacing: 8
+                            spacing: 10
 
                             Text {
                                 text: "Dot Color:"
                                 font.family: Styling.defaultFont
-                                font.pixelSize: 12
+                                font.pixelSize: Config.theme.fontSize
                                 color: Colors.overBackground
-                                Layout.preferredWidth: 100
+                                Layout.preferredWidth: 110
                             }
 
                             ColorSelector {
@@ -726,14 +753,14 @@ StyledRect {
                         // Background color
                         RowLayout {
                             Layout.fillWidth: true
-                            spacing: 8
+                            spacing: 10
 
                             Text {
                                 text: "BG Color:"
                                 font.family: Styling.defaultFont
-                                font.pixelSize: 12
+                                font.pixelSize: Config.theme.fontSize
                                 color: Colors.overBackground
-                                Layout.preferredWidth: 100
+                                Layout.preferredWidth: 110
                             }
 
                             ColorSelector {
@@ -747,19 +774,20 @@ StyledRect {
                         // Dot size range
                         RowLayout {
                             Layout.fillWidth: true
-                            spacing: 8
+                            spacing: 10
 
                             Text {
                                 text: "Dot Min:"
                                 font.family: Styling.defaultFont
-                                font.pixelSize: 12
+                                font.pixelSize: Config.theme.fontSize
                                 color: Colors.overBackground
-                                Layout.preferredWidth: 100
+                                Layout.preferredWidth: 110
                             }
 
                             SpinBox {
                                 id: dotMinSpinner
-                                Layout.preferredWidth: 100
+                                Layout.preferredWidth: 120
+                                Layout.preferredHeight: 36
                                 from: 0
                                 to: 200
                                 value: root.variantConfig.halftoneDotMin * 10
@@ -767,7 +795,11 @@ StyledRect {
 
                                 property real realValue: value / 10.0
 
-                                onValueModified: root.variantConfig.halftoneDotMin = realValue
+                                function applyValue() {
+                                    root.variantConfig.halftoneDotMin = realValue;
+                                }
+
+                                onValueModified: applyValue()
 
                                 textFromValue: function(value, locale) {
                                     return (value / 10.0).toFixed(1);
@@ -782,23 +814,32 @@ StyledRect {
                                 contentItem: TextInput {
                                     text: dotMinSpinner.textFromValue(dotMinSpinner.value, dotMinSpinner.locale)
                                     font.family: Styling.defaultFont
-                                    font.pixelSize: 12
+                                    font.pixelSize: Config.theme.fontSize
                                     color: Colors.overBackground
                                     horizontalAlignment: Text.AlignHCenter
                                     verticalAlignment: Text.AlignVCenter
                                     selectByMouse: true
+
+                                    Keys.onReturnPressed: {
+                                        dotMinSpinner.value = dotMinSpinner.valueFromText(text, dotMinSpinner.locale);
+                                        dotMinSpinner.applyValue();
+                                    }
+                                    Keys.onEnterPressed: {
+                                        dotMinSpinner.value = dotMinSpinner.valueFromText(text, dotMinSpinner.locale);
+                                        dotMinSpinner.applyValue();
+                                    }
                                 }
 
                                 up.indicator: StyledRect {
                                     x: parent.width - width
                                     height: parent.height
-                                    implicitWidth: 24
+                                    implicitWidth: 28
                                     variant: dotMinSpinner.up.pressed ? "primary" : "common"
                                     Text {
                                         anchors.centerIn: parent
                                         text: Icons.plus
                                         font.family: Icons.font
-                                        font.pixelSize: 12
+                                        font.pixelSize: Config.theme.fontSize
                                         color: dotMinSpinner.up.pressed ? Colors.overPrimary : Colors.overBackground
                                     }
                                 }
@@ -806,13 +847,13 @@ StyledRect {
                                 down.indicator: StyledRect {
                                     x: 0
                                     height: parent.height
-                                    implicitWidth: 24
+                                    implicitWidth: 28
                                     variant: dotMinSpinner.down.pressed ? "primary" : "common"
                                     Text {
                                         anchors.centerIn: parent
                                         text: Icons.minus
                                         font.family: Icons.font
-                                        font.pixelSize: 12
+                                        font.pixelSize: Config.theme.fontSize
                                         color: dotMinSpinner.down.pressed ? Colors.overPrimary : Colors.overBackground
                                     }
                                 }
@@ -823,19 +864,20 @@ StyledRect {
 
                         RowLayout {
                             Layout.fillWidth: true
-                            spacing: 8
+                            spacing: 10
 
                             Text {
                                 text: "Dot Max:"
                                 font.family: Styling.defaultFont
-                                font.pixelSize: 12
+                                font.pixelSize: Config.theme.fontSize
                                 color: Colors.overBackground
-                                Layout.preferredWidth: 100
+                                Layout.preferredWidth: 110
                             }
 
                             SpinBox {
                                 id: dotMaxSpinner
-                                Layout.preferredWidth: 100
+                                Layout.preferredWidth: 120
+                                Layout.preferredHeight: 36
                                 from: 0
                                 to: 200
                                 value: root.variantConfig.halftoneDotMax * 10
@@ -843,7 +885,11 @@ StyledRect {
 
                                 property real realValue: value / 10.0
 
-                                onValueModified: root.variantConfig.halftoneDotMax = realValue
+                                function applyValue() {
+                                    root.variantConfig.halftoneDotMax = realValue;
+                                }
+
+                                onValueModified: applyValue()
 
                                 textFromValue: function(value, locale) {
                                     return (value / 10.0).toFixed(1);
@@ -858,23 +904,32 @@ StyledRect {
                                 contentItem: TextInput {
                                     text: dotMaxSpinner.textFromValue(dotMaxSpinner.value, dotMaxSpinner.locale)
                                     font.family: Styling.defaultFont
-                                    font.pixelSize: 12
+                                    font.pixelSize: Config.theme.fontSize
                                     color: Colors.overBackground
                                     horizontalAlignment: Text.AlignHCenter
                                     verticalAlignment: Text.AlignVCenter
                                     selectByMouse: true
+
+                                    Keys.onReturnPressed: {
+                                        dotMaxSpinner.value = dotMaxSpinner.valueFromText(text, dotMaxSpinner.locale);
+                                        dotMaxSpinner.applyValue();
+                                    }
+                                    Keys.onEnterPressed: {
+                                        dotMaxSpinner.value = dotMaxSpinner.valueFromText(text, dotMaxSpinner.locale);
+                                        dotMaxSpinner.applyValue();
+                                    }
                                 }
 
                                 up.indicator: StyledRect {
                                     x: parent.width - width
                                     height: parent.height
-                                    implicitWidth: 24
+                                    implicitWidth: 28
                                     variant: dotMaxSpinner.up.pressed ? "primary" : "common"
                                     Text {
                                         anchors.centerIn: parent
                                         text: Icons.plus
                                         font.family: Icons.font
-                                        font.pixelSize: 12
+                                        font.pixelSize: Config.theme.fontSize
                                         color: dotMaxSpinner.up.pressed ? Colors.overPrimary : Colors.overBackground
                                     }
                                 }
@@ -882,13 +937,13 @@ StyledRect {
                                 down.indicator: StyledRect {
                                     x: 0
                                     height: parent.height
-                                    implicitWidth: 24
+                                    implicitWidth: 28
                                     variant: dotMaxSpinner.down.pressed ? "primary" : "common"
                                     Text {
                                         anchors.centerIn: parent
                                         text: Icons.minus
                                         font.family: Icons.font
-                                        font.pixelSize: 12
+                                        font.pixelSize: Config.theme.fontSize
                                         color: dotMaxSpinner.down.pressed ? Colors.overPrimary : Colors.overBackground
                                     }
                                 }
@@ -900,14 +955,14 @@ StyledRect {
                         // Gradient range
                         RowLayout {
                             Layout.fillWidth: true
-                            spacing: 8
+                            spacing: 10
 
                             Text {
                                 text: "Start:"
                                 font.family: Styling.defaultFont
-                                font.pixelSize: 12
+                                font.pixelSize: Config.theme.fontSize
                                 color: Colors.overBackground
-                                Layout.preferredWidth: 100
+                                Layout.preferredWidth: 110
                             }
 
                             Slider {
@@ -923,7 +978,7 @@ StyledRect {
                                 background: StyledRect {
                                     x: halftoneStartSlider.leftPadding
                                     y: halftoneStartSlider.topPadding + halftoneStartSlider.availableHeight / 2 - height / 2
-                                    implicitHeight: 6
+                                    implicitHeight: 8
                                     width: halftoneStartSlider.availableWidth
                                     variant: "common"
 
@@ -938,8 +993,8 @@ StyledRect {
                                 handle: StyledRect {
                                     x: halftoneStartSlider.leftPadding + halftoneStartSlider.visualPosition * (halftoneStartSlider.availableWidth - width)
                                     y: halftoneStartSlider.topPadding + halftoneStartSlider.availableHeight / 2 - height / 2
-                                    implicitWidth: 14
-                                    implicitHeight: 14
+                                    implicitWidth: 18
+                                    implicitHeight: 18
                                     variant: halftoneStartSlider.pressed ? "primaryfocus" : "primary"
                                 }
                             }
@@ -947,22 +1002,22 @@ StyledRect {
                             Text {
                                 text: root.variantConfig.halftoneStart.toFixed(2)
                                 font.family: Styling.defaultFont
-                                font.pixelSize: 12
+                                font.pixelSize: Config.theme.fontSize
                                 color: Colors.overBackground
-                                Layout.preferredWidth: 35
+                                Layout.preferredWidth: 45
                             }
                         }
 
                         RowLayout {
                             Layout.fillWidth: true
-                            spacing: 8
+                            spacing: 10
 
                             Text {
                                 text: "End:"
                                 font.family: Styling.defaultFont
-                                font.pixelSize: 12
+                                font.pixelSize: Config.theme.fontSize
                                 color: Colors.overBackground
-                                Layout.preferredWidth: 100
+                                Layout.preferredWidth: 110
                             }
 
                             Slider {
@@ -978,7 +1033,7 @@ StyledRect {
                                 background: StyledRect {
                                     x: halftoneEndSlider.leftPadding
                                     y: halftoneEndSlider.topPadding + halftoneEndSlider.availableHeight / 2 - height / 2
-                                    implicitHeight: 6
+                                    implicitHeight: 8
                                     width: halftoneEndSlider.availableWidth
                                     variant: "common"
 
@@ -993,8 +1048,8 @@ StyledRect {
                                 handle: StyledRect {
                                     x: halftoneEndSlider.leftPadding + halftoneEndSlider.visualPosition * (halftoneEndSlider.availableWidth - width)
                                     y: halftoneEndSlider.topPadding + halftoneEndSlider.availableHeight / 2 - height / 2
-                                    implicitWidth: 14
-                                    implicitHeight: 14
+                                    implicitWidth: 18
+                                    implicitHeight: 18
                                     variant: halftoneEndSlider.pressed ? "primaryfocus" : "primary"
                                 }
                             }
@@ -1002,58 +1057,72 @@ StyledRect {
                             Text {
                                 text: root.variantConfig.halftoneEnd.toFixed(2)
                                 font.family: Styling.defaultFont
-                                font.pixelSize: 12
+                                font.pixelSize: Config.theme.fontSize
                                 color: Colors.overBackground
-                                Layout.preferredWidth: 35
+                                Layout.preferredWidth: 45
                             }
                         }
 
                         // Angle
                         RowLayout {
                             Layout.fillWidth: true
-                            spacing: 8
+                            spacing: 10
 
                             Text {
                                 text: "Angle:"
                                 font.family: Styling.defaultFont
-                                font.pixelSize: 12
+                                font.pixelSize: Config.theme.fontSize
                                 color: Colors.overBackground
-                                Layout.preferredWidth: 100
+                                Layout.preferredWidth: 110
                             }
 
                             SpinBox {
                                 id: halftoneAngleSpinner
-                                Layout.preferredWidth: 120
+                                Layout.preferredWidth: 140
+                                Layout.preferredHeight: 36
                                 from: 0
                                 to: 360
                                 value: root.variantConfig.gradientAngle
                                 editable: true
                                 wrap: true
 
-                                onValueModified: root.variantConfig.gradientAngle = value
+                                function applyValue() {
+                                    root.variantConfig.gradientAngle = value;
+                                }
+
+                                onValueModified: applyValue()
 
                                 background: StyledRect { variant: "common" }
 
                                 contentItem: TextInput {
                                     text: halftoneAngleSpinner.textFromValue(halftoneAngleSpinner.value, halftoneAngleSpinner.locale)
                                     font.family: Styling.defaultFont
-                                    font.pixelSize: 12
+                                    font.pixelSize: Config.theme.fontSize
                                     color: Colors.overBackground
                                     horizontalAlignment: Text.AlignHCenter
                                     verticalAlignment: Text.AlignVCenter
                                     selectByMouse: true
+
+                                    Keys.onReturnPressed: {
+                                        halftoneAngleSpinner.value = parseInt(text) || 0;
+                                        halftoneAngleSpinner.applyValue();
+                                    }
+                                    Keys.onEnterPressed: {
+                                        halftoneAngleSpinner.value = parseInt(text) || 0;
+                                        halftoneAngleSpinner.applyValue();
+                                    }
                                 }
 
                                 up.indicator: StyledRect {
                                     x: parent.width - width
                                     height: parent.height
-                                    implicitWidth: 24
+                                    implicitWidth: 28
                                     variant: halftoneAngleSpinner.up.pressed ? "primary" : "common"
                                     Text {
                                         anchors.centerIn: parent
                                         text: Icons.plus
                                         font.family: Icons.font
-                                        font.pixelSize: 12
+                                        font.pixelSize: Config.theme.fontSize
                                         color: halftoneAngleSpinner.up.pressed ? Colors.overPrimary : Colors.overBackground
                                     }
                                 }
@@ -1061,13 +1130,13 @@ StyledRect {
                                 down.indicator: StyledRect {
                                     x: 0
                                     height: parent.height
-                                    implicitWidth: 24
+                                    implicitWidth: 28
                                     variant: halftoneAngleSpinner.down.pressed ? "primary" : "common"
                                     Text {
                                         anchors.centerIn: parent
                                         text: Icons.minus
                                         font.family: Icons.font
-                                        font.pixelSize: 12
+                                        font.pixelSize: Config.theme.fontSize
                                         color: halftoneAngleSpinner.down.pressed ? Colors.overPrimary : Colors.overBackground
                                     }
                                 }
@@ -1076,7 +1145,7 @@ StyledRect {
                             Text {
                                 text: "degrees"
                                 font.family: Styling.defaultFont
-                                font.pixelSize: 12
+                                font.pixelSize: Config.theme.fontSize
                                 color: Colors.overBackground
                                 opacity: 0.6
                             }

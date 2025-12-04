@@ -81,7 +81,7 @@ Item {
                     Text {
                         text: "StyledRect Variants"
                         font.family: Styling.defaultFont
-                        font.pixelSize: 14
+                        font.pixelSize: Config.theme.fontSize
                         font.bold: true
                         color: Colors.primary
                         Layout.alignment: Qt.AlignHCenter
@@ -102,7 +102,7 @@ Item {
                             Text {
                                 text: categoryDelegate.modelData.name
                                 font.family: Styling.defaultFont
-                                font.pixelSize: 12
+                                font.pixelSize: Config.theme.fontSize
                                 font.bold: true
                                 color: Colors.overBackground
                                 opacity: 0.7
@@ -172,7 +172,7 @@ Item {
                 Text {
                     text: "Select a variant to edit"
                     font.family: Styling.defaultFont
-                    font.pixelSize: 16
+                    font.pixelSize: Config.theme.fontSize
                     color: Colors.overBackground
                     opacity: 0.5
                     Layout.alignment: Qt.AlignHCenter

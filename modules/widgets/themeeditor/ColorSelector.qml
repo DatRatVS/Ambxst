@@ -11,20 +11,23 @@ Item {
     id: root
 
     required property var colorNames
-    required property string currentValue
+    required property var currentValue
 
     signal colorChanged(string newColor)
 
-    implicitHeight: 36
+    implicitHeight: 40
+
+    // Convert currentValue to string safely
+    readonly property string currentValueStr: currentValue ? currentValue.toString() : ""
 
     // Check if current value is a hex color
-    readonly property bool isHexColor: currentValue.startsWith("#") || currentValue.startsWith("rgb")
+    readonly property bool isHexColor: currentValueStr.startsWith("#") || currentValueStr.startsWith("rgb")
     readonly property string displayHex: {
         if (isHexColor) {
-            return currentValue;
+            return currentValueStr;
         }
         // Get hex from Colors singleton
-        const color = Colors[currentValue];
+        const color = Colors[currentValueStr];
         if (color) {
             return color.toString();
         }
@@ -33,18 +36,18 @@ Item {
 
     RowLayout {
         anchors.fill: parent
-        spacing: 8
+        spacing: 10
 
         // Color dropdown
         ComboBox {
             id: colorDropdown
             Layout.fillWidth: true
-            Layout.preferredHeight: 36
+            Layout.preferredHeight: 40
 
             model: ["Custom"].concat(root.colorNames)
             currentIndex: {
                 if (root.isHexColor) return 0; // "Custom"
-                const idx = root.colorNames.indexOf(root.currentValue);
+                const idx = root.colorNames.indexOf(root.currentValueStr);
                 return idx >= 0 ? idx + 1 : 0;
             }
 
@@ -62,15 +65,15 @@ Item {
             }
 
             contentItem: RowLayout {
-                spacing: 8
+                spacing: 10
                 anchors.fill: parent
-                anchors.leftMargin: 8
-                anchors.rightMargin: 30
+                anchors.leftMargin: 10
+                anchors.rightMargin: 32
 
                 // Color preview square
                 Rectangle {
-                    Layout.preferredWidth: 20
-                    Layout.preferredHeight: 20
+                    Layout.preferredWidth: 24
+                    Layout.preferredHeight: 24
                     radius: Styling.radius(-12)
                     color: Config.resolveColor(root.currentValue)
                     border.color: Colors.outline
@@ -78,9 +81,9 @@ Item {
                 }
 
                 Text {
-                    text: root.isHexColor ? "Custom" : root.currentValue
+                    text: root.isHexColor ? "Custom" : root.currentValueStr
                     font.family: Styling.defaultFont
-                    font.pixelSize: 12
+                    font.pixelSize: Config.theme.fontSize
                     color: Colors.overBackground
                     elide: Text.ElideRight
                     Layout.fillWidth: true
@@ -89,11 +92,11 @@ Item {
             }
 
             indicator: Text {
-                x: colorDropdown.width - width - 8
+                x: colorDropdown.width - width - 10
                 anchors.verticalCenter: parent.verticalCenter
                 text: Icons.caretDown
                 font.family: Icons.font
-                font.pixelSize: 12
+                font.pixelSize: 18
                 color: Colors.overBackground
             }
 
@@ -123,18 +126,18 @@ Item {
                 required property int index
 
                 width: colorDropdown.width - 8
-                height: 32
+                height: 36
 
                 background: StyledRect {
                     variant: delegateItem.highlighted ? "focus" : "common"
                 }
 
                 contentItem: RowLayout {
-                    spacing: 8
+                    spacing: 10
 
                     Rectangle {
-                        Layout.preferredWidth: 18
-                        Layout.preferredHeight: 18
+                        Layout.preferredWidth: 22
+                        Layout.preferredHeight: 22
                         radius: Styling.radius(-12)
                         color: {
                             if (delegateItem.index === 0) return "transparent";
@@ -157,7 +160,7 @@ Item {
                     Text {
                         text: delegateItem.modelData
                         font.family: Styling.defaultFont
-                        font.pixelSize: 11
+                        font.pixelSize: Config.theme.fontSize
                         color: Colors.overBackground
                         elide: Text.ElideRight
                         Layout.fillWidth: true
@@ -171,19 +174,19 @@ Item {
         // HEX input
         StyledRect {
             id: hexInputContainer
-            Layout.preferredWidth: 100
-            Layout.preferredHeight: 36
+            Layout.preferredWidth: 110
+            Layout.preferredHeight: 40
             variant: hexInput.activeFocus ? "focus" : "common"
 
             RowLayout {
                 anchors.fill: parent
-                anchors.margins: 4
+                anchors.margins: 6
                 spacing: 4
 
                 Text {
                     text: "#"
                     font.family: "monospace"
-                    font.pixelSize: 12
+                    font.pixelSize: Config.theme.fontSize
                     color: Colors.overBackground
                     opacity: 0.6
                 }
@@ -195,7 +198,7 @@ Item {
 
                     text: root.displayHex.replace("#", "").toUpperCase()
                     font.family: "monospace"
-                    font.pixelSize: 12
+                    font.pixelSize: Config.theme.fontSize
                     color: Colors.overBackground
                     verticalAlignment: Text.AlignVCenter
                     selectByMouse: true
@@ -203,6 +206,20 @@ Item {
 
                     validator: RegularExpressionValidator {
                         regularExpression: /[0-9A-Fa-f]{0,8}/
+                    }
+
+                    Keys.onReturnPressed: {
+                        let hex = text.trim();
+                        if (hex.length >= 6) {
+                            root.colorChanged("#" + hex);
+                        }
+                    }
+
+                    Keys.onEnterPressed: {
+                        let hex = text.trim();
+                        if (hex.length >= 6) {
+                            root.colorChanged("#" + hex);
+                        }
                     }
 
                     onEditingFinished: {
@@ -235,8 +252,8 @@ Item {
         // Color picker button
         Button {
             id: pickerButton
-            Layout.preferredWidth: 36
-            Layout.preferredHeight: 36
+            Layout.preferredWidth: 40
+            Layout.preferredHeight: 40
 
             background: StyledRect {
                 variant: pickerButton.hovered ? "focus" : "common"
@@ -245,7 +262,7 @@ Item {
             contentItem: Text {
                 text: Icons.xeyes
                 font.family: Icons.font
-                font.pixelSize: 16
+                font.pixelSize: 18
                 color: Colors.overBackground
                 horizontalAlignment: Text.AlignHCenter
                 verticalAlignment: Text.AlignVCenter
@@ -262,7 +279,7 @@ Item {
     ColorDialog {
         id: colorDialog
         title: "Select Color"
-        selectedColor: Config.resolveColor(root.currentValue)
+        selectedColor: Config.resolveColor(root.currentValueStr)
 
         onAccepted: {
             root.colorChanged(selectedColor.toString());

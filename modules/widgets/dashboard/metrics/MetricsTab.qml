@@ -379,6 +379,21 @@ Rectangle {
                                     font.weight: Font.Medium
                                     color: Colors.overBackground
                                 }
+
+                                Text {
+                                    text: Icons.temperature
+                                    font.family: Icons.font
+                                    font.pixelSize: Styling.fontSize(-2)
+                                    color: Colors.overBackground
+                                }
+
+                                Text {
+                                    text: "XXX"
+                                    font.family: Config.theme.font
+                                    font.pixelSize: Styling.fontSize(-2)
+                                    font.weight: Font.Medium
+                                    color: Colors.overBackground
+                                }
                             }
                         }
 
@@ -493,6 +508,21 @@ Rectangle {
 
                                     Text {
                                         text: `${Math.round(SystemResources.gpuUsages[index] || 0)}%`
+                                        font.family: Config.theme.font
+                                        font.pixelSize: Styling.fontSize(-2)
+                                        font.weight: Font.Medium
+                                        color: Colors.overBackground
+                                    }
+
+                                    Text {
+                                        text: Icons.temperature
+                                        font.family: Icons.font
+                                        font.pixelSize: Styling.fontSize(-2)
+                                        color: Colors.overBackground
+                                    }
+
+                                    Text {
+                                        text: "XXX"
                                         font.family: Config.theme.font
                                         font.pixelSize: Styling.fontSize(-2)
                                         font.weight: Font.Medium

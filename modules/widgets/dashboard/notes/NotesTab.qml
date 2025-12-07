@@ -119,10 +119,20 @@ Item {
         noteEditor.forceActiveFocus();
     }
 
-    // Set font size
+    // Set font size character by character to preserve existing styles
     function setFontSize(size) {
         if (hasSelection()) {
-            noteEditor.cursorSelection.font.pixelSize = size;
+            let start = noteEditor.selectionStart;
+            let end = noteEditor.selectionEnd;
+            
+            // Process each character individually to preserve its styles
+            for (let i = start; i < end; i++) {
+                noteEditor.select(i, i + 1);
+                noteEditor.cursorSelection.font.pixelSize = size;
+            }
+            
+            // Restore original selection
+            noteEditor.select(start, end);
         } else {
             preFormatFontSize = size;
         }

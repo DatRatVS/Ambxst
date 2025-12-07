@@ -13,6 +13,7 @@ Item {
 
     // Layout constants
     readonly property int notificationPadding: 16
+    readonly property int notificationPaddingTop: 8
 
     // State
     readonly property bool hasActiveNotifications: Notifications.popupList.length > 0
@@ -32,7 +33,7 @@ Item {
         ? (Config.notchTheme === "island" ? 36 : 44)
         : (Config.notchTheme === "island" ? 36 : 40)
     readonly property real notificationMinWidth: expandedState ? 420 : 320
-    readonly property real notificationContainerHeight: notificationView.implicitHeight + (notificationPadding * 2)
+    readonly property real notificationContainerHeight: notificationView.implicitHeight + notificationPaddingTop + notificationPadding
 
     implicitWidth: Math.round(hasActiveNotifications
         ? Math.max(notificationMinWidth + (notificationPadding * 2), mainRowContentWidth)
@@ -123,7 +124,10 @@ Item {
             NotchNotificationView {
                 id: notificationView
                 anchors.fill: parent
-                anchors.margins: notificationPadding
+                anchors.topMargin: notificationPaddingTop
+                anchors.leftMargin: notificationPadding
+                anchors.rightMargin: notificationPadding
+                anchors.bottomMargin: notificationPadding
                 opacity: hasActiveNotifications ? 1 : 0
                 notchHovered: expandedState
                 onIsNavigatingChanged: root.isNavigating = isNavigating

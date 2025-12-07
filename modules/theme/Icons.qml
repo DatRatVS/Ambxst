@@ -181,4 +181,8 @@ QtObject {
     readonly property string sync: ""
     readonly property string cube: ""
     readonly property string picker: ""
+    readonly property string alignLeft: ""
+    readonly property string alignCenter: ""
+    readonly property string alignRight: ""
+    readonly property string alignJustify: ""
 }

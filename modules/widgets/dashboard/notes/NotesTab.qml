@@ -25,6 +25,7 @@ Item {
     property string notesDir: (Quickshell.env("XDG_DATA_HOME") || (Quickshell.env("HOME") + "/.local/share")) + "/ambxst-notes"
     property string indexPath: notesDir + "/index.json"
     property string notesPath: notesDir + "/notes"
+    property string noteExtension: ".html"  // Store as HTML for rich text
 
     // Search and selection state
     property string searchText: ""
@@ -262,7 +263,7 @@ Item {
 
     function confirmDeleteNote() {
         if (noteToDelete) {
-            deleteNoteProcess.command = ["rm", "-f", notesPath + "/" + noteToDelete + ".md"];
+            deleteNoteProcess.command = ["rm", "-f", notesPath + "/" + noteToDelete + noteExtension];
             deleteNoteProcess.running = true;
         }
         cancelDeleteMode();
@@ -313,12 +314,12 @@ Item {
         var noteId = NotesUtils.generateUUID();
         var noteTitle = title || "Untitled Note";
         
-        // Create the note file
-        var initialContent = "# " + noteTitle + "\n\n";
+        // Create the note file with HTML content
+        var initialContent = "<h1>" + noteTitle + "</h1><p></p>";
         createNoteProcess.noteId = noteId;
         createNoteProcess.noteTitle = noteTitle;
         createNoteProcess.command = ["sh", "-c", 
-            "mkdir -p '" + notesPath + "' && printf '%s' '" + initialContent.replace(/'/g, "'\\''") + "' > '" + notesPath + "/" + noteId + ".md'"
+            "mkdir -p '" + notesPath + "' && printf '%s' '" + initialContent.replace(/'/g, "'\\''") + "' > '" + notesPath + "/" + noteId + noteExtension + "'"
         ];
         createNoteProcess.running = true;
     }
@@ -333,16 +334,17 @@ Item {
         
         loadingNote = true;
         currentNoteId = noteId;
-        readNoteProcess.command = ["cat", notesPath + "/" + noteId + ".md"];
+        readNoteProcess.command = ["cat", notesPath + "/" + noteId + noteExtension];
         readNoteProcess.running = true;
     }
 
     function saveCurrentNote() {
         if (!currentNoteId || currentNoteId === "__create__") return;
         
+        // Get the text content (RichText returns HTML-like format)
         var content = noteEditor.text;
         saveNoteProcess.command = ["sh", "-c",
-            "printf '%s' '" + content.replace(/'/g, "'\\''") + "' > '" + notesPath + "/" + currentNoteId + ".md'"
+            "printf '%s' '" + content.replace(/'/g, "'\\''") + "' > '" + notesPath + "/" + currentNoteId + noteExtension + "'"
         ];
         saveNoteProcess.running = true;
         editorDirty = false;
@@ -1548,40 +1550,342 @@ Item {
             vert: true
         }
 
-        // Right panel: Split view (Editor + Preview)
-        RowLayout {
+        // Right panel: WYSIWYG Editor
+        ColumnLayout {
             Layout.fillWidth: true
             Layout.fillHeight: true
             spacing: 8
             visible: currentNoteId !== ""
 
-            property bool syncingScroll: false
+            // Formatting toolbar
+            Rectangle {
+                Layout.fillWidth: true
+                Layout.preferredHeight: 40
+                color: "transparent"
 
-            function syncEditorToPreview() {
-                if (syncingScroll) return;
-                syncingScroll = true;
-                let editorMaxY = editorFlickable.contentHeight - editorFlickable.height;
-                let previewMaxY = previewFlickable.contentHeight - previewFlickable.height;
-                if (editorMaxY > 0 && previewMaxY > 0) {
-                    let ratio = editorFlickable.contentY / editorMaxY;
-                    previewFlickable.contentY = ratio * previewMaxY;
+                RowLayout {
+                    anchors.fill: parent
+                    anchors.leftMargin: 8
+                    anchors.rightMargin: 8
+                    spacing: 4
+
+                    // Bold button
+                    Rectangle {
+                        id: boldButton
+                        width: 32
+                        height: 32
+                        radius: Styling.radius(-4)
+                        color: noteEditor.cursorSelection.font.bold ? Colors.primary : "transparent"
+
+                        property bool isHovered: boldMouseArea.containsMouse
+
+                        StyledRect {
+                            anchors.fill: parent
+                            variant: parent.isHovered && !noteEditor.cursorSelection.font.bold ? "surface" : "transparent"
+                            radius: Styling.radius(-4)
+                            visible: !noteEditor.cursorSelection.font.bold
+                        }
+
+                        Text {
+                            anchors.centerIn: parent
+                            text: "B"
+                            font.family: Config.theme.font
+                            font.pixelSize: 14
+                            font.bold: true
+                            color: noteEditor.cursorSelection.font.bold ? Colors.overPrimary : Colors.overSurface
+                        }
+
+                        MouseArea {
+                            id: boldMouseArea
+                            anchors.fill: parent
+                            hoverEnabled: true
+                            cursorShape: Qt.PointingHandCursor
+                            onClicked: {
+                                noteEditor.cursorSelection.font.bold = !noteEditor.cursorSelection.font.bold;
+                                noteEditor.forceActiveFocus();
+                            }
+                        }
+
+                        StyledToolTip {
+                            text: "Bold (Ctrl+B)"
+                            visible: boldMouseArea.containsMouse
+                        }
+                    }
+
+                    // Italic button
+                    Rectangle {
+                        id: italicButton
+                        width: 32
+                        height: 32
+                        radius: Styling.radius(-4)
+                        color: noteEditor.cursorSelection.font.italic ? Colors.primary : "transparent"
+
+                        property bool isHovered: italicMouseArea.containsMouse
+
+                        StyledRect {
+                            anchors.fill: parent
+                            variant: parent.isHovered && !noteEditor.cursorSelection.font.italic ? "surface" : "transparent"
+                            radius: Styling.radius(-4)
+                            visible: !noteEditor.cursorSelection.font.italic
+                        }
+
+                        Text {
+                            anchors.centerIn: parent
+                            text: "I"
+                            font.family: Config.theme.font
+                            font.pixelSize: 14
+                            font.italic: true
+                            color: noteEditor.cursorSelection.font.italic ? Colors.overPrimary : Colors.overSurface
+                        }
+
+                        MouseArea {
+                            id: italicMouseArea
+                            anchors.fill: parent
+                            hoverEnabled: true
+                            cursorShape: Qt.PointingHandCursor
+                            onClicked: {
+                                noteEditor.cursorSelection.font.italic = !noteEditor.cursorSelection.font.italic;
+                                noteEditor.forceActiveFocus();
+                            }
+                        }
+
+                        StyledToolTip {
+                            text: "Italic (Ctrl+I)"
+                            visible: italicMouseArea.containsMouse
+                        }
+                    }
+
+                    // Underline button
+                    Rectangle {
+                        id: underlineButton
+                        width: 32
+                        height: 32
+                        radius: Styling.radius(-4)
+                        color: noteEditor.cursorSelection.font.underline ? Colors.primary : "transparent"
+
+                        property bool isHovered: underlineMouseArea.containsMouse
+
+                        StyledRect {
+                            anchors.fill: parent
+                            variant: parent.isHovered && !noteEditor.cursorSelection.font.underline ? "surface" : "transparent"
+                            radius: Styling.radius(-4)
+                            visible: !noteEditor.cursorSelection.font.underline
+                        }
+
+                        Text {
+                            anchors.centerIn: parent
+                            text: "U"
+                            font.family: Config.theme.font
+                            font.pixelSize: 14
+                            font.underline: true
+                            color: noteEditor.cursorSelection.font.underline ? Colors.overPrimary : Colors.overSurface
+                        }
+
+                        MouseArea {
+                            id: underlineMouseArea
+                            anchors.fill: parent
+                            hoverEnabled: true
+                            cursorShape: Qt.PointingHandCursor
+                            onClicked: {
+                                noteEditor.cursorSelection.font.underline = !noteEditor.cursorSelection.font.underline;
+                                noteEditor.forceActiveFocus();
+                            }
+                        }
+
+                        StyledToolTip {
+                            text: "Underline (Ctrl+U)"
+                            visible: underlineMouseArea.containsMouse
+                        }
+                    }
+
+                    // Strikethrough button
+                    Rectangle {
+                        id: strikeButton
+                        width: 32
+                        height: 32
+                        radius: Styling.radius(-4)
+                        color: noteEditor.cursorSelection.font.strikeout ? Colors.primary : "transparent"
+
+                        property bool isHovered: strikeMouseArea.containsMouse
+
+                        StyledRect {
+                            anchors.fill: parent
+                            variant: parent.isHovered && !noteEditor.cursorSelection.font.strikeout ? "surface" : "transparent"
+                            radius: Styling.radius(-4)
+                            visible: !noteEditor.cursorSelection.font.strikeout
+                        }
+
+                        Text {
+                            anchors.centerIn: parent
+                            text: "S"
+                            font.family: Config.theme.font
+                            font.pixelSize: 14
+                            font.strikeout: true
+                            color: noteEditor.cursorSelection.font.strikeout ? Colors.overPrimary : Colors.overSurface
+                        }
+
+                        MouseArea {
+                            id: strikeMouseArea
+                            anchors.fill: parent
+                            hoverEnabled: true
+                            cursorShape: Qt.PointingHandCursor
+                            onClicked: {
+                                noteEditor.cursorSelection.font.strikeout = !noteEditor.cursorSelection.font.strikeout;
+                                noteEditor.forceActiveFocus();
+                            }
+                        }
+
+                        StyledToolTip {
+                            text: "Strikethrough"
+                            visible: strikeMouseArea.containsMouse
+                        }
+                    }
+
+                    // Separator
+                    Rectangle {
+                        width: 1
+                        height: 24
+                        color: Colors.outline
+                        opacity: 0.3
+                    }
+
+                    // Align Left
+                    Rectangle {
+                        id: alignLeftButton
+                        width: 32
+                        height: 32
+                        radius: Styling.radius(-4)
+                        color: noteEditor.cursorSelection.alignment === Qt.AlignLeft ? Colors.primary : "transparent"
+
+                        property bool isHovered: alignLeftMouseArea.containsMouse
+
+                        StyledRect {
+                            anchors.fill: parent
+                            variant: parent.isHovered && noteEditor.cursorSelection.alignment !== Qt.AlignLeft ? "surface" : "transparent"
+                            radius: Styling.radius(-4)
+                            visible: noteEditor.cursorSelection.alignment !== Qt.AlignLeft
+                        }
+
+                        Text {
+                            anchors.centerIn: parent
+                            text: Icons.alignLeft
+                            font.family: Icons.font
+                            font.pixelSize: 14
+                            color: noteEditor.cursorSelection.alignment === Qt.AlignLeft ? Colors.overPrimary : Colors.overSurface
+                        }
+
+                        MouseArea {
+                            id: alignLeftMouseArea
+                            anchors.fill: parent
+                            hoverEnabled: true
+                            cursorShape: Qt.PointingHandCursor
+                            onClicked: {
+                                noteEditor.cursorSelection.alignment = Qt.AlignLeft;
+                                noteEditor.forceActiveFocus();
+                            }
+                        }
+
+                        StyledToolTip {
+                            text: "Align Left"
+                            visible: alignLeftMouseArea.containsMouse
+                        }
+                    }
+
+                    // Align Center
+                    Rectangle {
+                        id: alignCenterButton
+                        width: 32
+                        height: 32
+                        radius: Styling.radius(-4)
+                        color: noteEditor.cursorSelection.alignment === Qt.AlignHCenter ? Colors.primary : "transparent"
+
+                        property bool isHovered: alignCenterMouseArea.containsMouse
+
+                        StyledRect {
+                            anchors.fill: parent
+                            variant: parent.isHovered && noteEditor.cursorSelection.alignment !== Qt.AlignHCenter ? "surface" : "transparent"
+                            radius: Styling.radius(-4)
+                            visible: noteEditor.cursorSelection.alignment !== Qt.AlignHCenter
+                        }
+
+                        Text {
+                            anchors.centerIn: parent
+                            text: Icons.alignCenter
+                            font.family: Icons.font
+                            font.pixelSize: 14
+                            color: noteEditor.cursorSelection.alignment === Qt.AlignHCenter ? Colors.overPrimary : Colors.overSurface
+                        }
+
+                        MouseArea {
+                            id: alignCenterMouseArea
+                            anchors.fill: parent
+                            hoverEnabled: true
+                            cursorShape: Qt.PointingHandCursor
+                            onClicked: {
+                                noteEditor.cursorSelection.alignment = Qt.AlignHCenter;
+                                noteEditor.forceActiveFocus();
+                            }
+                        }
+
+                        StyledToolTip {
+                            text: "Align Center"
+                            visible: alignCenterMouseArea.containsMouse
+                        }
+                    }
+
+                    // Align Right
+                    Rectangle {
+                        id: alignRightButton
+                        width: 32
+                        height: 32
+                        radius: Styling.radius(-4)
+                        color: noteEditor.cursorSelection.alignment === Qt.AlignRight ? Colors.primary : "transparent"
+
+                        property bool isHovered: alignRightMouseArea.containsMouse
+
+                        StyledRect {
+                            anchors.fill: parent
+                            variant: parent.isHovered && noteEditor.cursorSelection.alignment !== Qt.AlignRight ? "surface" : "transparent"
+                            radius: Styling.radius(-4)
+                            visible: noteEditor.cursorSelection.alignment !== Qt.AlignRight
+                        }
+
+                        Text {
+                            anchors.centerIn: parent
+                            text: Icons.alignRight
+                            font.family: Icons.font
+                            font.pixelSize: 14
+                            color: noteEditor.cursorSelection.alignment === Qt.AlignRight ? Colors.overPrimary : Colors.overSurface
+                        }
+
+                        MouseArea {
+                            id: alignRightMouseArea
+                            anchors.fill: parent
+                            hoverEnabled: true
+                            cursorShape: Qt.PointingHandCursor
+                            onClicked: {
+                                noteEditor.cursorSelection.alignment = Qt.AlignRight;
+                                noteEditor.forceActiveFocus();
+                            }
+                        }
+
+                        StyledToolTip {
+                            text: "Align Right"
+                            visible: alignRightMouseArea.containsMouse
+                        }
+                    }
+
+                    Item { Layout.fillWidth: true }
                 }
-                syncingScroll = false;
             }
 
-            function syncPreviewToEditor() {
-                if (syncingScroll) return;
-                syncingScroll = true;
-                let editorMaxY = editorFlickable.contentHeight - editorFlickable.height;
-                let previewMaxY = previewFlickable.contentHeight - previewFlickable.height;
-                if (editorMaxY > 0 && previewMaxY > 0) {
-                    let ratio = previewFlickable.contentY / previewMaxY;
-                    editorFlickable.contentY = ratio * editorMaxY;
-                }
-                syncingScroll = false;
+            // Separator below toolbar
+            Separator {
+                Layout.fillWidth: true
+                Layout.preferredHeight: 2
             }
 
-            // Left side: Plain text editor
+            // WYSIWYG Editor
             Rectangle {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
@@ -1591,22 +1895,25 @@ Item {
                     id: editorFlickable
                     anchors.fill: parent
                     contentWidth: width
-                    contentHeight: noteEditor.contentHeight
+                    contentHeight: noteEditor.contentHeight + 32
                     clip: true
                     boundsBehavior: Flickable.StopAtBounds
-
-                    onContentYChanged: parent.parent.syncEditorToPreview()
 
                     TextArea.flickable: TextArea {
                         id: noteEditor
                         text: currentNoteContent
-                        textFormat: TextEdit.PlainText
-                        font.family: "monospace"
+                        textFormat: TextEdit.RichText
+                        font.family: Config.theme.font
                         font.pixelSize: Config.theme.fontSize
                         color: Colors.overSurface
                         wrapMode: TextEdit.Wrap
                         selectByMouse: true
+                        persistentSelection: true
                         placeholderText: "Start typing..."
+                        leftPadding: 8
+                        rightPadding: 8
+                        topPadding: 8
+                        bottomPadding: 8
                         background: Rectangle {
                             color: "transparent"
                         }
@@ -1618,64 +1925,28 @@ Item {
                             }
                         }
 
-                        onCursorRectangleChanged: {
-                            // Ensure flickable follows cursor, then sync
-                            Qt.callLater(() => parent.parent.parent.syncEditorToPreview());
-                        }
-
                         Keys.onEscapePressed: {
                             searchInput.focusInput();
                         }
 
-                        Keys.onTabPressed: event => {
-                            insert(cursorPosition, "    ");
-                            event.accepted = true;
-                        }
-                    }
-
-                    ScrollBar.vertical: ScrollBar {
-                        active: true
-                    }
-                }
-            }
-
-            // Separator
-            Separator {
-                Layout.preferredWidth: 2
-                Layout.fillHeight: true
-                vert: true
-            }
-
-            // Right side: Markdown preview
-            Rectangle {
-                Layout.fillWidth: true
-                Layout.fillHeight: true
-                color: "transparent"
-
-                Flickable {
-                    id: previewFlickable
-                    anchors.fill: parent
-                    contentWidth: width
-                    contentHeight: markdownPreview.implicitHeight + 32
-                    clip: true
-                    boundsBehavior: Flickable.StopAtBounds
-
-                    onContentYChanged: parent.parent.syncPreviewToEditor()
-
-                    TextArea {
-                        id: markdownPreview
-                        width: previewFlickable.width
-                        height: implicitHeight
-                        text: noteEditor.text
-                        textFormat: TextEdit.MarkdownText
-                        font.family: Config.theme.font
-                        font.pixelSize: Config.theme.fontSize
-                        color: Colors.overSurface
-                        wrapMode: TextEdit.Wrap
-                        readOnly: true
-                        selectByMouse: true
-                        background: Rectangle {
-                            color: "transparent"
+                        // Formatting shortcuts
+                        Keys.onPressed: event => {
+                            if (event.modifiers & Qt.ControlModifier) {
+                                switch (event.key) {
+                                    case Qt.Key_B:
+                                        cursorSelection.font.bold = !cursorSelection.font.bold;
+                                        event.accepted = true;
+                                        break;
+                                    case Qt.Key_I:
+                                        cursorSelection.font.italic = !cursorSelection.font.italic;
+                                        event.accepted = true;
+                                        break;
+                                    case Qt.Key_U:
+                                        cursorSelection.font.underline = !cursorSelection.font.underline;
+                                        event.accepted = true;
+                                        break;
+                                }
+                            }
                         }
                     }
 

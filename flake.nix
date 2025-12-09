@@ -159,6 +159,10 @@
 
         pipewire
         wireplumber
+
+        # Control packages
+        networkmanagerapplet
+        blueman
         easyeffects
 
         # Terminal

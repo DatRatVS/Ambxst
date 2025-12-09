@@ -543,6 +543,12 @@ FocusScope {
                 model: filteredWallpapers
                 currentIndex: selectedIndex
 
+                // Propiedad para detectar si está en movimiento (drag o flick)
+                property bool isScrolling: dragging || flicking
+
+                // Deshabilitar highlight durante scroll para evitar glitches
+                highlightFollowsCurrentItem: !isScrolling
+
                 // Optimizaciones de rendimiento
                 cacheBuffer: cellHeight * 2
                 displayMarginBeginning: cellHeight
@@ -784,10 +790,11 @@ FocusScope {
                     // Manejo de eventos de ratón.
                     MouseArea {
                         anchors.fill: parent
-                        hoverEnabled: true
+                        hoverEnabled: !wallpaperGrid.isScrolling
                         cursorShape: Qt.PointingHandCursor
 
                         onEntered: {
+                            if (wallpaperGrid.isScrolling) return;
                             parent.isHovered = true;
                             GlobalStates.wallpaperSelectedIndex = index;
                             selectedIndex = index;
@@ -796,10 +803,13 @@ FocusScope {
                         onExited: {
                             parent.isHovered = false;
                         }
-                        onPressed: parent.scale = 0.95
+                        onPressed: {
+                            if (!wallpaperGrid.isScrolling) parent.scale = 0.95;
+                        }
                         onReleased: parent.scale = 1.0
 
                         onClicked: {
+                            if (wallpaperGrid.isScrolling) return;
                             if (GlobalStates.wallpaperManager) {
                                 GlobalStates.wallpaperManager.setWallpaper(modelData);
                             }

@@ -45,7 +45,7 @@ Singleton {
 
     // Open EasyEffects app
     function openApp() {
-        openAppProcess.running = true;
+        Quickshell.execDetached(["easyeffects"]);
     }
 
     // Check if easyeffects is available
@@ -180,13 +180,6 @@ Singleton {
                 }
             }
         }
-    }
-
-    // Open app
-    Process {
-        id: openAppProcess
-        command: ["easyeffects"]
-        running: false
     }
 
     // Poll for state changes periodically

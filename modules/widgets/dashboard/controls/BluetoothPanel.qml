@@ -13,11 +13,6 @@ import qs.config
 Item {
     id: root
 
-    property Process launchBluemanProcess: Process {
-        command: ["blueman-manager"]
-        running: false
-    }
-
     Component.onCompleted: {
         // Only refresh device list, don't start scanning automatically
         if (BluetoothService.enabled) {
@@ -43,7 +38,7 @@ Item {
                 {
                     icon: Icons.externalLink,
                     tooltip: "Open Blueman",
-                    onClicked: function() { root.launchBluemanProcess.running = true; }
+                    onClicked: function() { Quickshell.execDetached(["blueman-manager"]); }
                 },
                 {
                     icon: Icons.sync,

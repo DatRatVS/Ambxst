@@ -16,11 +16,6 @@ Item {
 
     property bool showOutput: true  // true = output, false = input
 
-    property Process launchPavuProcess: Process {
-        command: ["pavucontrol"]
-        running: false
-    }
-
     ColumnLayout {
         anchors.fill: parent
         spacing: 8
@@ -37,8 +32,8 @@ Item {
                 },
                 {
                     icon: Icons.externalLink,
-                    tooltip: "Open Volume Control",
-                    onClicked: function() { root.launchPavuProcess.running = true; }
+                    tooltip: "Open PipeWire Volume Control",
+                    onClicked: function() { Quickshell.execDetached(["pwvucontrol"]); }
                 }
             ]
         }

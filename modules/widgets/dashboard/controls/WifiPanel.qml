@@ -38,7 +38,7 @@ Item {
                     onClicked: function() { NetworkService.openPublicWifiPortal(); }
                 },
                 {
-                    icon: Icons.gear,
+                    icon: Icons.externalLink,
                     tooltip: "Network settings",
                     onClicked: function() { Quickshell.execDetached(["nm-connection-editor"]); }
                 },

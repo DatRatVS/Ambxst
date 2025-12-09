@@ -163,6 +163,7 @@
         # Control packages
         networkmanagerapplet
         blueman
+        pwvucontrol
         easyeffects
 
         # Terminal

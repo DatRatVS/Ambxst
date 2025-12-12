@@ -155,7 +155,7 @@ Item {
     }
 
     // Helper function to get favicon URL for item
-    // First checks the linkPreviewCache for the best favicon, falls back to Google Favicon service
+    // First checks the linkPreviewCache for the best favicon, falls back to /favicon.ico
     function getFaviconUrl(item) {
         if (!item || item.isImage || item.isFile)
             return "";
@@ -167,28 +167,29 @@ Item {
         var trimmedUrl = content.trim();
         var cachedData = ClipboardService.linkPreviewCache[trimmedUrl];
         if (cachedData && cachedData.favicon) {
-            var favicon = cachedData.favicon;
-            // If favicon is SVG, use Google service instead (Qt has issues with remote SVGs)
-            if (favicon.toLowerCase().endsWith('.svg')) {
-                return ClipboardUtils.getFaviconUrl(content);
-            }
-            return favicon;
+            return cachedData.favicon;
         }
         
-        // Fallback to Google Favicon service
+        // Fallback to basic /favicon.ico
         return ClipboardUtils.getFaviconUrl(content);
     }
 
-    // Helper function to get usable favicon from link preview data
-    // Converts SVG to Google Favicon service URL since Qt can't load remote SVGs
-    function getUsableFavicon(faviconUrl, originalUrl) {
-        if (!faviconUrl)
+    // Helper function to get fallback favicon URL (Google service)
+    function getFaviconFallbackUrl(item) {
+        if (!item || item.isImage || item.isFile)
             return "";
-        // If favicon is SVG, use Google service instead
-        if (faviconUrl.toLowerCase().endsWith('.svg') && originalUrl) {
-            return ClipboardUtils.getFaviconUrl(originalUrl);
-        }
-        return faviconUrl;
+        var content = item.preview || "";
+        return ClipboardUtils.getFaviconFallbackUrl(content);
+    }
+
+    // Helper function to get usable favicon from link preview data
+    function getUsableFavicon(faviconUrl) {
+        return faviconUrl || "";
+    }
+    
+    // Helper function to get fallback favicon for link preview
+    function getUsableFaviconFallback(originalUrl) {
+        return ClipboardUtils.getFaviconFallbackUrl(originalUrl);
     }
 
     implicitWidth: 400
@@ -1945,8 +1946,15 @@ Item {
                                         var url = root.getFaviconUrl(modelData);
                                         return (url && url !== "") ? url : "";
                                     }
+                                    
+                                    property string faviconFallbackUrl: {
+                                        if (iconType !== "link")
+                                            return "";
+                                        return root.getFaviconFallbackUrl(modelData);
+                                    }
 
                                     property bool faviconLoaded: false
+                                    property bool triedFallback: false
 
                                     // Favicon for URLs
                                     Image {
@@ -1954,8 +1962,8 @@ Item {
                                         anchors.centerIn: parent
                                         width: 20
                                         height: 20
-                                        sourceSize.width: 20
-                                        sourceSize.height: 20
+                                        sourceSize.width: 40
+                                        sourceSize.height: 40
                                         visible: iconBackground.iconType === "link" && iconBackground.faviconLoaded && status === Image.Ready
                                         fillMode: Image.PreserveAspectFit
                                         asynchronous: true
@@ -1964,7 +1972,15 @@ Item {
                                         onStatusChanged: {
                                             if (status === Image.Ready) {
                                                 iconBackground.faviconLoaded = true;
-                                            } else if (status === Image.Error || status === Image.Null || status === Image.Loading) {
+                                            } else if (status === Image.Error) {
+                                                // Try fallback URL if not already tried
+                                                if (!iconBackground.triedFallback && iconBackground.faviconFallbackUrl !== "") {
+                                                    iconBackground.triedFallback = true;
+                                                    faviconImage.source = iconBackground.faviconFallbackUrl;
+                                                } else {
+                                                    iconBackground.faviconLoaded = false;
+                                                }
+                                            } else if (status === Image.Null || status === Image.Loading) {
                                                 iconBackground.faviconLoaded = false;
                                             }
                                         }
@@ -1974,6 +1990,7 @@ Item {
                                     onFaviconUrlChanged: {
                                         if (faviconUrl !== "" && faviconUrl !== faviconImage.source) {
                                             faviconLoaded = false;
+                                            triedFallback = false;
                                             faviconImage.source = faviconUrl;
                                         }
                                     }
@@ -1984,6 +2001,7 @@ Item {
                                         running: iconBackground.iconType === "link" && iconBackground.faviconUrl !== "" && faviconImage.source === ""
                                         onTriggered: {
                                             if (iconBackground.faviconUrl !== "") {
+                                                iconBackground.triedFallback = false;
                                                 faviconImage.source = iconBackground.faviconUrl;
                                             }
                                         }
@@ -2506,16 +2524,42 @@ Item {
                                         spacing: 8
                                         visible: root.linkPreviewData && root.linkPreviewData.site_name
 
-                                        Image {
+                                        Item {
                                             width: 16
                                             height: 16
-                                            sourceSize.width: 16
-                                            sourceSize.height: 16
-                                            source: root.linkPreviewData && root.linkPreviewData.favicon ? root.getUsableFavicon(root.linkPreviewData.favicon, root.currentFullContent) : ""
-                                            fillMode: Image.PreserveAspectFit
-                                            asynchronous: true
-                                            cache: true
-                                            visible: status === Image.Ready
+                                            visible: videoFaviconPrimary.status === Image.Ready || videoFaviconFallback.status === Image.Ready
+
+                                            property bool triedFallback: false
+
+                                            Image {
+                                                id: videoFaviconPrimary
+                                                anchors.fill: parent
+                                                sourceSize.width: 40
+                                                sourceSize.height: 40
+                                                source: root.linkPreviewData && root.linkPreviewData.favicon ? root.getUsableFavicon(root.linkPreviewData.favicon) : ""
+                                                fillMode: Image.PreserveAspectFit
+                                                asynchronous: true
+                                                cache: true
+                                                visible: status === Image.Ready
+
+                                                onStatusChanged: {
+                                                    if (status === Image.Error && !parent.triedFallback) {
+                                                        parent.triedFallback = true;
+                                                    }
+                                                }
+                                            }
+
+                                            Image {
+                                                id: videoFaviconFallback
+                                                anchors.fill: parent
+                                                sourceSize.width: 40
+                                                sourceSize.height: 40
+                                                source: parent.triedFallback && root.currentFullContent ? root.getUsableFaviconFallback(root.currentFullContent) : ""
+                                                fillMode: Image.PreserveAspectFit
+                                                asynchronous: true
+                                                cache: true
+                                                visible: parent.triedFallback && status === Image.Ready && videoFaviconPrimary.status !== Image.Ready
+                                            }
                                         }
 
                                         Text {
@@ -2650,16 +2694,42 @@ Item {
                                             spacing: 8
                                             visible: root.linkPreviewData && root.linkPreviewData.site_name
 
-                                            Image {
+                                            Item {
                                                 width: 16
                                                 height: 16
-                                                sourceSize.width: 16
-                                                sourceSize.height: 16
-                                                source: root.linkPreviewData && root.linkPreviewData.favicon ? root.getUsableFavicon(root.linkPreviewData.favicon, root.currentFullContent) : ""
-                                                fillMode: Image.PreserveAspectFit
-                                                asynchronous: true
-                                                cache: true
-                                                visible: status === Image.Ready
+                                                visible: linkFaviconPrimary.status === Image.Ready || linkFaviconFallback.status === Image.Ready
+
+                                                property bool triedFallback: false
+
+                                                Image {
+                                                    id: linkFaviconPrimary
+                                                    anchors.fill: parent
+                                                    sourceSize.width: 40
+                                                    sourceSize.height: 40
+                                                    source: root.linkPreviewData && root.linkPreviewData.favicon ? root.getUsableFavicon(root.linkPreviewData.favicon) : ""
+                                                    fillMode: Image.PreserveAspectFit
+                                                    asynchronous: true
+                                                    cache: true
+                                                    visible: status === Image.Ready
+
+                                                    onStatusChanged: {
+                                                        if (status === Image.Error && !parent.triedFallback) {
+                                                            parent.triedFallback = true;
+                                                        }
+                                                    }
+                                                }
+
+                                                Image {
+                                                    id: linkFaviconFallback
+                                                    anchors.fill: parent
+                                                    sourceSize.width: 40
+                                                    sourceSize.height: 40
+                                                    source: parent.triedFallback && root.currentFullContent ? root.getUsableFaviconFallback(root.currentFullContent) : ""
+                                                    fillMode: Image.PreserveAspectFit
+                                                    asynchronous: true
+                                                    cache: true
+                                                    visible: parent.triedFallback && status === Image.Ready && linkFaviconPrimary.status !== Image.Ready
+                                                }
                                             }
 
                                             Text {

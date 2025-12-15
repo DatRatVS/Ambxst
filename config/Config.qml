@@ -1327,22 +1327,30 @@ Singleton {
                     "enabled": true
                 },
 
-                // Navigate workspaces (consolidated with multiple keys)
+                // Navigate workspaces with mouse scroll
+                {
+                    "name": "Previous Occupied Workspace (Scroll)",
+                    "keys": [{ "modifiers": ["SUPER"], "key": "mouse_down" }],
+                    "actions": [{ "dispatcher": "workspace", "argument": "e-1", "flags": "" }],
+                    "enabled": true
+                },
+                {
+                    "name": "Next Occupied Workspace (Scroll)",
+                    "keys": [{ "modifiers": ["SUPER"], "key": "mouse_up" }],
+                    "actions": [{ "dispatcher": "workspace", "argument": "e+1", "flags": "" }],
+                    "enabled": true
+                },
+
+                // Navigate workspaces with keyboard
                 {
                     "name": "Previous Occupied Workspace",
-                    "keys": [
-                        { "modifiers": ["SUPER"], "key": "mouse_down" },
-                        { "modifiers": ["SUPER", "SHIFT"], "key": "Z" }
-                    ],
+                    "keys": [{ "modifiers": ["SUPER", "SHIFT"], "key": "Z" }],
                     "actions": [{ "dispatcher": "workspace", "argument": "e-1", "flags": "" }],
                     "enabled": true
                 },
                 {
                     "name": "Next Occupied Workspace",
-                    "keys": [
-                        { "modifiers": ["SUPER"], "key": "mouse_up" },
-                        { "modifiers": ["SUPER", "SHIFT"], "key": "X" }
-                    ],
+                    "keys": [{ "modifiers": ["SUPER", "SHIFT"], "key": "X" }],
                     "actions": [{ "dispatcher": "workspace", "argument": "e+1", "flags": "" }],
                     "enabled": true
                 },
@@ -1376,11 +1384,8 @@ Singleton {
                 // Media player controls
                 {
                     "name": "Play/Pause",
-                    "keys": [
-                        { "modifiers": [], "key": "XF86AudioPlay" },
-                        { "modifiers": [], "key": "XF86AudioMedia" }
-                    ],
-                    "actions": [{ "dispatcher": "exec", "argument": "playerctl play-pause", "flags": "l" }],
+                    "keys": [{ "modifiers": [], "key": "XF86AudioPlay" }],
+                    "actions": [{ "dispatcher": "exec", "argument": "playerctl play-pause", "flags": "" }],
                     "enabled": true
                 },
                 {
@@ -1393,6 +1398,12 @@ Singleton {
                     "name": "Next Track",
                     "keys": [{ "modifiers": [], "key": "XF86AudioNext" }],
                     "actions": [{ "dispatcher": "exec", "argument": "playerctl next", "flags": "" }],
+                    "enabled": true
+                },
+                {
+                    "name": "Media Play/Pause",
+                    "keys": [{ "modifiers": [], "key": "XF86AudioMedia" }],
+                    "actions": [{ "dispatcher": "exec", "argument": "playerctl play-pause", "flags": "l" }],
                     "enabled": true
                 },
                 {
@@ -1475,6 +1486,97 @@ Singleton {
                     "name": "Display On on Lid Open",
                     "keys": [{ "modifiers": [], "key": "switch:off:Lid Switch" }],
                     "actions": [{ "dispatcher": "exec", "argument": "hyprctl dispatch dpms on", "flags": "l" }],
+                    "enabled": true
+                },
+
+                // ============================================
+                // Hyprland Scrolling layout binds
+                // These are for the hyprscrolling plugin/layout
+                // ============================================
+                {
+                    "name": "Center Focus Up (Scrolling)",
+                    "keys": [
+                        { "modifiers": ["SUPER"], "key": "Up" },
+                        { "modifiers": ["SUPER", "CTRL"], "key": "k" }
+                    ],
+                    "actions": [{ "dispatcher": "layoutmsg", "argument": "focus u", "flags": "" }],
+                    "enabled": true
+                },
+                {
+                    "name": "Center Focus Down (Scrolling)",
+                    "keys": [
+                        { "modifiers": ["SUPER"], "key": "Down" },
+                        { "modifiers": ["SUPER", "CTRL"], "key": "j" }
+                    ],
+                    "actions": [{ "dispatcher": "layoutmsg", "argument": "focus d", "flags": "" }],
+                    "enabled": true
+                },
+                {
+                    "name": "Center Focus Left (Scrolling)",
+                    "keys": [
+                        { "modifiers": ["SUPER"], "key": "Left" },
+                        { "modifiers": ["SUPER", "CTRL"], "key": "z" },
+                        { "modifiers": ["SUPER", "CTRL"], "key": "h" }
+                    ],
+                    "actions": [{ "dispatcher": "layoutmsg", "argument": "focus l", "flags": "" }],
+                    "enabled": true
+                },
+                {
+                    "name": "Center Focus Right (Scrolling)",
+                    "keys": [
+                        { "modifiers": ["SUPER"], "key": "Right" },
+                        { "modifiers": ["SUPER", "CTRL"], "key": "x" },
+                        { "modifiers": ["SUPER", "CTRL"], "key": "l" }
+                    ],
+                    "actions": [{ "dispatcher": "layoutmsg", "argument": "focus r", "flags": "" }],
+                    "enabled": true
+                },
+                {
+                    "name": "Promote (Scrolling)",
+                    "keys": [{ "modifiers": ["SUPER", "ALT"], "key": "SPACE" }],
+                    "actions": [{ "dispatcher": "layoutmsg", "argument": "promote", "flags": "" }],
+                    "enabled": true
+                },
+                {
+                    "name": "Swap Column Left (Scrolling)",
+                    "keys": [{ "modifiers": ["SUPER", "ALT"], "key": "Left" }],
+                    "actions": [{ "dispatcher": "layoutmsg", "argument": "swapcol l", "flags": "" }],
+                    "enabled": true
+                },
+                {
+                    "name": "Swap Column Right (Scrolling)",
+                    "keys": [{ "modifiers": ["SUPER", "ALT"], "key": "Right" }],
+                    "actions": [{ "dispatcher": "layoutmsg", "argument": "swapcol r", "flags": "" }],
+                    "enabled": true
+                },
+                {
+                    "name": "Toggle Fit (Scrolling)",
+                    "keys": [{ "modifiers": ["SUPER", "CTRL"], "key": "SPACE" }],
+                    "actions": [{ "dispatcher": "layoutmsg", "argument": "togglefit", "flags": "" }],
+                    "enabled": true
+                },
+                {
+                    "name": "Column Resize + (Scrolling)",
+                    "keys": [
+                        { "modifiers": ["SUPER", "CTRL"], "key": "Right" },
+                        { "modifiers": ["SUPER", "ALT"], "key": "l" }
+                    ],
+                    "actions": [{ "dispatcher": "layoutmsg", "argument": "colresize +0.1", "flags": "" }],
+                    "enabled": true
+                },
+                {
+                    "name": "Column Resize - (Scrolling)",
+                    "keys": [
+                        { "modifiers": ["SUPER", "CTRL"], "key": "Left" },
+                        { "modifiers": ["SUPER", "ALT"], "key": "h" }
+                    ],
+                    "actions": [{ "dispatcher": "layoutmsg", "argument": "colresize -0.1", "flags": "" }],
+                    "enabled": true
+                },
+                {
+                    "name": "Toggle Full Column (Scrolling)",
+                    "keys": [{ "modifiers": ["SUPER", "SHIFT"], "key": "SPACE" }],
+                    "actions": [{ "dispatcher": "layoutmsg", "argument": "colresize +conf", "flags": "" }],
                     "enabled": true
                 }
             ]

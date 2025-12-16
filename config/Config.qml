@@ -1150,11 +1150,11 @@ Singleton {
         adapter: JsonAdapter {
             property JsonObject ambxst: JsonObject {
                 property JsonObject dashboard: JsonObject {
-                    property JsonObject widgets: JsonObject {
+                    property JsonObject assistant: JsonObject {
                         property list<string> modifiers: ["SUPER"]
-                        property string key: "R"
+                        property string key: "A"
                         property string dispatcher: "global"
-                        property string argument: "ambxst:dashboard-widgets"
+                        property string argument: "ambxst:dashboard-assistant"
                     }
                     property JsonObject clipboard: JsonObject {
                         property list<string> modifiers: ["SUPER"]
@@ -1168,6 +1168,12 @@ Singleton {
                         property string dispatcher: "global"
                         property string argument: "ambxst:dashboard-emoji"
                     }
+                    property JsonObject notes: JsonObject {
+                        property list<string> modifiers: ["SUPER"]
+                        property string key: "N"
+                        property string dispatcher: "global"
+                        property string argument: "ambxst:dashboard-notes"
+                    }
                     property JsonObject tmux: JsonObject {
                         property list<string> modifiers: ["SUPER"]
                         property string key: "T"
@@ -1180,32 +1186,14 @@ Singleton {
                         property string dispatcher: "global"
                         property string argument: "ambxst:dashboard-wallpapers"
                     }
-                    property JsonObject assistant: JsonObject {
+                    property JsonObject widgets: JsonObject {
                         property list<string> modifiers: ["SUPER"]
-                        property string key: "A"
+                        property string key: "R"
                         property string dispatcher: "global"
-                        property string argument: "ambxst:dashboard-assistant"
-                    }
-                    property JsonObject notes: JsonObject {
-                        property list<string> modifiers: ["SUPER"]
-                        property string key: "N"
-                        property string dispatcher: "global"
-                        property string argument: "ambxst:dashboard-notes"
+                        property string argument: "ambxst:dashboard-widgets"
                     }
                 }
                 property JsonObject system: JsonObject {
-                    property JsonObject overview: JsonObject {
-                        property list<string> modifiers: ["SUPER"]
-                        property string key: "TAB"
-                        property string dispatcher: "global"
-                        property string argument: "ambxst:overview"
-                    }
-                    property JsonObject powermenu: JsonObject {
-                        property list<string> modifiers: ["SUPER"]
-                        property string key: "ESCAPE"
-                        property string dispatcher: "global"
-                        property string argument: "ambxst:powermenu"
-                    }
                     property JsonObject config: JsonObject {
                         property list<string> modifiers: ["SUPER", "SHIFT"]
                         property string key: "C"
@@ -1218,361 +1206,486 @@ Singleton {
                         property string dispatcher: "global"
                         property string argument: "ambxst:lockscreen"
                     }
+                    property JsonObject overview: JsonObject {
+                        property list<string> modifiers: ["SUPER"]
+                        property string key: "TAB"
+                        property string dispatcher: "global"
+                        property string argument: "ambxst:overview"
+                    }
+                    property JsonObject powermenu: JsonObject {
+                        property list<string> modifiers: ["SUPER"]
+                        property string key: "ESCAPE"
+                        property string dispatcher: "global"
+                        property string argument: "ambxst:powermenu"
+                    }
                 }
             }
             property list<var> custom: [
-                // Window management
+                // ============================================
+                // Window Management
+                // ============================================
                 {
                     "name": "Close Window",
                     "keys": [{ "modifiers": ["SUPER"], "key": "C" }],
-                    "actions": [{ "dispatcher": "killactive", "argument": "", "flags": "" }],
+                    "actions": [{ "dispatcher": "killactive", "argument": "", "flags": "", "compositor": { "type": "hyprland", "layouts": [] } }],
                     "enabled": true
                 },
 
-                // Switch workspaces with SUPER + [0-9]
+                // ============================================
+                // Workspace Navigation (SUPER + [0-9])
+                // ============================================
                 {
                     "name": "Workspace 1",
                     "keys": [{ "modifiers": ["SUPER"], "key": "1" }],
-                    "actions": [{ "dispatcher": "workspace", "argument": "1", "flags": "" }],
+                    "actions": [{ "dispatcher": "workspace", "argument": "1", "flags": "", "compositor": { "type": "hyprland", "layouts": [] } }],
                     "enabled": true
                 },
                 {
                     "name": "Workspace 2",
                     "keys": [{ "modifiers": ["SUPER"], "key": "2" }],
-                    "actions": [{ "dispatcher": "workspace", "argument": "2", "flags": "" }],
+                    "actions": [{ "dispatcher": "workspace", "argument": "2", "flags": "", "compositor": { "type": "hyprland", "layouts": [] } }],
                     "enabled": true
                 },
                 {
                     "name": "Workspace 3",
                     "keys": [{ "modifiers": ["SUPER"], "key": "3" }],
-                    "actions": [{ "dispatcher": "workspace", "argument": "3", "flags": "" }],
+                    "actions": [{ "dispatcher": "workspace", "argument": "3", "flags": "", "compositor": { "type": "hyprland", "layouts": [] } }],
                     "enabled": true
                 },
                 {
                     "name": "Workspace 4",
                     "keys": [{ "modifiers": ["SUPER"], "key": "4" }],
-                    "actions": [{ "dispatcher": "workspace", "argument": "4", "flags": "" }],
+                    "actions": [{ "dispatcher": "workspace", "argument": "4", "flags": "", "compositor": { "type": "hyprland", "layouts": [] } }],
                     "enabled": true
                 },
                 {
                     "name": "Workspace 5",
                     "keys": [{ "modifiers": ["SUPER"], "key": "5" }],
-                    "actions": [{ "dispatcher": "workspace", "argument": "5", "flags": "" }],
+                    "actions": [{ "dispatcher": "workspace", "argument": "5", "flags": "", "compositor": { "type": "hyprland", "layouts": [] } }],
                     "enabled": true
                 },
                 {
                     "name": "Workspace 6",
                     "keys": [{ "modifiers": ["SUPER"], "key": "6" }],
-                    "actions": [{ "dispatcher": "workspace", "argument": "6", "flags": "" }],
+                    "actions": [{ "dispatcher": "workspace", "argument": "6", "flags": "", "compositor": { "type": "hyprland", "layouts": [] } }],
                     "enabled": true
                 },
                 {
                     "name": "Workspace 7",
                     "keys": [{ "modifiers": ["SUPER"], "key": "7" }],
-                    "actions": [{ "dispatcher": "workspace", "argument": "7", "flags": "" }],
+                    "actions": [{ "dispatcher": "workspace", "argument": "7", "flags": "", "compositor": { "type": "hyprland", "layouts": [] } }],
                     "enabled": true
                 },
                 {
                     "name": "Workspace 8",
                     "keys": [{ "modifiers": ["SUPER"], "key": "8" }],
-                    "actions": [{ "dispatcher": "workspace", "argument": "8", "flags": "" }],
+                    "actions": [{ "dispatcher": "workspace", "argument": "8", "flags": "", "compositor": { "type": "hyprland", "layouts": [] } }],
                     "enabled": true
                 },
                 {
                     "name": "Workspace 9",
                     "keys": [{ "modifiers": ["SUPER"], "key": "9" }],
-                    "actions": [{ "dispatcher": "workspace", "argument": "9", "flags": "" }],
+                    "actions": [{ "dispatcher": "workspace", "argument": "9", "flags": "", "compositor": { "type": "hyprland", "layouts": [] } }],
                     "enabled": true
                 },
                 {
                     "name": "Workspace 10",
                     "keys": [{ "modifiers": ["SUPER"], "key": "0" }],
-                    "actions": [{ "dispatcher": "workspace", "argument": "10", "flags": "" }],
+                    "actions": [{ "dispatcher": "workspace", "argument": "10", "flags": "", "compositor": { "type": "hyprland", "layouts": [] } }],
                     "enabled": true
                 },
 
-                // Move active window to workspace with SUPER + SHIFT + [0-9]
+                // ============================================
+                // Move Window to Workspace (SUPER + SHIFT + [0-9])
+                // ============================================
                 {
                     "name": "Move to Workspace 1",
                     "keys": [{ "modifiers": ["SUPER", "SHIFT"], "key": "1" }],
-                    "actions": [{ "dispatcher": "movetoworkspace", "argument": "1", "flags": "" }],
+                    "actions": [{ "dispatcher": "movetoworkspace", "argument": "1", "flags": "", "compositor": { "type": "hyprland", "layouts": [] } }],
                     "enabled": true
                 },
                 {
                     "name": "Move to Workspace 2",
                     "keys": [{ "modifiers": ["SUPER", "SHIFT"], "key": "2" }],
-                    "actions": [{ "dispatcher": "movetoworkspace", "argument": "2", "flags": "" }],
+                    "actions": [{ "dispatcher": "movetoworkspace", "argument": "2", "flags": "", "compositor": { "type": "hyprland", "layouts": [] } }],
                     "enabled": true
                 },
                 {
                     "name": "Move to Workspace 3",
                     "keys": [{ "modifiers": ["SUPER", "SHIFT"], "key": "3" }],
-                    "actions": [{ "dispatcher": "movetoworkspace", "argument": "3", "flags": "" }],
+                    "actions": [{ "dispatcher": "movetoworkspace", "argument": "3", "flags": "", "compositor": { "type": "hyprland", "layouts": [] } }],
                     "enabled": true
                 },
                 {
                     "name": "Move to Workspace 4",
                     "keys": [{ "modifiers": ["SUPER", "SHIFT"], "key": "4" }],
-                    "actions": [{ "dispatcher": "movetoworkspace", "argument": "4", "flags": "" }],
+                    "actions": [{ "dispatcher": "movetoworkspace", "argument": "4", "flags": "", "compositor": { "type": "hyprland", "layouts": [] } }],
                     "enabled": true
                 },
                 {
                     "name": "Move to Workspace 5",
                     "keys": [{ "modifiers": ["SUPER", "SHIFT"], "key": "5" }],
-                    "actions": [{ "dispatcher": "movetoworkspace", "argument": "5", "flags": "" }],
+                    "actions": [{ "dispatcher": "movetoworkspace", "argument": "5", "flags": "", "compositor": { "type": "hyprland", "layouts": [] } }],
                     "enabled": true
                 },
                 {
                     "name": "Move to Workspace 6",
                     "keys": [{ "modifiers": ["SUPER", "SHIFT"], "key": "6" }],
-                    "actions": [{ "dispatcher": "movetoworkspace", "argument": "6", "flags": "" }],
+                    "actions": [{ "dispatcher": "movetoworkspace", "argument": "6", "flags": "", "compositor": { "type": "hyprland", "layouts": [] } }],
                     "enabled": true
                 },
                 {
                     "name": "Move to Workspace 7",
                     "keys": [{ "modifiers": ["SUPER", "SHIFT"], "key": "7" }],
-                    "actions": [{ "dispatcher": "movetoworkspace", "argument": "7", "flags": "" }],
+                    "actions": [{ "dispatcher": "movetoworkspace", "argument": "7", "flags": "", "compositor": { "type": "hyprland", "layouts": [] } }],
                     "enabled": true
                 },
                 {
                     "name": "Move to Workspace 8",
                     "keys": [{ "modifiers": ["SUPER", "SHIFT"], "key": "8" }],
-                    "actions": [{ "dispatcher": "movetoworkspace", "argument": "8", "flags": "" }],
+                    "actions": [{ "dispatcher": "movetoworkspace", "argument": "8", "flags": "", "compositor": { "type": "hyprland", "layouts": [] } }],
                     "enabled": true
                 },
                 {
                     "name": "Move to Workspace 9",
                     "keys": [{ "modifiers": ["SUPER", "SHIFT"], "key": "9" }],
-                    "actions": [{ "dispatcher": "movetoworkspace", "argument": "9", "flags": "" }],
+                    "actions": [{ "dispatcher": "movetoworkspace", "argument": "9", "flags": "", "compositor": { "type": "hyprland", "layouts": [] } }],
                     "enabled": true
                 },
                 {
                     "name": "Move to Workspace 10",
                     "keys": [{ "modifiers": ["SUPER", "SHIFT"], "key": "0" }],
-                    "actions": [{ "dispatcher": "movetoworkspace", "argument": "10", "flags": "" }],
+                    "actions": [{ "dispatcher": "movetoworkspace", "argument": "10", "flags": "", "compositor": { "type": "hyprland", "layouts": [] } }],
                     "enabled": true
                 },
 
-                // Navigate workspaces with mouse scroll
+                // ============================================
+                // Workspace Navigation (Mouse Scroll)
+                // ============================================
                 {
                     "name": "Previous Occupied Workspace (Scroll)",
                     "keys": [{ "modifiers": ["SUPER"], "key": "mouse_down" }],
-                    "actions": [{ "dispatcher": "workspace", "argument": "e-1", "flags": "" }],
+                    "actions": [{ "dispatcher": "workspace", "argument": "e-1", "flags": "", "compositor": { "type": "hyprland", "layouts": [] } }],
                     "enabled": true
                 },
                 {
                     "name": "Next Occupied Workspace (Scroll)",
                     "keys": [{ "modifiers": ["SUPER"], "key": "mouse_up" }],
-                    "actions": [{ "dispatcher": "workspace", "argument": "e+1", "flags": "" }],
+                    "actions": [{ "dispatcher": "workspace", "argument": "e+1", "flags": "", "compositor": { "type": "hyprland", "layouts": [] } }],
                     "enabled": true
                 },
 
-                // Navigate workspaces with keyboard
+                // ============================================
+                // Workspace Navigation (Keyboard)
+                // ============================================
                 {
                     "name": "Previous Occupied Workspace",
                     "keys": [{ "modifiers": ["SUPER", "SHIFT"], "key": "Z" }],
-                    "actions": [{ "dispatcher": "workspace", "argument": "e-1", "flags": "" }],
+                    "actions": [{ "dispatcher": "workspace", "argument": "e-1", "flags": "", "compositor": { "type": "hyprland", "layouts": [] } }],
                     "enabled": true
                 },
                 {
                     "name": "Next Occupied Workspace",
                     "keys": [{ "modifiers": ["SUPER", "SHIFT"], "key": "X" }],
-                    "actions": [{ "dispatcher": "workspace", "argument": "e+1", "flags": "" }],
+                    "actions": [{ "dispatcher": "workspace", "argument": "e+1", "flags": "", "compositor": { "type": "hyprland", "layouts": [] } }],
                     "enabled": true
                 },
                 {
                     "name": "Previous Workspace",
                     "keys": [{ "modifiers": ["SUPER"], "key": "Z" }],
-                    "actions": [{ "dispatcher": "workspace", "argument": "-1", "flags": "" }],
+                    "actions": [{ "dispatcher": "workspace", "argument": "-1", "flags": "", "compositor": { "type": "hyprland", "layouts": [] } }],
                     "enabled": true
                 },
                 {
                     "name": "Next Workspace",
                     "keys": [{ "modifiers": ["SUPER"], "key": "X" }],
-                    "actions": [{ "dispatcher": "workspace", "argument": "+1", "flags": "" }],
+                    "actions": [{ "dispatcher": "workspace", "argument": "+1", "flags": "", "compositor": { "type": "hyprland", "layouts": [] } }],
                     "enabled": true
                 },
 
-                // Move/resize windows with mouse
+                // ============================================
+                // Window Drag/Resize (Mouse)
+                // ============================================
                 {
                     "name": "Drag Window",
                     "keys": [{ "modifiers": ["SUPER"], "key": "mouse:272" }],
-                    "actions": [{ "dispatcher": "movewindow", "argument": "", "flags": "m" }],
+                    "actions": [{ "dispatcher": "movewindow", "argument": "", "flags": "m", "compositor": { "type": "hyprland", "layouts": [] } }],
                     "enabled": true
                 },
                 {
                     "name": "Drag Resize Window",
                     "keys": [{ "modifiers": ["SUPER"], "key": "mouse:273" }],
-                    "actions": [{ "dispatcher": "resizewindow", "argument": "", "flags": "m" }],
+                    "actions": [{ "dispatcher": "resizewindow", "argument": "", "flags": "m", "compositor": { "type": "hyprland", "layouts": [] } }],
                     "enabled": true
                 },
 
-                // Media player controls
+                // ============================================
+                // Media Player Controls
+                // ============================================
                 {
                     "name": "Play/Pause",
                     "keys": [{ "modifiers": [], "key": "XF86AudioPlay" }],
-                    "actions": [{ "dispatcher": "exec", "argument": "playerctl play-pause", "flags": "" }],
+                    "actions": [{ "dispatcher": "exec", "argument": "playerctl play-pause", "flags": "", "compositor": { "type": "hyprland", "layouts": [] } }],
                     "enabled": true
                 },
                 {
                     "name": "Previous Track",
                     "keys": [{ "modifiers": [], "key": "XF86AudioPrev" }],
-                    "actions": [{ "dispatcher": "exec", "argument": "playerctl previous", "flags": "" }],
+                    "actions": [{ "dispatcher": "exec", "argument": "playerctl previous", "flags": "", "compositor": { "type": "hyprland", "layouts": [] } }],
                     "enabled": true
                 },
                 {
                     "name": "Next Track",
                     "keys": [{ "modifiers": [], "key": "XF86AudioNext" }],
-                    "actions": [{ "dispatcher": "exec", "argument": "playerctl next", "flags": "" }],
+                    "actions": [{ "dispatcher": "exec", "argument": "playerctl next", "flags": "", "compositor": { "type": "hyprland", "layouts": [] } }],
                     "enabled": true
                 },
                 {
                     "name": "Media Play/Pause",
                     "keys": [{ "modifiers": [], "key": "XF86AudioMedia" }],
-                    "actions": [{ "dispatcher": "exec", "argument": "playerctl play-pause", "flags": "l" }],
+                    "actions": [{ "dispatcher": "exec", "argument": "playerctl play-pause", "flags": "l", "compositor": { "type": "hyprland", "layouts": [] } }],
                     "enabled": true
                 },
                 {
                     "name": "Stop Playback",
                     "keys": [{ "modifiers": [], "key": "XF86AudioStop" }],
-                    "actions": [{ "dispatcher": "exec", "argument": "playerctl stop", "flags": "l" }],
+                    "actions": [{ "dispatcher": "exec", "argument": "playerctl stop", "flags": "l", "compositor": { "type": "hyprland", "layouts": [] } }],
                     "enabled": true
                 },
 
-                // Volume controls
+                // ============================================
+                // Volume Controls
+                // ============================================
                 {
                     "name": "Volume Up",
                     "keys": [{ "modifiers": [], "key": "XF86AudioRaiseVolume" }],
-                    "actions": [{ "dispatcher": "exec", "argument": "wpctl set-volume -l 1 @DEFAULT_AUDIO_SINK@ 10%+", "flags": "le" }],
+                    "actions": [{ "dispatcher": "exec", "argument": "wpctl set-volume -l 1 @DEFAULT_AUDIO_SINK@ 10%+", "flags": "le", "compositor": { "type": "hyprland", "layouts": [] } }],
                     "enabled": true
                 },
                 {
                     "name": "Volume Down",
                     "keys": [{ "modifiers": [], "key": "XF86AudioLowerVolume" }],
-                    "actions": [{ "dispatcher": "exec", "argument": "wpctl set-volume -l 1 @DEFAULT_AUDIO_SINK@ 10%-", "flags": "le" }],
+                    "actions": [{ "dispatcher": "exec", "argument": "wpctl set-volume -l 1 @DEFAULT_AUDIO_SINK@ 10%-", "flags": "le", "compositor": { "type": "hyprland", "layouts": [] } }],
                     "enabled": true
                 },
                 {
                     "name": "Mute Audio",
                     "keys": [{ "modifiers": [], "key": "XF86AudioMute" }],
-                    "actions": [{ "dispatcher": "exec", "argument": "wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle", "flags": "le" }],
+                    "actions": [{ "dispatcher": "exec", "argument": "wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle", "flags": "le", "compositor": { "type": "hyprland", "layouts": [] } }],
                     "enabled": true
                 },
 
-                // Brightness controls
+                // ============================================
+                // Brightness Controls
+                // ============================================
                 {
                     "name": "Brightness Up",
                     "keys": [{ "modifiers": [], "key": "XF86MonBrightnessUp" }],
-                    "actions": [{ "dispatcher": "exec", "argument": "ambxst brightness +5", "flags": "le" }],
+                    "actions": [{ "dispatcher": "exec", "argument": "ambxst brightness +5", "flags": "le", "compositor": { "type": "hyprland", "layouts": [] } }],
                     "enabled": true
                 },
                 {
                     "name": "Brightness Down",
                     "keys": [{ "modifiers": [], "key": "XF86MonBrightnessDown" }],
-                    "actions": [{ "dispatcher": "exec", "argument": "ambxst brightness -5", "flags": "le" }],
+                    "actions": [{ "dispatcher": "exec", "argument": "ambxst brightness -5", "flags": "le", "compositor": { "type": "hyprland", "layouts": [] } }],
                     "enabled": true
                 },
 
-                // Calculator key
+                // ============================================
+                // Special Keys
+                // ============================================
                 {
                     "name": "Calculator",
                     "keys": [{ "modifiers": [], "key": "XF86Calculator" }],
-                    "actions": [{ "dispatcher": "exec", "argument": "notify-send \"Soon\"", "flags": "" }],
+                    "actions": [{ "dispatcher": "exec", "argument": "notify-send \"Soon\"", "flags": "", "compositor": { "type": "hyprland", "layouts": [] } }],
                     "enabled": true
                 },
 
-                // Special workspaces
+                // ============================================
+                // Special Workspaces
+                // ============================================
                 {
                     "name": "Toggle Special Workspace",
                     "keys": [{ "modifiers": ["SUPER", "SHIFT"], "key": "V" }],
-                    "actions": [{ "dispatcher": "togglespecialworkspace", "argument": "", "flags": "" }],
+                    "actions": [{ "dispatcher": "togglespecialworkspace", "argument": "", "flags": "", "compositor": { "type": "hyprland", "layouts": [] } }],
                     "enabled": true
                 },
                 {
                     "name": "Move to Special Workspace",
                     "keys": [{ "modifiers": ["SUPER", "ALT"], "key": "V" }],
-                    "actions": [{ "dispatcher": "movetoworkspace", "argument": "special", "flags": "" }],
+                    "actions": [{ "dispatcher": "movetoworkspace", "argument": "special", "flags": "", "compositor": { "type": "hyprland", "layouts": [] } }],
                     "enabled": true
                 },
 
-                // Lid switch events
+                // ============================================
+                // Lid Switch Events
+                // ============================================
                 {
                     "name": "Lock on Lid Close",
                     "keys": [{ "modifiers": [], "key": "switch:Lid Switch" }],
-                    "actions": [{ "dispatcher": "exec", "argument": "loginctl lock-session", "flags": "l" }],
+                    "actions": [{ "dispatcher": "exec", "argument": "loginctl lock-session", "flags": "l", "compositor": { "type": "hyprland", "layouts": [] } }],
                     "enabled": true
                 },
                 {
                     "name": "Display Off on Lid Close",
                     "keys": [{ "modifiers": [], "key": "switch:on:Lid Switch" }],
-                    "actions": [{ "dispatcher": "exec", "argument": "hyprctl dispatch dpms off", "flags": "l" }],
+                    "actions": [{ "dispatcher": "exec", "argument": "hyprctl dispatch dpms off", "flags": "l", "compositor": { "type": "hyprland", "layouts": [] } }],
                     "enabled": true
                 },
                 {
                     "name": "Display On on Lid Open",
                     "keys": [{ "modifiers": [], "key": "switch:off:Lid Switch" }],
-                    "actions": [{ "dispatcher": "exec", "argument": "hyprctl dispatch dpms on", "flags": "l" }],
+                    "actions": [{ "dispatcher": "exec", "argument": "hyprctl dispatch dpms on", "flags": "l", "compositor": { "type": "hyprland", "layouts": [] } }],
                     "enabled": true
                 },
 
                 // ============================================
-                // Hyprland Scrolling layout binds
-                // These are for the hyprscrolling plugin/layout
+                // Window Focus (Layout-aware)
                 // ============================================
                 {
-                    "name": "Center Focus Up (Scrolling)",
+                    "name": "Focus Up",
                     "keys": [
                         { "modifiers": ["SUPER"], "key": "Up" },
                         { "modifiers": ["SUPER", "CTRL"], "key": "k" }
                     ],
-                    "actions": [{ "dispatcher": "layoutmsg", "argument": "focus u", "flags": "", "compositor": { "type": "hyprland", "layouts": ["scrolling"] } }],
+                    "actions": [
+                        { "dispatcher": "layoutmsg", "argument": "focus u", "flags": "", "compositor": { "type": "hyprland", "layouts": ["scrolling"] } },
+                        { "dispatcher": "movefocus", "argument": "u", "flags": "", "compositor": { "type": "hyprland", "layouts": ["dwindle", "master"] } }
+                    ],
                     "enabled": true
                 },
                 {
-                    "name": "Center Focus Down (Scrolling)",
+                    "name": "Focus Down",
                     "keys": [
                         { "modifiers": ["SUPER"], "key": "Down" },
                         { "modifiers": ["SUPER", "CTRL"], "key": "j" }
                     ],
-                    "actions": [{ "dispatcher": "layoutmsg", "argument": "focus d", "flags": "", "compositor": { "type": "hyprland", "layouts": ["scrolling"] } }],
+                    "actions": [
+                        { "dispatcher": "layoutmsg", "argument": "focus d", "flags": "", "compositor": { "type": "hyprland", "layouts": ["scrolling"] } },
+                        { "dispatcher": "movefocus", "argument": "d", "flags": "", "compositor": { "type": "hyprland", "layouts": ["master", "dwindle"] } }
+                    ],
                     "enabled": true
                 },
                 {
-                    "name": "Center Focus Left (Scrolling)",
+                    "name": "Focus Left",
                     "keys": [
                         { "modifiers": ["SUPER"], "key": "Left" },
                         { "modifiers": ["SUPER", "CTRL"], "key": "z" },
                         { "modifiers": ["SUPER", "CTRL"], "key": "h" }
                     ],
-                    "actions": [{ "dispatcher": "layoutmsg", "argument": "focus l", "flags": "", "compositor": { "type": "hyprland", "layouts": ["scrolling"] } }],
+                    "actions": [
+                        { "dispatcher": "layoutmsg", "argument": "focus l", "flags": "", "compositor": { "type": "hyprland", "layouts": ["scrolling"] } },
+                        { "dispatcher": "movefocus", "argument": "l", "flags": "", "compositor": { "type": "hyprland", "layouts": ["dwindle", "master"] } }
+                    ],
                     "enabled": true
                 },
                 {
-                    "name": "Center Focus Right (Scrolling)",
+                    "name": "Focus Right",
                     "keys": [
                         { "modifiers": ["SUPER"], "key": "Right" },
                         { "modifiers": ["SUPER", "CTRL"], "key": "x" },
                         { "modifiers": ["SUPER", "CTRL"], "key": "l" }
                     ],
-                    "actions": [{ "dispatcher": "layoutmsg", "argument": "focus r", "flags": "", "compositor": { "type": "hyprland", "layouts": ["scrolling"] } }],
+                    "actions": [
+                        { "dispatcher": "layoutmsg", "argument": "focus r", "flags": "", "compositor": { "type": "hyprland", "layouts": ["scrolling"] } },
+                        { "dispatcher": "movefocus", "argument": "r", "flags": "", "compositor": { "type": "hyprland", "layouts": ["master", "dwindle"] } }
+                    ],
                     "enabled": true
                 },
+
+                // ============================================
+                // Window Movement (Layout-aware)
+                // ============================================
+                {
+                    "name": "Move Window Left",
+                    "keys": [
+                        { "modifiers": ["SUPER", "SHIFT"], "key": "Left" },
+                        { "modifiers": ["SUPER", "SHIFT"], "key": "h" }
+                    ],
+                    "actions": [{ "dispatcher": "movewindow", "argument": "l", "flags": "", "compositor": { "type": "hyprland", "layouts": [] } }],
+                    "enabled": true
+                },
+                {
+                    "name": "Move Window Right",
+                    "keys": [
+                        { "modifiers": ["SUPER", "SHIFT"], "key": "Right" },
+                        { "modifiers": ["SUPER", "SHIFT"], "key": "l" }
+                    ],
+                    "actions": [{ "dispatcher": "movewindow", "argument": "r", "flags": "", "compositor": { "type": "hyprland", "layouts": [] } }],
+                    "enabled": true
+                },
+                {
+                    "name": "Move Window Up",
+                    "keys": [
+                        { "modifiers": ["SUPER", "SHIFT"], "key": "Up" },
+                        { "modifiers": ["SUPER", "SHIFT"], "key": "k" }
+                    ],
+                    "actions": [{ "dispatcher": "movewindow", "argument": "u", "flags": "", "compositor": { "type": "hyprland", "layouts": [] } }],
+                    "enabled": true
+                },
+                {
+                    "name": "Move Window Down",
+                    "keys": [
+                        { "modifiers": ["SUPER", "SHIFT"], "key": "Down" },
+                        { "modifiers": ["SUPER", "SHIFT"], "key": "j" }
+                    ],
+                    "actions": [{ "dispatcher": "movewindow", "argument": "d", "flags": "", "compositor": { "type": "hyprland", "layouts": [] } }],
+                    "enabled": true
+                },
+
+                // ============================================
+                // Window Resize (Layout-aware)
+                // ============================================
+                {
+                    "name": "Horizontal Resize +",
+                    "keys": [
+                        { "modifiers": ["SUPER", "ALT"], "key": "Right" },
+                        { "modifiers": ["SUPER", "ALT"], "key": "l" }
+                    ],
+                    "actions": [
+                        { "dispatcher": "layoutmsg", "argument": "colresize +0.1", "flags": "", "compositor": { "type": "hyprland", "layouts": ["scrolling"] } },
+                        { "dispatcher": "resizeactive", "argument": "50 0", "flags": "", "compositor": { "type": "hyprland", "layouts": ["master", "dwindle"] } }
+                    ],
+                    "enabled": true
+                },
+                {
+                    "name": "Horizontal Resize -",
+                    "keys": [
+                        { "modifiers": ["SUPER", "ALT"], "key": "Left" },
+                        { "modifiers": ["SUPER", "ALT"], "key": "h" }
+                    ],
+                    "actions": [
+                        { "dispatcher": "layoutmsg", "argument": "colresize -0.1", "flags": "", "compositor": { "type": "hyprland", "layouts": ["scrolling"] } },
+                        { "dispatcher": "resizeactive", "argument": "-50 0", "flags": "", "compositor": { "type": "hyprland", "layouts": ["master", "dwindle"] } }
+                    ],
+                    "enabled": true
+                },
+                {
+                    "name": "Vertical Resize +",
+                    "keys": [
+                        { "modifiers": ["SUPER", "ALT"], "key": "Down" },
+                        { "modifiers": ["SUPER", "ALT"], "key": "j" }
+                    ],
+                    "actions": [{ "dispatcher": "resizeactive", "argument": "0 50", "flags": "", "compositor": { "type": "hyprland", "layouts": [] } }],
+                    "enabled": true
+                },
+                {
+                    "name": "Vertical Resize -",
+                    "keys": [
+                        { "modifiers": ["SUPER", "ALT"], "key": "Up" },
+                        { "modifiers": ["SUPER", "ALT"], "key": "k" }
+                    ],
+                    "actions": [{ "dispatcher": "resizeactive", "argument": "0 -50", "flags": "", "compositor": { "type": "hyprland", "layouts": [] } }],
+                    "enabled": true
+                },
+
+                // ============================================
+                // Scrolling Layout Specific
+                // ============================================
                 {
                     "name": "Promote (Scrolling)",
                     "keys": [{ "modifiers": ["SUPER", "ALT"], "key": "SPACE" }],
                     "actions": [{ "dispatcher": "layoutmsg", "argument": "promote", "flags": "", "compositor": { "type": "hyprland", "layouts": ["scrolling"] } }],
-                    "enabled": true
-                },
-                {
-                    "name": "Swap Column Left (Scrolling)",
-                    "keys": [{ "modifiers": ["SUPER", "ALT"], "key": "Left" }],
-                    "actions": [{ "dispatcher": "layoutmsg", "argument": "swapcol l", "flags": "", "compositor": { "type": "hyprland", "layouts": ["scrolling"] } }],
-                    "enabled": true
-                },
-                {
-                    "name": "Swap Column Right (Scrolling)",
-                    "keys": [{ "modifiers": ["SUPER", "ALT"], "key": "Right" }],
-                    "actions": [{ "dispatcher": "layoutmsg", "argument": "swapcol r", "flags": "", "compositor": { "type": "hyprland", "layouts": ["scrolling"] } }],
                     "enabled": true
                 },
                 {
@@ -1582,27 +1695,27 @@ Singleton {
                     "enabled": true
                 },
                 {
-                    "name": "Column Resize + (Scrolling)",
-                    "keys": [
-                        { "modifiers": ["SUPER", "CTRL"], "key": "Right" },
-                        { "modifiers": ["SUPER", "ALT"], "key": "l" }
-                    ],
-                    "actions": [{ "dispatcher": "layoutmsg", "argument": "colresize +0.1", "flags": "", "compositor": { "type": "hyprland", "layouts": ["scrolling"] } }],
-                    "enabled": true
-                },
-                {
-                    "name": "Column Resize - (Scrolling)",
-                    "keys": [
-                        { "modifiers": ["SUPER", "CTRL"], "key": "Left" },
-                        { "modifiers": ["SUPER", "ALT"], "key": "h" }
-                    ],
-                    "actions": [{ "dispatcher": "layoutmsg", "argument": "colresize -0.1", "flags": "", "compositor": { "type": "hyprland", "layouts": ["scrolling"] } }],
-                    "enabled": true
-                },
-                {
                     "name": "Toggle Full Column (Scrolling)",
                     "keys": [{ "modifiers": ["SUPER", "SHIFT"], "key": "SPACE" }],
                     "actions": [{ "dispatcher": "layoutmsg", "argument": "colresize +conf", "flags": "", "compositor": { "type": "hyprland", "layouts": ["scrolling"] } }],
+                    "enabled": true
+                },
+                {
+                    "name": "Swap Column Left",
+                    "keys": [
+                        { "modifiers": ["SUPER", "ALT", "CTRL"], "key": "Left" },
+                        { "modifiers": ["SUPER", "ALT", "CTRL"], "key": "h" }
+                    ],
+                    "actions": [{ "dispatcher": "layoutmsg", "argument": "swapcol l", "flags": "", "compositor": { "type": "hyprland", "layouts": ["scrolling"] } }],
+                    "enabled": true
+                },
+                {
+                    "name": "Swap Column Right",
+                    "keys": [
+                        { "modifiers": ["SUPER", "ALT", "CTRL"], "key": "Right" },
+                        { "modifiers": ["SUPER", "ALT", "CTRL"], "key": "l" }
+                    ],
+                    "actions": [{ "dispatcher": "layoutmsg", "argument": "swapcol r", "flags": "", "compositor": { "type": "hyprland", "layouts": ["scrolling"] } }],
                     "enabled": true
                 }
             ]

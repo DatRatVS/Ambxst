@@ -14,7 +14,7 @@ Rectangle {
     implicitWidth: 400
     implicitHeight: 300
 
-    property int currentSection: 0  // 0: Network, 1: Bluetooth, 2: Mixer, 3: Effects, 4: Theme, 5: Binds
+    property int currentSection: 0  // 0: Network, 1: Bluetooth, 2: Mixer, 3: Effects, 4: Theme, 5: Binds, 6: System
 
     RowLayout {
         anchors.fill: parent
@@ -68,15 +68,16 @@ Rectangle {
                     spacing: 4
                     z: 1
 
-                    Repeater {
-                        model: [
-                            { icon: Icons.wifiHigh, label: "Network", section: 0 },
-                            { icon: Icons.bluetooth, label: "Bluetooth", section: 1 },
-                            { icon: Icons.faders, label: "Mixer", section: 2 },
-                            { icon: Icons.waveform, label: "Effects", section: 3 },
-                            { icon: Icons.paintBrush, label: "Theme", section: 4 },
-                            { icon: Icons.keyboard, label: "Binds", section: 5 }
-                        ]
+                        Repeater {
+                            model: [
+                                { icon: Icons.wifiHigh, label: "Network", section: 0 },
+                                { icon: Icons.bluetooth, label: "Bluetooth", section: 1 },
+                                { icon: Icons.faders, label: "Mixer", section: 2 },
+                                { icon: Icons.waveform, label: "Effects", section: 3 },
+                                { icon: Icons.paintBrush, label: "Theme", section: 4 },
+                                { icon: Icons.keyboard, label: "Binds", section: 5 },
+                                { icon: Icons.circuitry, label: "System", section: 6 }
+                            ]
 
                         delegate: Button {
                             id: sidebarButton
@@ -155,7 +156,7 @@ Rectangle {
                         // Otherwise, navigate sections
                         if (event.angleDelta.y > 0 && root.currentSection > 0) {
                             root.currentSection--;
-                        } else if (event.angleDelta.y < 0 && root.currentSection < 5) {
+                        } else if (event.angleDelta.y < 0 && root.currentSection < 6) {
                             root.currentSection++;
                         }
                     }
@@ -350,6 +351,35 @@ Rectangle {
 
                 transform: Translate {
                     y: root.currentSection === 5 ? 0 : (root.currentSection > 5 ? -20 : 20)
+
+                    Behavior on y {
+                        enabled: Config.animDuration > 0
+                        NumberAnimation {
+                            duration: Config.animDuration
+                            easing.type: Easing.OutCubic
+                        }
+                    }
+                }
+            }
+
+            // System Panel
+            SystemPanel {
+                id: systemPanel
+                anchors.fill: parent
+                maxContentWidth: contentArea.maxContentWidth
+                visible: opacity > 0
+                opacity: root.currentSection === 6 ? 1 : 0
+
+                Behavior on opacity {
+                    enabled: Config.animDuration > 0
+                    NumberAnimation {
+                        duration: Config.animDuration
+                        easing.type: Easing.OutCubic
+                    }
+                }
+
+                transform: Translate {
+                    y: root.currentSection === 6 ? 0 : (root.currentSection > 6 ? -20 : 20)
 
                     Behavior on y {
                         enabled: Config.animDuration > 0

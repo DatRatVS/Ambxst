@@ -14,6 +14,36 @@ Item {
     readonly property int contentWidth: Math.min(width, maxContentWidth)
     readonly property real sideMargin: (width - contentWidth) / 2
 
+    // Available color names for color picker
+    readonly property var colorNames: ["background", "surface", "surfaceBright", "surfaceContainer", "surfaceContainerHigh", "surfaceContainerHighest", "surfaceContainerLow", "surfaceContainerLowest", "surfaceDim", "surfaceTint", "surfaceVariant", "primary", "primaryContainer", "primaryFixed", "primaryFixedDim", "secondary", "secondaryContainer", "secondaryFixed", "secondaryFixedDim", "tertiary", "tertiaryContainer", "tertiaryFixed", "tertiaryFixedDim", "error", "errorContainer", "overBackground", "overSurface", "overSurfaceVariant", "overPrimary", "overPrimaryContainer", "overPrimaryFixed", "overPrimaryFixedVariant", "overSecondary", "overSecondaryContainer", "overSecondaryFixed", "overSecondaryFixedVariant", "overTertiary", "overTertiaryContainer", "overTertiaryFixed", "overTertiaryFixedVariant", "overError", "overErrorContainer", "outline", "outlineVariant", "inversePrimary", "inverseSurface", "inverseOnSurface", "shadow", "scrim", "blue", "blueContainer", "overBlue", "overBlueContainer", "cyan", "cyanContainer", "overCyan", "overCyanContainer", "green", "greenContainer", "overGreen", "overGreenContainer", "magenta", "magentaContainer", "overMagenta", "overMagentaContainer", "red", "redContainer", "overRed", "overRedContainer", "yellow", "yellowContainer", "overYellow", "overYellowContainer", "white", "whiteContainer", "overWhite", "overWhiteContainer"]
+
+    // Color picker state
+    property bool colorPickerActive: false
+    property var colorPickerColorNames: []
+    property string colorPickerCurrentColor: ""
+    property string colorPickerDialogTitle: ""
+    property var colorPickerCallback: null
+
+    function openColorPicker(colorNames, currentColor, dialogTitle, callback) {
+        colorPickerColorNames = colorNames;
+        colorPickerCurrentColor = currentColor;
+        colorPickerDialogTitle = dialogTitle;
+        colorPickerCallback = callback;
+        colorPickerActive = true;
+    }
+
+    function closeColorPicker() {
+        colorPickerActive = false;
+        colorPickerCallback = null;
+    }
+
+    function handleColorSelected(color) {
+        if (colorPickerCallback) {
+            colorPickerCallback(color);
+        }
+        colorPickerCurrentColor = color;
+    }
+
     // Inline component for toggle rows
     component ToggleRow: RowLayout {
         id: toggleRowRoot
@@ -217,7 +247,6 @@ Item {
         SegmentedSwitch {
             Layout.fillWidth: true
             Layout.preferredHeight: 32
-            buttonSize: (Layout.fillWidth ? (parent.width - 100 - 8) / selectorRowRoot.options.length : 60)
             options: selectorRowRoot.options.map(opt => opt.label)
             currentIndex: selectorRowRoot.getIndexFromValue(selectorRowRoot.value)
             onIndexChanged: index => {
@@ -229,12 +258,36 @@ Item {
         }
     }
 
+    // Main content
     Flickable {
         id: mainFlickable
         anchors.fill: parent
         contentHeight: mainColumn.implicitHeight
         clip: true
         boundsBehavior: Flickable.StopAtBounds
+        interactive: !root.colorPickerActive
+
+        // Horizontal slide + fade animation
+        opacity: root.colorPickerActive ? 0 : 1
+        transform: Translate {
+            x: root.colorPickerActive ? -30 : 0
+
+            Behavior on x {
+                enabled: Config.animDuration > 0
+                NumberAnimation {
+                    duration: Config.animDuration / 2
+                    easing.type: Easing.OutQuart
+                }
+            }
+        }
+
+        Behavior on opacity {
+            enabled: Config.animDuration > 0
+            NumberAnimation {
+                duration: Config.animDuration / 2
+                easing.type: Easing.OutQuart
+            }
+        }
 
         ColumnLayout {
             id: mainColumn
@@ -285,7 +338,9 @@ Item {
                             label: "Position"
                             options: [
                                 { label: "Top", value: "top" },
-                                { label: "Bottom", value: "bottom" }
+                                { label: "Bottom", value: "bottom" },
+                                { label: "Left", value: "left" },
+                                { label: "Right", value: "right" }
                             ]
                             value: Config.bar.position ?? "top"
                             onValueSelected: newValue => {
@@ -297,7 +352,7 @@ Item {
                         TextInputRow {
                             label: "Launcher Icon"
                             value: Config.bar.launcherIcon ?? ""
-                            placeholder: "Path to icon..."
+                            placeholder: "Symbol or path to icon..."
                             onValueEdited: newValue => {
                                 Config.bar.launcherIcon = newValue;
                                 Config.saveConfig("bar");
@@ -366,8 +421,7 @@ Item {
                             label: "Theme"
                             options: [
                                 { label: "Default", value: "default" },
-                                { label: "Minimal", value: "minimal" },
-                                { label: "Compact", value: "compact" }
+                                { label: "Island", value: "island" }
                             ]
                             value: Config.notch.theme ?? "default"
                             onValueSelected: newValue => {
@@ -558,7 +612,6 @@ Item {
                             label: "Position"
                             options: [
                                 { label: "Top", value: "top" },
-                                { label: "Center", value: "center" },
                                 { label: "Bottom", value: "bottom" }
                             ]
                             value: Config.lockscreen.position ?? "bottom"
@@ -620,17 +673,34 @@ Item {
                             }
                         }
 
-                        SelectorRow {
-                            label: "Text Color"
-                            options: [
-                                { label: "Over BG", value: "overBackground" },
-                                { label: "Primary", value: "primary" },
-                                { label: "Secondary", value: "secondary" }
-                            ]
-                            value: Config.desktop.textColor ?? "overBackground"
-                            onValueSelected: newValue => {
-                                Config.desktop.textColor = newValue;
-                                Config.saveConfig("desktop");
+                        // Text Color with ColorButton
+                        RowLayout {
+                            Layout.fillWidth: true
+                            spacing: 8
+
+                            Text {
+                                text: "Text Color"
+                                font.family: Config.theme.font
+                                font.pixelSize: Styling.fontSize(0)
+                                color: Colors.overBackground
+                                Layout.preferredWidth: 100
+                            }
+
+                            ColorButton {
+                                id: desktopTextColorButton
+                                Layout.fillWidth: true
+                                Layout.preferredHeight: 48
+                                colorNames: root.colorNames
+                                currentColor: Config.desktop.textColor ?? "overBackground"
+                                dialogTitle: "Desktop Text Color"
+                                compact: false
+
+                                onOpenColorPicker: (colorNames, currentColor, dialogTitle) => {
+                                    root.openColorPicker(colorNames, currentColor, dialogTitle, function(color) {
+                                        Config.desktop.textColor = color;
+                                        Config.saveConfig("desktop");
+                                    });
+                                }
                             }
                         }
                     }
@@ -642,6 +712,62 @@ Item {
                     }
                 }
             }
+        }
+    }
+
+    // Color picker view (shown when colorPickerActive)
+    Item {
+        id: colorPickerContainer
+        anchors.fill: parent
+        clip: true
+
+        // Horizontal slide + fade animation (enters from right)
+        opacity: root.colorPickerActive ? 1 : 0
+        transform: Translate {
+            x: root.colorPickerActive ? 0 : 30
+
+            Behavior on x {
+                enabled: Config.animDuration > 0
+                NumberAnimation {
+                    duration: Config.animDuration / 2
+                    easing.type: Easing.OutQuart
+                }
+            }
+        }
+
+        Behavior on opacity {
+            enabled: Config.animDuration > 0
+            NumberAnimation {
+                duration: Config.animDuration / 2
+                easing.type: Easing.OutQuart
+            }
+        }
+
+        // Prevent interaction when hidden
+        enabled: root.colorPickerActive
+
+        // Block interaction with elements behind when active
+        MouseArea {
+            anchors.fill: parent
+            enabled: root.colorPickerActive
+            hoverEnabled: true
+            acceptedButtons: Qt.AllButtons
+            onPressed: event => event.accepted = true
+            onReleased: event => event.accepted = true
+            onWheel: event => event.accepted = true
+        }
+
+        ColorPickerView {
+            id: colorPickerContent
+            anchors.fill: parent
+            anchors.leftMargin: root.sideMargin
+            anchors.rightMargin: root.sideMargin
+            colorNames: root.colorPickerColorNames
+            currentColor: root.colorPickerCurrentColor
+            dialogTitle: root.colorPickerDialogTitle
+
+            onColorSelected: color => root.handleColorSelected(color)
+            onClosed: root.closeColorPicker()
         }
     }
 }

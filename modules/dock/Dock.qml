@@ -712,37 +712,37 @@ Scope {
                                 // End at Bottom Right (width - offset, height - offset)
                                 
                             } else if (root.isLeft) {
-                                // Draw Bottom to Top (Start Bottom Left)
-                                ctx.moveTo(offset, height - offset);
+                                // Mirror of right - Draw Top to Bottom (Start Top Left)
+                                ctx.moveTo(offset, offset);
                                 
-                                // Bottom Fillet (Left Edge -> Bottom Side)
-                                // Center (cs, height - offset).
-                                // Start 180 (Left). End 270 (Top). CW (Increasing).
-                                ctx.arc(cs, height - offset, cs - offset, Math.PI, 3 * Math.PI / 2, false);
+                                // Top Fillet (Left Edge -> Top Side)
+                                // Center (cs, offset).
+                                // Start 180 (Left). End 90 (Bottom). ACW (Decreasing).
+                                ctx.arc(cs, offset, cs - offset, Math.PI, Math.PI / 2, true);
                                 
-                                // Line Right to Bottom Right
-                                ctx.lineTo(width - cs - br, height - cs);
-                                
-                                // Bottom Right Corner
-                                if (br > 0) ctx.arcTo(width - offset, height - cs, width - offset, height - cs - br, br - offset);
-                                else ctx.lineTo(width - offset, height - cs);
-                                
-                                // Line Up to Top Right
-                                ctx.lineTo(width - offset, cs + tr);
+                                // Line Right to Top Right Corner
+                                ctx.lineTo(width - tr - offset, cs);
                                 
                                 // Top Right Corner
-                                if (tr > 0) ctx.arcTo(width - offset, cs, width - offset - tr, cs, tr - offset);
+                                if (tr > 0) ctx.arcTo(width - offset, cs, width - offset, cs + tr, tr - offset);
                                 else ctx.lineTo(width - offset, cs);
                                 
-                                // Line Left to Top Fillet
-                                ctx.lineTo(cs, cs);
+                                // Line Down to Bottom Right Corner
+                                ctx.lineTo(width - offset, height - cs - br);
                                 
-                                // Top Fillet (Top Side -> Left Edge)
-                                // Center (cs, offset).
-                                // Start 90 (Bottom). End 180 (Left). CW (Increasing).
-                                ctx.arc(cs, offset, cs - offset, Math.PI / 2, Math.PI, false);
+                                // Bottom Right Corner
+                                if (br > 0) ctx.arcTo(width - offset, height - cs, width - offset - br, height - cs, br - offset);
+                                else ctx.lineTo(width - offset, height - cs);
                                 
-                                // End at Top Left (offset, offset)
+                                // Line Left to Bottom Fillet
+                                ctx.lineTo(cs, height - cs);
+                                
+                                // Bottom Fillet (Bottom Side -> Left Edge)
+                                // Center (cs, height - offset).
+                                // Start 270 (Top). End 180 (Left). ACW (Decreasing).
+                                ctx.arc(cs, height - offset, cs - offset, 3 * Math.PI / 2, Math.PI, true);
+                                
+                                // End at Bottom Left (offset, height - offset)
                                 
                             } else if (root.isRight) {
                                 // Draw Top to Bottom (Start Top Right)

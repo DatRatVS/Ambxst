@@ -1,4 +1,5 @@
 import QtQuick
+import QtQuick.Layouts
 import QtQuick.Effects
 import Quickshell
 import Quickshell.Wayland
@@ -88,25 +89,13 @@ PanelWindow {
         }
     }
 
-    // Overview container
+    // Main content column (search + overview)
     Item {
-        id: overviewContainer
+        id: mainContainer
         anchors.centerIn: parent
-        width: overviewLoader.item ? overviewLoader.item.implicitWidth + 48 : 400
-        height: overviewLoader.item ? overviewLoader.item.implicitHeight + 48 : 300
+        width: Math.max(searchContainer.width, overviewContainer.width)
+        height: searchContainer.height + 16 + overviewContainer.height
 
-        // Background panel
-        StyledRect {
-            id: overviewBackground
-            variant: "bg"
-            anchors.fill: parent
-            radius: Styling.radius(20)
-
-            layer.enabled: true
-            layer.effect: Shadow {}
-        }
-
-        // Scale and opacity animation
         opacity: overviewOpen ? 1 : 0
         scale: overviewOpen ? 1 : 0.9
 
@@ -127,24 +116,167 @@ PanelWindow {
             }
         }
 
-        // Loader for Overview to prevent issues during destruction
-        Loader {
-            id: overviewLoader
-            anchors.centerIn: parent
-            active: overviewOpen
-            
-            sourceComponent: Overview {
-                currentScreen: overviewPopup.screen
+        // Search input container
+        StyledRect {
+            id: searchContainer
+            variant: "bg"
+            anchors.top: parent.top
+            anchors.horizontalCenter: parent.horizontalCenter
+            width: Math.min(400, overviewContainer.width)
+            height: 80
+            radius: height / 2
 
-                Keys.onPressed: event => {
-                    if (event.key === Qt.Key_Escape) {
-                        Visibilities.setActiveModule("");
-                        event.accepted = true;
+            layer.enabled: true
+            layer.effect: Shadow {}
+
+            RowLayout {
+                anchors.fill: parent
+                anchors.margins: 16
+                spacing: 8
+
+                // Icon container
+                Rectangle {
+                    Layout.preferredWidth: 48
+                    Layout.preferredHeight: 48
+                    Layout.alignment: Qt.AlignVCenter
+                    color: "transparent"
+
+                    Text {
+                        anchors.centerIn: parent
+                        text: Icons.overview
+                        font.family: Icons.font
+                        font.pixelSize: 24
+                        color: Colors.primary
                     }
                 }
 
-                Component.onCompleted: {
-                    forceActiveFocus();
+                // Search input
+                SearchInput {
+                    id: searchInput
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: 48
+                    Layout.alignment: Qt.AlignVCenter
+
+                    variant: "common"
+                    placeholderText: qsTr("Search windows...")
+                    handleTabNavigation: true
+                    clearOnEscape: false
+
+                    // Match counter suffix
+                    Text {
+                        id: matchCounter
+                        visible: overviewLoader.item && overviewLoader.item.searchQuery.length > 0
+                        anchors.right: parent.right
+                        anchors.rightMargin: 16
+                        anchors.verticalCenter: parent.verticalCenter
+                        text: {
+                            if (!overviewLoader.item) return "0";
+                            const matches = overviewLoader.item.matchingWindows.length;
+                            if (matches > 0) {
+                                return `${overviewLoader.item.selectedMatchIndex + 1}/${matches}`;
+                            }
+                            return "0";
+                        }
+                        font.family: Config.theme.font
+                        font.pixelSize: Config.theme.fontSize - 2
+                        color: (overviewLoader.item && overviewLoader.item.matchingWindows.length > 0) ? Colors.primary : Colors.error
+                        opacity: 0.8
+                    }
+
+                    onSearchTextChanged: text => {
+                        if (overviewLoader.item) {
+                            overviewLoader.item.searchQuery = text;
+                        }
+                    }
+
+                    onAccepted: {
+                        if (overviewLoader.item) {
+                            overviewLoader.item.navigateToSelectedWindow();
+                        }
+                    }
+
+                    onTabPressed: {
+                        if (overviewLoader.item) {
+                            overviewLoader.item.selectNextMatch();
+                        }
+                    }
+
+                    onShiftTabPressed: {
+                        if (overviewLoader.item) {
+                            overviewLoader.item.selectPrevMatch();
+                        }
+                    }
+
+                    onDownPressed: {
+                        if (overviewLoader.item) {
+                            overviewLoader.item.selectNextMatch();
+                        }
+                    }
+
+                    onUpPressed: {
+                        if (overviewLoader.item) {
+                            overviewLoader.item.selectPrevMatch();
+                        }
+                    }
+
+                    onEscapePressed: {
+                        if (searchInput.text.length > 0) {
+                            searchInput.clear();
+                            if (overviewLoader.item) {
+                                overviewLoader.item.searchQuery = "";
+                            }
+                        } else {
+                            Visibilities.setActiveModule("");
+                        }
+                    }
+
+                    onLeftPressed: {
+                        if (searchInput.text.length === 0) {
+                            Hyprland.dispatch("workspace r-1");
+                        } else if (overviewLoader.item) {
+                            overviewLoader.item.selectPrevMatch();
+                        }
+                    }
+
+                    onRightPressed: {
+                        if (searchInput.text.length === 0) {
+                            Hyprland.dispatch("workspace r+1");
+                        } else if (overviewLoader.item) {
+                            overviewLoader.item.selectNextMatch();
+                        }
+                    }
+                }
+            }
+        }
+
+        // Overview container
+        Item {
+            id: overviewContainer
+            anchors.top: searchContainer.bottom
+            anchors.topMargin: 16
+            anchors.horizontalCenter: parent.horizontalCenter
+            width: overviewLoader.item ? overviewLoader.item.implicitWidth + 48 : 400
+            height: overviewLoader.item ? overviewLoader.item.implicitHeight + 48 : 300
+
+            // Background panel
+            StyledRect {
+                id: overviewBackground
+                variant: "bg"
+                anchors.fill: parent
+                radius: Styling.radius(20)
+
+                layer.enabled: true
+                layer.effect: Shadow {}
+            }
+
+            // Loader for Overview to prevent issues during destruction
+            Loader {
+                id: overviewLoader
+                anchors.centerIn: parent
+                active: overviewOpen
+                
+                sourceComponent: Overview {
+                    currentScreen: overviewPopup.screen
                 }
             }
         }
@@ -152,11 +284,13 @@ PanelWindow {
 
     // Ensure focus when overview opens
     onOverviewOpenChanged: {
-        if (overviewOpen && overviewLoader.item) {
+        if (overviewOpen) {
             Qt.callLater(() => {
+                searchInput.clear();
                 if (overviewLoader.item) {
-                    overviewLoader.item.forceActiveFocus();
+                    overviewLoader.item.resetSearch();
                 }
+                searchInput.focusInput();
             });
         }
     }

@@ -29,6 +29,10 @@ Item {
     property string barPosition: "top"
     property int barReserved: 0
 
+    // Search highlighting
+    property bool isSearchMatch: false
+    property bool isSearchSelected: false
+
     // Cache calculated values
     readonly property real initX: {
         let base = (windowData?.at?.[0] || 0) - (monitorData?.x || 0);
@@ -113,13 +117,18 @@ Item {
         anchors.fill: parent
         radius: root.calculatedRadius
         color: pressed ? Colors.surfaceBright : hovered ? Colors.surface : Colors.background
-        border.color: Colors.primary
-        border.width: hovered ? 2 : 0
+        border.color: root.isSearchSelected ? Colors.tertiary : root.isSearchMatch ? Colors.primary : Colors.primary
+        border.width: root.isSearchSelected ? 3 : root.isSearchMatch ? 2 : (hovered ? 2 : 0)
         visible: !windowPreview.hasContent || !Config.performance.windowPreview
 
         Behavior on color {
             enabled: Config.animDuration > 0
             ColorAnimation { duration: Config.animDuration / 2 }
+        }
+
+        Behavior on border.width {
+            enabled: Config.animDuration > 0
+            NumberAnimation { duration: Config.animDuration / 2 }
         }
     }
 
@@ -145,10 +154,28 @@ Item {
         color: pressed ? Qt.rgba(Colors.surfaceContainerHighest.r, Colors.surfaceContainerHighest.g, Colors.surfaceContainerHighest.b, 0.5) 
              : hovered ? Qt.rgba(Colors.surfaceContainer.r, Colors.surfaceContainer.g, Colors.surfaceContainer.b, 0.2) 
              : "transparent"
-        border.color: Colors.primary
-        border.width: hovered ? 2 : 0
+        border.color: root.isSearchSelected ? Colors.tertiary : root.isSearchMatch ? Colors.primary : Colors.primary
+        border.width: root.isSearchSelected ? 3 : root.isSearchMatch ? 2 : (hovered ? 2 : 0)
         visible: windowPreview.hasContent && Config.performance.windowPreview
         z: 5
+
+        Behavior on border.width {
+            enabled: Config.animDuration > 0
+            NumberAnimation { duration: Config.animDuration / 2 }
+        }
+    }
+
+    // Search match glow effect
+    Rectangle {
+        visible: root.isSearchSelected && !root.Drag.active
+        anchors.fill: parent
+        anchors.margins: -4
+        radius: root.calculatedRadius + 4
+        color: "transparent"
+        border.color: Colors.tertiary
+        border.width: 2
+        opacity: 0.6
+        z: -1
     }
 
     // Overlay icon when preview is available (smaller, in corner)

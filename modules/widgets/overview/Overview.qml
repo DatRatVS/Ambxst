@@ -37,6 +37,131 @@ Item {
     readonly property string barPosition: Config.bar.position
     readonly property int barReserved: Config.showBackground ? 44 : 40
 
+    // Search functionality (controlled from parent)
+    property string searchQuery: ""
+    property var matchingWindows: []
+    property int selectedMatchIndex: 0
+
+    // Reset search state
+    function resetSearch() {
+        searchQuery = "";
+        matchingWindows = [];
+        selectedMatchIndex = 0;
+    }
+
+    // Update matching windows when search query or window list changes
+    onSearchQueryChanged: updateMatchingWindows()
+    onWindowListChanged: updateMatchingWindows()
+
+    // Fuzzy match: checks if all characters of query appear in order in target
+    function fuzzyMatch(query, target) {
+        if (query.length === 0) return true;
+        if (target.length === 0) return false;
+        
+        let queryIndex = 0;
+        for (let i = 0; i < target.length && queryIndex < query.length; i++) {
+            if (target[i] === query[queryIndex]) {
+                queryIndex++;
+            }
+        }
+        return queryIndex === query.length;
+    }
+
+    // Score a fuzzy match (higher is better)
+    function fuzzyScore(query, target) {
+        if (query.length === 0) return 0;
+        if (target.length === 0) return -1;
+        
+        // Exact match gets highest score
+        if (target.includes(query)) return 1000 + (100 - target.length);
+        
+        // Check for fuzzy match
+        let queryIndex = 0;
+        let consecutiveMatches = 0;
+        let maxConsecutive = 0;
+        let score = 0;
+        
+        for (let i = 0; i < target.length && queryIndex < query.length; i++) {
+            if (target[i] === query[queryIndex]) {
+                queryIndex++;
+                consecutiveMatches++;
+                maxConsecutive = Math.max(maxConsecutive, consecutiveMatches);
+                // Bonus for matches at word boundaries
+                if (i === 0 || target[i-1] === ' ' || target[i-1] === '-' || target[i-1] === '_') {
+                    score += 10;
+                }
+            } else {
+                consecutiveMatches = 0;
+            }
+        }
+        
+        if (queryIndex !== query.length) return -1; // No match
+        
+        return score + maxConsecutive * 5;
+    }
+
+    function updateMatchingWindows() {
+        if (searchQuery.length === 0) {
+            matchingWindows = [];
+            selectedMatchIndex = 0;
+            return;
+        }
+        
+        const query = searchQuery.toLowerCase();
+        const matches = windowList
+            .filter(win => {
+                if (!win) return false;
+                const title = (win.title || "").toLowerCase();
+                const windowClass = (win.class || "").toLowerCase();
+                return fuzzyMatch(query, title) || fuzzyMatch(query, windowClass);
+            })
+            .map(win => ({
+                window: win,
+                score: Math.max(
+                    fuzzyScore(query, (win.title || "").toLowerCase()),
+                    fuzzyScore(query, (win.class || "").toLowerCase())
+                )
+            }))
+            .sort((a, b) => b.score - a.score)
+            .map(item => item.window);
+        
+        matchingWindows = matches;
+        selectedMatchIndex = matches.length > 0 ? 0 : -1;
+    }
+
+    function navigateToSelectedWindow() {
+        if (matchingWindows.length === 0 || selectedMatchIndex < 0) return;
+        
+        const win = matchingWindows[selectedMatchIndex];
+        if (!win) return;
+        
+        // Close overview and focus the matched window
+        Visibilities.setActiveModule("", true);
+        Qt.callLater(() => {
+            Hyprland.dispatch(`focuswindow address:${win.address}`);
+        });
+    }
+
+    function selectNextMatch() {
+        if (matchingWindows.length === 0) return;
+        selectedMatchIndex = (selectedMatchIndex + 1) % matchingWindows.length;
+    }
+
+    function selectPrevMatch() {
+        if (matchingWindows.length === 0) return;
+        selectedMatchIndex = (selectedMatchIndex - 1 + matchingWindows.length) % matchingWindows.length;
+    }
+
+    function isWindowMatched(windowAddress) {
+        if (searchQuery.length === 0) return false;
+        return matchingWindows.some(win => win?.address === windowAddress);
+    }
+
+    function isWindowSelected(windowAddress) {
+        if (matchingWindows.length === 0 || selectedMatchIndex < 0) return false;
+        return matchingWindows[selectedMatchIndex]?.address === windowAddress;
+    }
+
     // Pre-calculate workspace dimensions once
     readonly property real workspaceImplicitWidth: {
         if (!monitorData) return 200;
@@ -70,35 +195,6 @@ Item {
     
     // Enable layer for GPU acceleration
     layer.enabled: true
-
-    Keys.onPressed: event => {
-        if (event.key === Qt.Key_Escape) {
-            // Find any window in the current workspace and focus it
-            let currentWorkspace = monitor?.activeWorkspace?.id;
-            if (currentWorkspace) {
-                // Find a window in the current workspace
-                let windowInWorkspace = windowList.find(win => win?.workspace?.id === currentWorkspace && monitor?.id === win.monitor);
-
-                Visibilities.setActiveModule("");
-
-                // Use the same focus restoration pattern as double-click
-                if (windowInWorkspace) {
-                    Qt.callLater(() => {
-                        Hyprland.dispatch(`focuswindow address:${windowInWorkspace.address}`);
-                    });
-                }
-            } else {
-                Visibilities.setActiveModule("");
-            }
-            event.accepted = true;
-        } else if (event.key === Qt.Key_Left) {
-            Hyprland.dispatch("workspace r-1");
-            event.accepted = true;
-        } else if (event.key === Qt.Key_Right) {
-            Hyprland.dispatch("workspace r+1");
-            event.accepted = true;
-        }
-    }
 
     Item {
         id: overviewBackground
@@ -246,6 +342,10 @@ Item {
                     monitorData: overviewRoot.monitorData
                     barPosition: overviewRoot.barPosition
                     barReserved: overviewRoot.barReserved
+
+                    // Search highlighting
+                    isSearchMatch: overviewRoot.isWindowMatched(windowData?.address)
+                    isSearchSelected: overviewRoot.isWindowSelected(windowData?.address)
 
                     property int workspaceColIndex: (windowData?.workspace.id - 1) % overviewRoot.columns
                     property int workspaceRowIndex: Math.floor((windowData?.workspace.id - 1) % overviewRoot.workspacesShown / overviewRoot.columns)

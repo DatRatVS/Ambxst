@@ -57,8 +57,8 @@ QtObject {
 
     function applyHyprlandConfigInternal() {
         // Verificar que los adapters estén cargados antes de aplicar configuración
-        if (!Config.loader.loaded || !Colors.loaded) {
-            console.log("HyprlandConfig: Esperando que se carguen los adapters...");
+        if (!Config.loader.loaded) {
+            console.log("HyprlandConfig: Esperando que se cargue Config...");
             return;
         }
 
@@ -280,8 +280,8 @@ QtObject {
     }
 
     Component.onCompleted: {
-        // Si ambos loaders ya están cargados, aplicar inmediatamente
-        if (Config.loader.loaded && Colors.loaded) {
+        // Si Config loader ya está cargado, aplicar inmediatamente
+        if (Config.loader.loaded) {
             applyHyprlandConfig();
         }
         // Si no, las conexiones onLoaded se encargarán

@@ -20,8 +20,8 @@ Item {
     readonly property int totalWorkspaces: Config.overview.rows * Config.overview.columns
     readonly property int visibleWorkspaces: 3  // Show 3 workspaces at a time in viewport
     readonly property real workspaceSpacing: Config.overview.workspaceSpacing
-    readonly property real workspacePadding: 8
-    readonly property color activeBorderColor: Colors.loaded ? Colors.primary : "white"
+    readonly property real workspacePadding: 4
+    readonly property color activeBorderColor: Colors.primary
 
     // Monitor info
     property var currentScreen: null
@@ -147,7 +147,7 @@ Item {
     }
 
     // Calculate workspace dimensions
-    // Double the width for scrolling mode to take advantage of horizontal space
+    // Triple the width for scrolling mode to take advantage of horizontal space
     readonly property real workspaceWidth: {
         if (!monitorData) return 800;
         const isRotated = (monitorData.transform % 2 === 1);
@@ -157,7 +157,7 @@ Item {
         if (barPosition === "left" || barPosition === "right") {
             scaledWidth -= barReserved * scale;
         }
-        return Math.max(0, Math.round(scaledWidth * 2));  // Double width
+        return Math.max(0, Math.round(scaledWidth * 3));  // Triple width
     }
 
     readonly property real workspaceHeight: {
@@ -177,11 +177,11 @@ Item {
     property int draggingTargetWorkspace: -1
 
     // Size for the overview
-    implicitWidth: workspaceWidth + workspacePadding * 2 + 16
+    implicitWidth: workspaceWidth + workspacePadding * 2 + 8
     implicitHeight: Math.min(
         (workspaceHeight + workspacePadding + workspaceSpacing) * visibleWorkspaces,
         (workspaceHeight + workspacePadding + workspaceSpacing) * totalWorkspaces
-    ) + 16
+    ) + 8
 
     layer.enabled: true
 
@@ -193,7 +193,7 @@ Item {
     Flickable {
         id: workspaceFlickable
         anchors.fill: parent
-        anchors.margins: 8
+        anchors.margins: 4
         contentWidth: width
         contentHeight: workspaceColumn.implicitHeight
         clip: true

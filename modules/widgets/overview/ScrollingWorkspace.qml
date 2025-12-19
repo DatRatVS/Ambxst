@@ -45,8 +45,8 @@ Item {
     implicitHeight: workspaceHeight + workspacePadding
     
     // Monitor viewport width in real (unscaled) pixels
-    // Note: workspaceWidth is already doubled in the overview, so we divide by 2 first
-    readonly property real scaledMonitorWidth: workspaceWidth / 2  // The actual scaled monitor width
+    // Note: workspaceWidth is already tripled in the overview, so we divide by 3 first
+    readonly property real scaledMonitorWidth: workspaceWidth / 3  // The actual scaled monitor width
     readonly property real realMonitorWidth: scaledMonitorWidth / scale_  // Real pixels
 
     // Filter windows for this workspace and monitor
@@ -180,7 +180,7 @@ Item {
         Flickable {
             id: windowsFlickable
             anchors.fill: parent
-            anchors.margins: workspacePadding / 2
+            anchors.margins: 2
             contentWidth: Math.max(width, scaledContentWidth)
             contentHeight: height
             clip: true
@@ -242,9 +242,9 @@ Item {
                     y: 0
                     width: root.scaledMonitorWidth - workspacePadding
                     height: parent.height
-                    color: Colors.loaded ? Qt.rgba(Colors.primary.r, Colors.primary.g, Colors.primary.b, 0.08) : "transparent"
+                    color: Qt.rgba(Colors.primary.r, Colors.primary.g, Colors.primary.b, 0.08)
                     border.width: root.isActive ? 2 : 1
-                    border.color: Colors.loaded ? (root.isActive ? Colors.primary : Colors.outline) : "white"
+                    border.color: root.isActive ? Colors.primary : Colors.outline
                     opacity: root.isActive ? 0.6 : 0.3
                     radius: Styling.radius(0)
                     z: 0

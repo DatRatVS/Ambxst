@@ -319,10 +319,7 @@ PanelWindow {
                 contentItem: Rectangle {
                     implicitWidth: 6
                     radius: 3
-                    color: {
-                        if (!Colors.loaded) return "gray";
-                        return externalScrollBar.pressed ? Colors.primary : (externalScrollBar.hovered ? Colors.onSurfaceVariant : Colors.outline);
-                    }
+                    color: externalScrollBar.pressed ? Colors.primary : (externalScrollBar.hovered ? Colors.overSurfaceVariant : Colors.outline)
                     opacity: externalScrollBar.pressed ? 1.0 : (externalScrollBar.hovered ? 0.8 : 0.5)
                     
                     Behavior on color {
@@ -338,7 +335,7 @@ PanelWindow {
                 background: Rectangle {
                     implicitWidth: 6
                     radius: 3
-                    color: Colors.loaded ? Colors.surfaceContainer : "darkgray"
+                    color: Colors.surfaceContainer
                     opacity: 0.3
                 }
             }

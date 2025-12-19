@@ -379,6 +379,8 @@ Item {
                                     progressColor: Colors.primary
                                     tooltipText: `${Math.round(value * 1000)}ms`
                                     scroll: true
+                                    stepSize: 0.01  // 10ms steps (1/100 of 1000ms)
+                                    snapMode: "always"
 
                                     readonly property real configValue: Config.theme.animDuration / 1000
 
@@ -1019,6 +1021,8 @@ Item {
                                     progressColor: Colors.primary
                                     tooltipText: `${Math.round(value * 20)}`
                                     scroll: true
+                                    stepSize: 0.05  // 1/20 = 0.05 for integer steps in 0-20 range
+                                    snapMode: "always"
 
                                     // Use a computed property that always reads from Config
                                     readonly property real configValue: Config.theme.roundness / 20
@@ -1033,9 +1037,10 @@ Item {
                                     Component.onCompleted: value = configValue
 
                                     onValueChanged: {
-                                        if (Math.round(value * 20) !== Config.theme.roundness) {
+                                        let newRoundness = Math.round(value * 20);
+                                        if (newRoundness !== Config.theme.roundness) {
                                             GlobalStates.markThemeChanged();
-                                            Config.theme.roundness = Math.round(value * 20);
+                                            Config.theme.roundness = newRoundness;
                                         }
                                     }
                                 }
@@ -1093,6 +1098,8 @@ Item {
                                     progressColor: Colors.primary
                                     tooltipText: `${Math.round(value * 100)}%`
                                     scroll: true
+                                    stepSize: 0.01
+                                    snapMode: "always"
 
                                     readonly property real configValue: Config.theme.shadowOpacity
 
@@ -1142,6 +1149,8 @@ Item {
                                     progressColor: Colors.primary
                                     tooltipText: `${(value * 4).toFixed(1)}`
                                     scroll: true
+                                    stepSize: 0.01
+                                    snapMode: "always"
 
                                     readonly property real configValue: Config.theme.shadowBlur / 4
 
@@ -1192,6 +1201,8 @@ Item {
                                     progressColor: Colors.primary
                                     tooltipText: `${Math.round((value - 0.5) * 40)}`
                                     scroll: true
+                                    stepSize: 0.025  // 1/40 for integer steps in -20 to +20 range
+                                    snapMode: "always"
 
                                     readonly property real configValue: (Config.theme.shadowXOffset + 20) / 40
 
@@ -1241,6 +1252,8 @@ Item {
                                     progressColor: Colors.primary
                                     tooltipText: `${Math.round((value - 0.5) * 40)}`
                                     scroll: true
+                                    stepSize: 0.025  // 1/40 for integer steps in -20 to +20 range
+                                    snapMode: "always"
 
                                     readonly property real configValue: (Config.theme.shadowYOffset + 20) / 40
 

@@ -181,17 +181,23 @@ Item {
             id: windowsFlickable
             anchors.fill: parent
             anchors.margins: workspacePadding / 2
-            contentWidth: scaledContentWidth
+            contentWidth: Math.max(width, scaledContentWidth)
             contentHeight: height
             clip: true
             boundsBehavior: Flickable.StopAtBounds
             flickableDirection: Flickable.HorizontalFlick
-            interactive: true  // Enable drag to scroll
+            interactive: contentWidth > width  // Only enable drag when content overflows
             
             // Auto-scroll to center the focused window (or center of windows)
             Component.onCompleted: scrollToCenter()
             
             function scrollToCenter() {
+                // If content fits, no need to scroll
+                if (contentWidth <= width) {
+                    contentX = 0;
+                    return;
+                }
+                
                 let targetCenterX;
                 
                 if (root.focusedWindow && root.isActive) {
@@ -210,11 +216,13 @@ Item {
                 contentX = Math.max(0, Math.min(targetX, contentWidth - width));
             }
 
-            // Windows container
+            // Windows container - centered when content is smaller than view
             Item {
                 id: windowsContainer
-                width: windowsFlickable.contentWidth
+                width: scaledContentWidth
                 height: windowsFlickable.height
+                // Center horizontally when content is smaller than flickable
+                x: scaledContentWidth < windowsFlickable.width ? (windowsFlickable.width - scaledContentWidth) / 2 : 0
                 
                 // Double-click on empty space to switch workspace
                 TapHandler {

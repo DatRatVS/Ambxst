@@ -1,6 +1,7 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
+import QtQuick.Effects
 import Quickshell
 import Quickshell.Wayland
 import Quickshell.Hyprland
@@ -99,14 +100,12 @@ Item {
         }
     }
 
-    Rectangle {
+    Item {
         id: overviewBackground
         anchors.centerIn: parent
 
-        implicitWidth: workspaceColumnLayout.implicitWidth + workspaceSpacing * 2
-        implicitHeight: workspaceColumnLayout.implicitHeight + workspaceSpacing * 2
-        radius: Styling.radius(4)
-        color: Colors.surface
+        implicitWidth: workspaceColumnLayout.implicitWidth
+        implicitHeight: workspaceColumnLayout.implicitHeight
 
         ColumnLayout {
             id: workspaceColumnLayout
@@ -133,20 +132,42 @@ Item {
 
                             implicitWidth: overviewRoot.workspaceImplicitWidth + workspacePadding
                             implicitHeight: overviewRoot.workspaceImplicitHeight + workspacePadding
-                            color: hoveredWhileDragging ? hoveredWorkspaceColor : defaultWorkspaceColor
-                            radius: Math.max(Styling.radius(4) - workspaceSpacing, 0)
+                            color: "transparent"
+                            radius: Styling.radius(2)
                             border.width: 2
                             border.color: hoveredWhileDragging ? hoveredBorderColor : "transparent"
+                            clip: true
 
-                            Text {
-                                anchors.centerIn: parent
-                                text: workspaceValue
-                                font.pixelSize: Math.min(parent.width, parent.height) * 0.25
-                                font.weight: Font.Bold
-                                color: Colors.surfaceBright
-                                opacity: 1
-                                horizontalAlignment: Text.AlignHCenter
-                                verticalAlignment: Text.AlignVCenter
+                            // Wallpaper background for each workspace
+                            Image {
+                                id: workspaceWallpaper
+                                anchors.fill: parent
+                                fillMode: Image.PreserveAspectCrop
+                                asynchronous: true
+                                smooth: true
+
+                                property string lockscreenFramePath: {
+                                    if (!GlobalStates.wallpaperManager)
+                                        return "";
+                                    return GlobalStates.wallpaperManager.getLockscreenFramePath(GlobalStates.wallpaperManager.currentWallpaper);
+                                }
+
+                                source: lockscreenFramePath ? "file://" + lockscreenFramePath : ""
+
+                                // Rounded corners mask
+                                layer.enabled: true
+                                layer.effect: MultiEffect {
+                                    maskEnabled: true
+                                    maskThresholdMin: 0.5
+                                    maskSpreadAtMin: 1.0
+                                    maskSource: ShaderEffectSource {
+                                        sourceItem: Rectangle {
+                                            width: workspaceWallpaper.width
+                                            height: workspaceWallpaper.height
+                                            radius: Styling.radius(2)
+                                        }
+                                    }
+                                }
                             }
 
                             MouseArea {
@@ -264,7 +285,7 @@ Item {
                 width: Math.round(overviewRoot.workspaceImplicitWidth + workspacePadding)
                 height: Math.round(overviewRoot.workspaceImplicitHeight + workspacePadding)
                 color: "transparent"
-                radius: Math.max(Styling.radius(4) - workspaceSpacing, 0)
+                radius: Styling.radius(2)
                 border.width: 2
                 border.color: overviewRoot.activeBorderColor
 

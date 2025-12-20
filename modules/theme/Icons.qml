@@ -177,6 +177,7 @@ QtObject {
     readonly property string moon: ""
     readonly property string user: ""
     readonly property string spinnerGap: ""
+    readonly property string circleNotch: ""
     readonly property string file: ""
     readonly property string note: ""
     readonly property string notepad: ""

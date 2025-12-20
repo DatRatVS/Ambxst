@@ -14,6 +14,8 @@ QtObject {
     property int weatherCode: 0
     property real windSpeed: 0
     property bool dataAvailable: false
+    property bool isLoading: false
+    property bool hasFailed: false
 
     // Sun position data
     property string sunrise: ""  // HH:MM format
@@ -334,6 +336,9 @@ QtObject {
     }
 
     function updateWeather() {
+        root.isLoading = true;
+        root.hasFailed = false;
+        
         var location = Config.weather.location.trim();
         if (location.length === 0) {
             geoipProcess.command = ["curl", "-s", "https://ipapi.co/json/"];
@@ -463,22 +468,30 @@ QtObject {
                             root.weatherDescription = getWeatherDescription(root.weatherCode);
                             root.calculateSunPosition();
                             root.dataAvailable = true;
+                            root.isLoading = false;
+                            root.hasFailed = false;
                             root.retryCount = 0;
                         } else {
                             root.dataAvailable = false;
+                            root.isLoading = false;
                             if (root.retryCount < root.maxRetries) {
                                 root.retryCount++;
                                 retryTimer.interval = Math.min(600000, 5000 * Math.pow(2, root.retryCount - 1));
                                 retryTimer.start();
+                            } else {
+                                root.hasFailed = true;
                             }
                         }
                     } catch (e) {
                         console.warn("WeatherService: JSON parse error:", e);
                         root.dataAvailable = false;
+                        root.isLoading = false;
                         if (root.retryCount < root.maxRetries) {
                             root.retryCount++;
                             retryTimer.interval = Math.min(600000, 5000 * Math.pow(2, root.retryCount - 1));
                             retryTimer.start();
+                        } else {
+                            root.hasFailed = true;
                         }
                     }
                 }
@@ -488,10 +501,13 @@ QtObject {
         onExited: function (code) {
             if (code !== 0) {
                 root.dataAvailable = false;
+                root.isLoading = false;
                 if (root.retryCount < root.maxRetries) {
                     root.retryCount++;
                     retryTimer.interval = Math.min(600000, 5000 * Math.pow(2, root.retryCount - 1));
                     retryTimer.start();
+                } else {
+                    root.hasFailed = true;
                 }
             }
         }

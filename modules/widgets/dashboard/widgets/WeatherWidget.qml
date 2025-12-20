@@ -19,7 +19,81 @@ Rectangle {
 
     radius: cornerRadius
     clip: true
-    visible: WeatherService.dataAvailable
+    
+    // Request weather update when widget becomes visible if no data
+    onVisibleChanged: {
+        if (visible && !WeatherService.dataAvailable && !WeatherService.isLoading) {
+            WeatherService.updateWeather();
+        }
+    }
+
+    // Loading/Error state indicator
+    Item {
+        id: loadingIndicator
+        anchors.fill: parent
+        visible: !WeatherService.dataAvailable
+        
+        Rectangle {
+            anchors.fill: parent
+            radius: root.cornerRadius
+            color: Colors.surface
+        }
+
+        Column {
+            anchors.centerIn: parent
+            spacing: 8
+
+            Text {
+                anchors.horizontalCenter: parent.horizontalCenter
+                text: WeatherService.hasFailed ? Icons.alert : Icons.circleNotch
+                font.family: Icons.font
+                font.pixelSize: 24
+                color: WeatherService.hasFailed ? Colors.primary : Colors.onSurface
+
+                RotationAnimation on rotation {
+                    from: 0
+                    to: 360
+                    duration: 1000
+                    loops: Animation.Infinite
+                    running: WeatherService.isLoading && !WeatherService.hasFailed
+                }
+            }
+
+            Text {
+                anchors.horizontalCenter: parent.horizontalCenter
+                text: WeatherService.hasFailed ? "Failed to load" : "Loading..."
+                font.family: Config.theme.font
+                font.pixelSize: Config.theme.fontSize - 2
+                color: Colors.onSurface
+                opacity: 0.7
+            }
+
+            // Retry button when failed
+            Rectangle {
+                anchors.horizontalCenter: parent.horizontalCenter
+                visible: WeatherService.hasFailed
+                width: retryText.width + 16
+                height: retryText.height + 8
+                radius: Styling.radius(2)
+                color: Colors.primary
+                
+                Text {
+                    id: retryText
+                    anchors.centerIn: parent
+                    text: "Retry"
+                    font.family: Config.theme.font
+                    font.pixelSize: Config.theme.fontSize - 2
+                    color: Colors.onPrimary
+                }
+
+                MouseArea {
+                    anchors.fill: parent
+                    cursorShape: Qt.PointingHandCursor
+                    onClicked: WeatherService.updateWeather()
+                }
+            }
+        }
+    }
 
     // Color blending helper function
     function blendColors(color1, color2, color3, blend) {
@@ -790,7 +864,7 @@ Rectangle {
                 id: tempText
                 text: Math.round(WeatherService.currentTemp) + "°" + Config.weather.unit
                 color: "#FFFFFF"
-                font.family: Config.theme.font
+                font.family: "Noto Sans"
                 font.pixelSize: Config.theme.fontSize + 6
                 font.weight: Font.Bold
             }
@@ -799,8 +873,9 @@ Rectangle {
                 id: descText
                 text: WeatherService.effectiveWeatherDescription
                 color: Qt.rgba(1, 1, 1, 0.85)
-                font.family: Config.theme.font
+                font.family: "Noto Sans"
                 font.pixelSize: Config.theme.fontSize - 2
+                font.weight: Font.Bold
             }
         }
 

@@ -17,6 +17,7 @@ var data = {
     "shadowYOffset": 0,
     "shadowBlur": 1,
     "srBg": {
+        "label": "Background",
         "gradient": [["background", 0.0]],
         "gradientType": "linear",
         "gradientAngle": 0,
@@ -33,6 +34,7 @@ var data = {
         "opacity": 1.0
     },
     "srPopup": {
+        "label": "Popup",
         "gradient": [["background", 0.0]],
         "gradientType": "linear",
         "gradientAngle": 0,
@@ -49,6 +51,7 @@ var data = {
         "opacity": 1.0
     },
     "srInternalBg": {
+        "label": "Internal BG",
         "gradient": [["background", 0.0]],
         "gradientType": "linear",
         "gradientAngle": 0,
@@ -65,6 +68,7 @@ var data = {
         "opacity": 1.0
     },
     "srBarBg": {
+        "label": "Bar BG",
         "gradient": [["surfaceDim", 0.0]],
         "gradientType": "linear",
         "gradientAngle": 0,
@@ -81,6 +85,7 @@ var data = {
         "opacity": 0.0
     },
     "srPane": {
+        "label": "Pane",
         "gradient": [["surface", 0.0]],
         "gradientType": "linear",
         "gradientAngle": 0,
@@ -97,6 +102,7 @@ var data = {
         "opacity": 1.0
     },
     "srCommon": {
+        "label": "Common",
         "gradient": [["surface", 0.0]],
         "gradientType": "linear",
         "gradientAngle": 0,
@@ -113,6 +119,7 @@ var data = {
         "opacity": 1.0
     },
     "srFocus": {
+        "label": "Focus",
         "gradient": [["surfaceBright", 0.0]],
         "gradientType": "linear",
         "gradientAngle": 0,
@@ -129,6 +136,7 @@ var data = {
         "opacity": 1.0
     },
     "srPrimary": {
+        "label": "Primary",
         "gradient": [["primary", 0.0]],
         "gradientType": "linear",
         "gradientAngle": 0,
@@ -145,6 +153,7 @@ var data = {
         "opacity": 1.0
     },
     "srPrimaryFocus": {
+        "label": "Primary Focus",
         "gradient": [["overPrimaryContainer", 0.0]],
         "gradientType": "linear",
         "gradientAngle": 0,
@@ -161,6 +170,7 @@ var data = {
         "opacity": 1.0
     },
     "srOverPrimary": {
+        "label": "Over Primary",
         "gradient": [["overPrimary", 0.0]],
         "gradientType": "linear",
         "gradientAngle": 0,
@@ -177,6 +187,7 @@ var data = {
         "opacity": 1.0
     },
     "srSecondary": {
+        "label": "Secondary",
         "gradient": [["secondary", 0.0]],
         "gradientType": "linear",
         "gradientAngle": 0,
@@ -193,6 +204,7 @@ var data = {
         "opacity": 1.0
     },
     "srSecondaryFocus": {
+        "label": "Secondary Focus",
         "gradient": [["overSecondaryContainer", 0.0]],
         "gradientType": "linear",
         "gradientAngle": 0,
@@ -209,6 +221,7 @@ var data = {
         "opacity": 1.0
     },
     "srOverSecondary": {
+        "label": "Over Secondary",
         "gradient": [["overSecondary", 0.0]],
         "gradientType": "linear",
         "gradientAngle": 0,
@@ -225,6 +238,7 @@ var data = {
         "opacity": 1.0
     },
     "srTertiary": {
+        "label": "Tertiary",
         "gradient": [["tertiary", 0.0]],
         "gradientType": "linear",
         "gradientAngle": 0,
@@ -241,6 +255,7 @@ var data = {
         "opacity": 1.0
     },
     "srTertiaryFocus": {
+        "label": "Tertiary Focus",
         "gradient": [["overTertiaryContainer", 0.0]],
         "gradientType": "linear",
         "gradientAngle": 0,
@@ -257,6 +272,7 @@ var data = {
         "opacity": 1.0
     },
     "srOverTertiary": {
+        "label": "Over Tertiary",
         "gradient": [["overTertiary", 0.0]],
         "gradientType": "linear",
         "gradientAngle": 0,
@@ -273,6 +289,7 @@ var data = {
         "opacity": 1.0
     },
     "srError": {
+        "label": "Error",
         "gradient": [["error", 0.0]],
         "gradientType": "linear",
         "gradientAngle": 0,
@@ -289,6 +306,7 @@ var data = {
         "opacity": 1.0
     },
     "srErrorFocus": {
+        "label": "Error Focus",
         "gradient": [["overBackground", 0.0]],
         "gradientType": "linear",
         "gradientAngle": 0,
@@ -305,6 +323,7 @@ var data = {
         "opacity": 1.0
     },
     "srOverError": {
+        "label": "Over Error",
         "gradient": [["overError", 0.0]],
         "gradientType": "linear",
         "gradientAngle": 0,

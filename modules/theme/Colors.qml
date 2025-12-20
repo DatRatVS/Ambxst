@@ -208,4 +208,30 @@ FileView {
     // Semantic aliases
     property color warning: adapter.yellow
     property color success: adapter.green
+
+    // List of available color names for color pickers (excludes internal/source colors)
+    readonly property var availableColorNames: [
+        "background", "surface", "surfaceBright", "surfaceContainer",
+        "surfaceContainerHigh", "surfaceContainerHighest", "surfaceContainerLow",
+        "surfaceContainerLowest", "surfaceDim", "surfaceTint", "surfaceVariant",
+        "primary", "primaryContainer", "primaryFixed", "primaryFixedDim",
+        "secondary", "secondaryContainer", "secondaryFixed", "secondaryFixedDim",
+        "tertiary", "tertiaryContainer", "tertiaryFixed", "tertiaryFixedDim",
+        "error", "errorContainer",
+        "overBackground", "overSurface", "overSurfaceVariant",
+        "overPrimary", "overPrimaryContainer", "overPrimaryFixed", "overPrimaryFixedVariant",
+        "overSecondary", "overSecondaryContainer", "overSecondaryFixed", "overSecondaryFixedVariant",
+        "overTertiary", "overTertiaryContainer", "overTertiaryFixed", "overTertiaryFixedVariant",
+        "overError", "overErrorContainer",
+        "outline", "outlineVariant",
+        "inversePrimary", "inverseSurface", "inverseOnSurface",
+        "shadow", "scrim",
+        "blue", "blueContainer", "overBlue", "overBlueContainer",
+        "cyan", "cyanContainer", "overCyan", "overCyanContainer",
+        "green", "greenContainer", "overGreen", "overGreenContainer",
+        "magenta", "magentaContainer", "overMagenta", "overMagentaContainer",
+        "red", "redContainer", "overRed", "overRedContainer",
+        "yellow", "yellowContainer", "overYellow", "overYellowContainer",
+        "white", "whiteContainer", "overWhite", "overWhiteContainer"
+    ]
 }

@@ -123,6 +123,7 @@ Singleton {
             property real shadowBlur: 1
 
             property JsonObject srBg: JsonObject {
+                property string label: "Background"
                 property list<var> gradient: [["background", 0.0]]
                 property string gradientType: "linear"
                 property int gradientAngle: 0
@@ -140,6 +141,7 @@ Singleton {
             }
 
             property JsonObject srPopup: JsonObject {
+                property string label: "Popup"
                 property list<var> gradient: [["background", 0.0]]
                 property string gradientType: "linear"
                 property int gradientAngle: 0
@@ -157,6 +159,7 @@ Singleton {
             }
 
             property JsonObject srInternalBg: JsonObject {
+                property string label: "Internal BG"
                 property list<var> gradient: [["background", 0.0]]
                 property string gradientType: "linear"
                 property int gradientAngle: 0
@@ -174,6 +177,7 @@ Singleton {
             }
 
             property JsonObject srBarBg: JsonObject {
+                property string label: "Bar BG"
                 property list<var> gradient: [["surfaceDim", 0.0]]
                 property string gradientType: "linear"
                 property int gradientAngle: 0
@@ -191,6 +195,7 @@ Singleton {
             }
 
             property JsonObject srPane: JsonObject {
+                property string label: "Pane"
                 property list<var> gradient: [["surface", 0.0]]
                 property string gradientType: "linear"
                 property int gradientAngle: 0
@@ -208,6 +213,7 @@ Singleton {
             }
 
             property JsonObject srCommon: JsonObject {
+                property string label: "Common"
                 property list<var> gradient: [["surface", 0.0]]
                 property string gradientType: "linear"
                 property int gradientAngle: 0
@@ -225,6 +231,7 @@ Singleton {
             }
 
             property JsonObject srFocus: JsonObject {
+                property string label: "Focus"
                 property list<var> gradient: [["surfaceBright", 0.0]]
                 property string gradientType: "linear"
                 property int gradientAngle: 0
@@ -242,6 +249,7 @@ Singleton {
             }
 
             property JsonObject srPrimary: JsonObject {
+                property string label: "Primary"
                 property list<var> gradient: [["primary", 0.0]]
                 property string gradientType: "linear"
                 property int gradientAngle: 0
@@ -259,6 +267,7 @@ Singleton {
             }
 
             property JsonObject srPrimaryFocus: JsonObject {
+                property string label: "Primary Focus"
                 property list<var> gradient: [["overPrimaryContainer", 0.0]]
                 property string gradientType: "linear"
                 property int gradientAngle: 0
@@ -276,6 +285,7 @@ Singleton {
             }
 
             property JsonObject srOverPrimary: JsonObject {
+                property string label: "Over Primary"
                 property list<var> gradient: [["overPrimary", 0.0]]
                 property string gradientType: "linear"
                 property int gradientAngle: 0
@@ -293,6 +303,7 @@ Singleton {
             }
 
             property JsonObject srSecondary: JsonObject {
+                property string label: "Secondary"
                 property list<var> gradient: [["secondary", 0.0]]
                 property string gradientType: "linear"
                 property int gradientAngle: 0
@@ -310,6 +321,7 @@ Singleton {
             }
 
             property JsonObject srSecondaryFocus: JsonObject {
+                property string label: "Secondary Focus"
                 property list<var> gradient: [["overSecondaryContainer", 0.0]]
                 property string gradientType: "linear"
                 property int gradientAngle: 0
@@ -327,6 +339,7 @@ Singleton {
             }
 
             property JsonObject srOverSecondary: JsonObject {
+                property string label: "Over Secondary"
                 property list<var> gradient: [["overSecondary", 0.0]]
                 property string gradientType: "linear"
                 property int gradientAngle: 0
@@ -344,6 +357,7 @@ Singleton {
             }
 
             property JsonObject srTertiary: JsonObject {
+                property string label: "Tertiary"
                 property list<var> gradient: [["tertiary", 0.0]]
                 property string gradientType: "linear"
                 property int gradientAngle: 0
@@ -361,6 +375,7 @@ Singleton {
             }
 
             property JsonObject srTertiaryFocus: JsonObject {
+                property string label: "Tertiary Focus"
                 property list<var> gradient: [["overTertiaryContainer", 0.0]]
                 property string gradientType: "linear"
                 property int gradientAngle: 0
@@ -378,6 +393,7 @@ Singleton {
             }
 
             property JsonObject srOverTertiary: JsonObject {
+                property string label: "Over Tertiary"
                 property list<var> gradient: [["overTertiary", 0.0]]
                 property string gradientType: "linear"
                 property int gradientAngle: 0
@@ -395,6 +411,7 @@ Singleton {
             }
 
             property JsonObject srError: JsonObject {
+                property string label: "Error"
                 property list<var> gradient: [["error", 0.0]]
                 property string gradientType: "linear"
                 property int gradientAngle: 0
@@ -412,6 +429,7 @@ Singleton {
             }
 
             property JsonObject srErrorFocus: JsonObject {
+                property string label: "Error Focus"
                 property list<var> gradient: [["overBackground", 0.0]]
                 property string gradientType: "linear"
                 property int gradientAngle: 0
@@ -429,6 +447,7 @@ Singleton {
             }
 
             property JsonObject srOverError: JsonObject {
+                property string label: "Over Error"
                 property list<var> gradient: [["overError", 0.0]]
                 property string gradientType: "linear"
                 property int gradientAngle: 0

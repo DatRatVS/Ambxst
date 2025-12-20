@@ -44,40 +44,13 @@ Item {
         colorPickerCurrentColor = color;
     }
 
-    // Mapping from sr property names to display labels
-    readonly property var variantLabels: ({
-        "srBg": "Background",
-        "srPopup": "Popup",
-        "srInternalBg": "Internal BG",
-        "srBarBg": "Bar BG",
-        "srPane": "Pane",
-        "srCommon": "Common",
-        "srFocus": "Focus",
-        "srPrimary": "Primary",
-        "srPrimaryFocus": "Primary Focus",
-        "srOverPrimary": "Over Primary",
-        "srSecondary": "Secondary",
-        "srSecondaryFocus": "Secondary Focus",
-        "srOverSecondary": "Over Secondary",
-        "srTertiary": "Tertiary",
-        "srTertiaryFocus": "Tertiary Focus",
-        "srOverTertiary": "Over Tertiary",
-        "srError": "Error",
-        "srErrorFocus": "Error Focus",
-        "srOverError": "Over Error"
-    })
-
     // Convert sr property name to variant id (srBg -> bg, srPrimaryFocus -> primaryfocus)
     function srNameToId(srName: string): string {
         return srName.substring(2).toLowerCase();
     }
 
-    // Convert sr property name to display label
-    function srNameToLabel(srName: string): string {
-        return variantLabels[srName] || srName.substring(2);
-    }
-
     // Dynamically generate allVariants from Config.theme properties starting with "sr"
+    // Reads the label property from each variant config
     readonly property var allVariants: {
         let variants = [];
         let theme = Config.theme;
@@ -85,40 +58,14 @@ Item {
         // Get all property names from theme that start with "sr"
         for (let prop in theme) {
             if (prop.startsWith("sr") && theme[prop] && typeof theme[prop] === "object") {
+                // Read label from the variant config itself, fallback to property name
+                let label = theme[prop].label || prop.substring(2);
                 variants.push({
                     id: srNameToId(prop),
-                    label: srNameToLabel(prop)
+                    label: label
                 });
             }
         }
-        
-        // Sort by the order defined in variantLabels (to maintain consistent ordering)
-        let labelOrder = Object.keys(variantLabels);
-        variants.sort((a, b) => {
-            let aIndex = labelOrder.indexOf("sr" + a.id.charAt(0).toUpperCase() + a.id.slice(1));
-            let bIndex = labelOrder.indexOf("sr" + b.id.charAt(0).toUpperCase() + b.id.slice(1));
-            // Handle camelCase conversion for multi-word variants
-            if (aIndex === -1) {
-                for (let i = 0; i < labelOrder.length; i++) {
-                    if (srNameToId(labelOrder[i]) === a.id) {
-                        aIndex = i;
-                        break;
-                    }
-                }
-            }
-            if (bIndex === -1) {
-                for (let i = 0; i < labelOrder.length; i++) {
-                    if (srNameToId(labelOrder[i]) === b.id) {
-                        bIndex = i;
-                        break;
-                    }
-                }
-            }
-            // Put unknown variants at the end
-            if (aIndex === -1) aIndex = 999;
-            if (bIndex === -1) bIndex = 999;
-            return aIndex - bIndex;
-        });
         
         return variants;
     }
@@ -998,7 +945,7 @@ Item {
 
                                         onClicked: {
                                             root.openColorPicker(
-                                                ["background", "surface", "surfaceBright", "surfaceContainer", "surfaceContainerHigh", "surfaceContainerHighest", "surfaceContainerLow", "surfaceContainerLowest", "surfaceDim", "surfaceTint", "surfaceVariant", "primary", "primaryContainer", "primaryFixed", "primaryFixedDim", "secondary", "secondaryContainer", "secondaryFixed", "secondaryFixedDim", "tertiary", "tertiaryContainer", "tertiaryFixed", "tertiaryFixedDim", "error", "errorContainer", "overBackground", "overSurface", "overSurfaceVariant", "overPrimary", "overPrimaryContainer", "overPrimaryFixed", "overPrimaryFixedVariant", "overSecondary", "overSecondaryContainer", "overSecondaryFixed", "overSecondaryFixedVariant", "overTertiary", "overTertiaryContainer", "overTertiaryFixed", "overTertiaryFixedVariant", "overError", "overErrorContainer", "outline", "outlineVariant", "inversePrimary", "inverseSurface", "inverseOnSurface", "shadow", "scrim", "blue", "blueContainer", "overBlue", "overBlueContainer", "cyan", "cyanContainer", "overCyan", "overCyanContainer", "green", "greenContainer", "overGreen", "overGreenContainer", "magenta", "magentaContainer", "overMagenta", "overMagentaContainer", "red", "redContainer", "overRed", "overRedContainer", "yellow", "yellowContainer", "overYellow", "overYellowContainer", "white", "whiteContainer", "overWhite", "overWhiteContainer"],
+                                                Colors.availableColorNames,
                                                 Config.theme.shadowColor,
                                                 "Select Shadow Color",
                                                 function(color) {

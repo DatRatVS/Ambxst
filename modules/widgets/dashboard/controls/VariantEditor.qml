@@ -21,50 +21,24 @@ Item {
 
     // Get the Config object for this variant (reads directly from Config)
     readonly property var variantConfig: {
-        switch (variantId) {
-        case "bg":
-            return Config.theme.srBg;
-        case "internalbg":
-            return Config.theme.srInternalBg;
-        case "barbg":
-            return Config.theme.srBarBg;
-        case "pane":
-            return Config.theme.srPane;
-        case "common":
-            return Config.theme.srCommon;
-        case "focus":
-            return Config.theme.srFocus;
-        case "primary":
-            return Config.theme.srPrimary;
-        case "primaryfocus":
-            return Config.theme.srPrimaryFocus;
-        case "overprimary":
-            return Config.theme.srOverPrimary;
-        case "secondary":
-            return Config.theme.srSecondary;
-        case "secondaryfocus":
-            return Config.theme.srSecondaryFocus;
-        case "oversecondary":
-            return Config.theme.srOverSecondary;
-        case "tertiary":
-            return Config.theme.srTertiary;
-        case "tertiaryfocus":
-            return Config.theme.srTertiaryFocus;
-        case "overtertiary":
-            return Config.theme.srOverTertiary;
-        case "error":
-            return Config.theme.srError;
-        case "errorfocus":
-            return Config.theme.srErrorFocus;
-        case "overerror":
-            return Config.theme.srOverError;
-        default:
-            return null;
+        // Convert variant id to sr property name (e.g., "bg" -> "srBg", "primaryfocus" -> "srPrimaryfocus")
+        let srName = "sr" + variantId.charAt(0).toUpperCase() + variantId.slice(1);
+        // Try to get the property from Config.theme
+        let config = Config.theme[srName];
+        if (config && typeof config === "object") {
+            return config;
         }
+        // Fallback: search for matching property (handles case variations)
+        for (let prop in Config.theme) {
+            if (prop.toLowerCase() === srName.toLowerCase()) {
+                return Config.theme[prop];
+            }
+        }
+        return null;
     }
 
-    // List of available color names from Colors.qml
-    readonly property var colorNames: ["background", "surface", "surfaceBright", "surfaceContainer", "surfaceContainerHigh", "surfaceContainerHighest", "surfaceContainerLow", "surfaceContainerLowest", "surfaceDim", "surfaceTint", "surfaceVariant", "primary", "primaryContainer", "primaryFixed", "primaryFixedDim", "secondary", "secondaryContainer", "secondaryFixed", "secondaryFixedDim", "tertiary", "tertiaryContainer", "tertiaryFixed", "tertiaryFixedDim", "error", "errorContainer", "overBackground", "overSurface", "overSurfaceVariant", "overPrimary", "overPrimaryContainer", "overPrimaryFixed", "overPrimaryFixedVariant", "overSecondary", "overSecondaryContainer", "overSecondaryFixed", "overSecondaryFixedVariant", "overTertiary", "overTertiaryContainer", "overTertiaryFixed", "overTertiaryFixedVariant", "overError", "overErrorContainer", "outline", "outlineVariant", "inversePrimary", "inverseSurface", "inverseOnSurface", "shadow", "scrim", "blue", "blueContainer", "overBlue", "overBlueContainer", "cyan", "cyanContainer", "overCyan", "overCyanContainer", "green", "greenContainer", "overGreen", "overGreenContainer", "magenta", "magentaContainer", "overMagenta", "overMagentaContainer", "red", "redContainer", "overRed", "overRedContainer", "yellow", "yellowContainer", "overYellow", "overYellowContainer", "white", "whiteContainer", "overWhite", "overWhiteContainer"]
+    // List of available color names from Colors singleton
+    readonly property var colorNames: Colors.availableColorNames
 
     // Gradient type options
     readonly property var gradientTypes: ["linear", "radial", "halftone"]

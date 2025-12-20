@@ -73,10 +73,11 @@ Item {
             maxX = Math.max(maxX, scaledX + winWidth);
         }
 
-        // The visible viewport in content coordinates is [0, viewportWidth]
-        // Content extends from minX to maxX
-        // Overflow exists if content extends beyond viewport bounds
-        const hasOverflow = minX < 0 || maxX > viewportWidth;
+        // The full workspace width is 3x viewport (workspaceWidth = viewportWidth * 3)
+        // Content in local coords spans from minX to maxX
+        // The full scrollable area in local coords is [-viewportWidth, 2*viewportWidth]
+        // Overflow exists only if content extends beyond the full workspace width
+        const hasOverflow = minX < -viewportWidth || maxX > (viewportWidth * 2);
 
         return { minX, maxX, hasOverflow };
     }

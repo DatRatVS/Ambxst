@@ -197,6 +197,9 @@ QtObject {
         var now = new Date();
         var hour = now.getHours() + now.getMinutes() / 60;
 
+        // Update currentHour so readonly properties can react to time changes
+        root.currentHour = hour;
+
         var sunriseH = sunrise.length > 0 ? parseTime(sunrise) : 6.0;
         var sunsetH = sunset.length > 0 ? parseTime(sunset) : 18.0;
 
@@ -389,13 +392,7 @@ QtObject {
         interval: 60000  // 1 minute
         running: true
         repeat: true
-        onTriggered: {
-            var now = new Date();
-            root.currentHour = now.getHours() + now.getMinutes() / 60;
-            if (root.dataAvailable) {
-                root.calculateSunPosition();
-            }
-        }
+        onTriggered: root.calculateSunPosition()
     }
 
     property Connections configConnections: Connections {

@@ -275,10 +275,12 @@ ClippingRectangle {
             Item {
                 id: bgCloud
                 required property int index
-                property real startX: -width + (index * parent.width * 0.4)
                 property real speed: 0.15 + (index * 0.05)
+                property real totalDistance: cloudEffect.width + width + 100
+                property real cycleDuration: 40000 / speed  // 40 seconds base, adjusted by speed
 
-                x: startX
+                // Start already positioned across the screen
+                x: (index * totalDistance / 4) % (cloudEffect.width + width) - width
                 y: 5 + (index * 15)
                 width: 160 + (index * 40)
                 height: 60 + (index * 16)
@@ -308,12 +310,32 @@ ClippingRectangle {
                     color: Qt.rgba(cloudEffect.cloudColorLight.r, cloudEffect.cloudColorLight.g, cloudEffect.cloudColorLight.b, 0.4)
                 }
 
-                NumberAnimation on x {
-                    from: bgCloud.startX
-                    to: cloudEffect.width + bgCloud.width
-                    duration: 35000 / bgCloud.speed
-                    loops: Animation.Infinite
+                // Continuous movement animation
+                SequentialAnimation on x {
                     running: cloudEffect.visible
+                    loops: Animation.Infinite
+                    
+                    // Move across screen
+                    NumberAnimation {
+                        to: cloudEffect.width + 50
+                        duration: bgCloud.cycleDuration
+                        easing.type: Easing.Linear
+                    }
+                    
+                    // Reset to start position smoothly
+                    NumberAnimation {
+                        to: -bgCloud.width - 50
+                        duration: 0  // Instant reset when off-screen
+                    }
+                }
+
+                // Fade in/out when entering/leaving screen
+                PropertyAnimation on opacity {
+                    running: cloudEffect.visible
+                    from: 0
+                    to: 0.8
+                    duration: 2000
+                    easing.type: Easing.InOutQuad
                 }
             }
         }
@@ -325,10 +347,12 @@ ClippingRectangle {
             Item {
                 id: fgCloud
                 required property int index
-                property real startX: -width + (index * parent.width * 0.25)
                 property real speed: 0.25 + (index * 0.1)
+                property real totalDistance: cloudEffect.width + width + 100
+                property real cycleDuration: 25000 / speed  // 25 seconds base, adjusted by speed
 
-                x: startX
+                // Start already positioned across the screen
+                x: (index * totalDistance / 6) % (cloudEffect.width + width) - width
                 y: 20 + (index * 15)
                 width: 90 + (index * 24)
                 height: 36 + (index * 10)
@@ -358,12 +382,32 @@ ClippingRectangle {
                     color: Qt.rgba(cloudEffect.cloudColorLight.r, cloudEffect.cloudColorLight.g, cloudEffect.cloudColorLight.b, 0.55 - (fgCloud.index * 0.06))
                 }
 
-                NumberAnimation on x {
-                    from: fgCloud.startX
-                    to: cloudEffect.width + fgCloud.width
-                    duration: 22000 / fgCloud.speed
-                    loops: Animation.Infinite
+                // Continuous movement animation
+                SequentialAnimation on x {
                     running: cloudEffect.visible
+                    loops: Animation.Infinite
+                    
+                    // Move across screen
+                    NumberAnimation {
+                        to: cloudEffect.width + 50
+                        duration: fgCloud.cycleDuration
+                        easing.type: Easing.Linear
+                    }
+                    
+                    // Reset to start position smoothly
+                    NumberAnimation {
+                        to: -fgCloud.width - 50
+                        duration: 0  // Instant reset when off-screen
+                    }
+                }
+
+                // Fade in/out when entering/leaving screen
+                PropertyAnimation on opacity {
+                    running: cloudEffect.visible
+                    from: 0
+                    to: 0.9
+                    duration: 1500
+                    easing.type: Easing.InOutQuad
                 }
             }
         }

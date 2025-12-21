@@ -295,10 +295,10 @@ PanelWindow {
                                     layer.enabled: false
                                 }
 
-                                Bar.PowerProfileSelector {
-                                    id: powerProfileSelector
-                                    orientation: "horizontal"
-                                    layer.enabled: false
+                                Bar.BatteryIndicator {
+                                    id: batteryIndicator
+                                    bar: panel
+                                    layerEnabled: false
                                 }
 
                                 ControlsButton {
@@ -428,10 +428,10 @@ PanelWindow {
                                     layer.enabled: false
                                 }
 
-                                Bar.PowerProfileSelector {
-                                    id: powerProfileSelectorVert
-                                    orientation: "vertical"
-                                    layer.enabled: false
+                                Bar.BatteryIndicator {
+                                    id: batteryIndicatorVert
+                                    bar: panel
+                                    layerEnabled: false
                                 }
 
                                 ControlsButton {

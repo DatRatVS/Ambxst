@@ -18,4 +18,5 @@ with pkgs; [
   qt6.qtdeclarative
   qt6.qtimageformats
   kdePackages.qtshadertools
+  kdePackages.syntax-highlighting
 ]

@@ -78,7 +78,8 @@ Rectangle {
                                 { icon: Icons.paintBrush, label: "Theme", section: 4, isIcon: true },
                                 { icon: Icons.keyboard, label: "Binds", section: 5, isIcon: true },
                                 { icon: Icons.circuitry, label: "System", section: 6, isIcon: true },
-                                { icon: Qt.resolvedUrl("../../../../assets/ambxst-icon.svg"), label: "Ambxst", section: 7, isIcon: false }
+                                { icon: Icons.sparkle, label: "Compositor", section: 7, isIcon: true },
+                                { icon: Qt.resolvedUrl("../../../../assets/ambxst-icon.svg"), label: "Ambxst", section: 8, isIcon: false }
                             ]
 
                         delegate: Button {
@@ -188,7 +189,7 @@ Rectangle {
                         // Otherwise, navigate sections
                         if (event.angleDelta.y > 0 && root.currentSection > 0) {
                             root.currentSection--;
-                        } else if (event.angleDelta.y < 0 && root.currentSection < 7) {
+                        } else if (event.angleDelta.y < 0 && root.currentSection < 8) {
                             root.currentSection++;
                         }
                     }
@@ -423,9 +424,9 @@ Rectangle {
                 }
             }
 
-            // Shell Panel
-            ShellPanel {
-                id: shellPanel
+            // Compositor Panel
+            CompositorPanel {
+                id: compositorPanel
                 anchors.fill: parent
                 maxContentWidth: contentArea.maxContentWidth
                 visible: opacity > 0
@@ -441,6 +442,35 @@ Rectangle {
 
                 transform: Translate {
                     y: root.currentSection === 7 ? 0 : (root.currentSection > 7 ? -20 : 20)
+
+                    Behavior on y {
+                        enabled: Config.animDuration > 0
+                        NumberAnimation {
+                            duration: Config.animDuration
+                            easing.type: Easing.OutCubic
+                        }
+                    }
+                }
+            }
+
+            // Shell Panel
+            ShellPanel {
+                id: shellPanel
+                anchors.fill: parent
+                maxContentWidth: contentArea.maxContentWidth
+                visible: opacity > 0
+                opacity: root.currentSection === 8 ? 1 : 0
+
+                Behavior on opacity {
+                    enabled: Config.animDuration > 0
+                    NumberAnimation {
+                        duration: Config.animDuration
+                        easing.type: Easing.OutCubic
+                    }
+                }
+
+                transform: Translate {
+                    y: root.currentSection === 8 ? 0 : (root.currentSection > 8 ? -20 : 20)
 
                     Behavior on y {
                         enabled: Config.animDuration > 0

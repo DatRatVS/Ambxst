@@ -98,7 +98,7 @@ StyledRect {
                     }
 
                     StyledToolTip {
-                        visible: optionButton.hovered && typeof optionButton.modelData === "object" && optionButton.modelData.tooltip
+                        visible: optionButton.hovered && typeof optionButton.modelData === "object" && !!optionButton.modelData.tooltip
                         tooltipText: typeof optionButton.modelData === "object" ? (optionButton.modelData.tooltip || "") : ""
                     }
                 }

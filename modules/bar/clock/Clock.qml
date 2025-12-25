@@ -157,13 +157,7 @@ Item {
         contentWidth: popupColumn.width
         contentHeight: popupColumn.height
 
-        Behavior on contentHeight {
-            enabled: Config.animDuration > 0
-            NumberAnimation {
-                duration: Config.animDuration
-                easing.type: Easing.OutCubic
-            }
-        }
+
 
         onIsOpenChanged: {
             if (isOpen && !WeatherService.dataAvailable) {
@@ -346,13 +340,7 @@ Item {
                     clip: true
                     visible: height > 0
 
-                    Behavior on height {
-                        enabled: Config.animDuration > 0
-                        NumberAnimation {
-                            duration: Config.animDuration
-                            easing.type: Easing.OutCubic
-                        }
-                    }
+
 
                     StyledRect {
                         id: forecastContent
@@ -438,13 +426,7 @@ Item {
                     clip: true
                     visible: height > 0
 
-                    Behavior on height {
-                        enabled: Config.animDuration > 0
-                        NumberAnimation {
-                            duration: Config.animDuration
-                            easing.type: Easing.OutCubic
-                        }
-                    }
+
 
                     ColumnLayout {
                         id: debugContent

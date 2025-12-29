@@ -122,6 +122,7 @@ Item {
                 anchors.fill: parent
                 variant: "internalbg"
                 opacity: hasArtwork ? 0.5 : 0.0
+                radius: Styling.radius(-4)
                 Behavior on opacity {
                     enabled: Config.animDuration > 0
                     NumberAnimation {

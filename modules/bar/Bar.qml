@@ -36,12 +36,11 @@ PanelWindow {
             if (pos === "left" || pos === "start") return "start";
             if (pos === "right" || pos === "end") return "end";
             return "center";
-        } else {
-            // vertical
-            if (pos === "top" || pos === "start") return "start";
-            if (pos === "bottom" || pos === "end") return "end";
-            return "center";
         }
+        
+        // Vertical always falls back to center (or default logic) for now
+        // to match the reverted behavior where it ignores start/end.
+        return "center";
     }
 
     anchors {
@@ -284,22 +283,17 @@ PanelWindow {
 
                 ColumnLayout {
                     anchors.horizontalCenter: parent.horizontalCenter
-                    
-                    // Calculate target position based on config
-                    property real targetY: {
-                        if (integratedDockEnabled) {
-                            if (integratedDockPosition === "start") return 0;
-                            if (integratedDockPosition === "end") return parent.height - height;
-                        }
 
-                        // Center logic (reactive using parent.y + margin offset)
-                        // ColumnLayout has anchors.margins: 4, so offset is 4
-                        return (bar.height - height) / 2 - (parent.y + 4);
+                    // Calculate target position to be absolutely centered in the bar (vertically)
+                    property real targetY: {
+                        if (!parent || !bar) return 0;
+                        var parentPos = parent.mapToItem(bar, 0, 0);
+                        return (bar.height - height) / 2 - parentPos.y;
                     }
-                    
+
                     // Clamp y position
                     y: Math.max(0, Math.min(parent.height - height, targetY))
-                    
+
                     height: Math.min(parent.height, implicitHeight)
                     width: parent.width
                     spacing: 4
@@ -328,7 +322,7 @@ PanelWindow {
                         Layout.fillHeight: true
                         Layout.fillWidth: true
                     }
-                    
+
                     ToolsButton {
                         id: toolsButtonVert
                         Layout.alignment: Qt.AlignHCenter

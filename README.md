@@ -4,6 +4,10 @@
 An <i><b>Ax</b>tremely</i> customizable shell.
 </p>
 
+<p align="center">
+<a href="https://ko-fi.com/Axenide"><img src="https://axeni.de/social-icons/128x/kofi_icon_bg.png" width="32" height="32" /></a> <a href="https://axeni.de/ambxst"><img src="https://axeni.de/social-icons/128x/domain_icon_bg.png" width="32" height="32" /></a> <a href="https://discord.com/invite/gHG9WHyNvH"><img src="https://axeni.de/social-icons/128x/discord_icon_bg.png" width="32" height="32" /></a>
+</p>
+
 ---
 
 <h2><sub><img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Objects/Camera%20with%20Flash.png" alt="Camera with Flash" width="32" height="32" /></sub> Screenshots</h2>

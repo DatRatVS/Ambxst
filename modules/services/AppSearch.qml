@@ -71,6 +71,17 @@ Singleton {
         return null;
     }
 
+    property var iconCache: ({})
+    
+    function getCachedIcon(str) {
+        if (!str) return "image-missing";
+        if (iconCache[str]) return iconCache[str];
+        
+        const result = guessIcon(str);
+        iconCache[str] = result;
+        return result;
+    }
+
     function guessIcon(str) {
         if (!str || str.length == 0) return "image-missing";
 
@@ -104,6 +115,28 @@ Singleton {
     readonly property list<DesktopEntry> list: Array.from(DesktopEntries.applications.values)
         .sort((a, b) => a.name.localeCompare(b.name))
     
+    // Index structure: [{ name: "lower", command: "lower", keywords: ["lower"], original: appObject }, ...]
+    property var searchIndex: []
+    
+    function buildIndex() {
+        const newIndex = [];
+        for (let i = 0; i < list.length; i++) {
+            const app = list[i];
+            newIndex.push({
+                name: app.name.toLowerCase(),
+                command: (app.command && app.command.length > 0) ? app.command.join(' ').toLowerCase() : "",
+                executable: (app.command && app.command.length > 0) ? app.command[0].toLowerCase() : "",
+                comment: (app.comment || "").toLowerCase(),
+                genericName: (app.genericName || "").toLowerCase(),
+                keywords: (app.keywords || []).map(k => k.toLowerCase()),
+                original: app
+            });
+        }
+        searchIndex = newIndex;
+    }
+    
+    Component.onCompleted: buildIndex()
+    
     function getAllApps() {
         const results = [];
         
@@ -132,62 +165,54 @@ Singleton {
         const searchLower = search.toLowerCase();
         const results = [];
         
-        for (let i = 0; i < list.length; i++) {
-            const app = list[i];
+        // Ensure index exists
+        if (searchIndex.length === 0 && list.length > 0) buildIndex();
+        
+        for (let i = 0; i < searchIndex.length; i++) {
+            const entry = searchIndex[i];
             let score = 0;
             let matchFound = false;
             
             // Search in name (highest priority)
-            const nameLower = app.name.toLowerCase();
-            if (nameLower === searchLower) {
+            if (entry.name === searchLower) {
                 score += 100; // Exact name match
                 matchFound = true;
-            } else if (nameLower.startsWith(searchLower)) {
+            } else if (entry.name.startsWith(searchLower)) {
                 score += 80; // Name starts with search
                 matchFound = true;
-            } else if (nameLower.includes(searchLower)) {
+            } else if (entry.name.includes(searchLower)) {
                 score += 60; // Name contains search
                 matchFound = true;
             }
             
             // Search in command (high priority)
-            if (app.command && app.command.length > 0) {
-                const commandStr = app.command.join(' ').toLowerCase();
-                if (commandStr.includes(searchLower)) {
+            if (entry.command) {
+                if (entry.command.includes(searchLower)) {
                     score += 40; // Command contains search
                     matchFound = true;
                 }
-                
-                // También buscar en el primer elemento del comando (executable)
-                const executableLower = app.command[0].toLowerCase();
-                if (executableLower.includes(searchLower)) {
+                if (entry.executable.includes(searchLower)) {
                     score += 50; // Executable name contains search
                     matchFound = true;
                 }
             }
             
             // Search in comment/description (medium priority)
-            if (app.comment) {
-                const commentLower = app.comment.toLowerCase();
-                if (commentLower.includes(searchLower)) {
-                    score += 30; // Comment contains search
-                    matchFound = true;
-                }
+            if (entry.comment && entry.comment.includes(searchLower)) {
+                score += 30; // Comment contains search
+                matchFound = true;
             }
             
             // Search in genericName (medium priority)
-            if (app.genericName) {
-                const genericLower = app.genericName.toLowerCase();
-                if (genericLower.includes(searchLower)) {
-                    score += 25; // Generic name contains search
-                    matchFound = true;
-                }
+            if (entry.genericName && entry.genericName.includes(searchLower)) {
+                score += 25; // Generic name contains search
+                matchFound = true;
             }
             
             // Search in keywords (medium priority)
-            if (app.keywords && app.keywords.length > 0) {
-                for (let j = 0; j < app.keywords.length; j++) {
-                    if (app.keywords[j].toLowerCase().includes(searchLower)) {
+            if (entry.keywords.length > 0) {
+                for (let j = 0; j < entry.keywords.length; j++) {
+                    if (entry.keywords[j].includes(searchLower)) {
                         score += 20; // Keyword contains search
                         matchFound = true;
                         break;
@@ -196,6 +221,7 @@ Singleton {
             }
             
             if (matchFound) {
+                const app = entry.original;
                 results.push({
                     name: app.name,
                     icon: app.icon || "application-x-executable",

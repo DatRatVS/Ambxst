@@ -103,38 +103,46 @@ Item {
         return workspaceGroup * Config.workspaces.shown + index + 1;
     }
 
-    Component.onCompleted: updateWorkspaceOccupied()
+    Timer {
+        id: updateTimer
+        interval: 50
+        repeat: false
+        onTriggered: workspacesWidget.updateWorkspaceOccupied()
+    }
+
+    // Initial update
+    Component.onCompleted: updateTimer.restart()
 
     Connections {
         target: Hyprland.workspaces
         function onValuesChanged() {
-            updateWorkspaceOccupied();
+            updateTimer.restart();
         }
     }
 
     Connections {
         target: monitor
         function onActiveWorkspaceChanged() {
-            updateWorkspaceOccupied();
+            updateTimer.restart();
         }
     }
 
     Connections {
         target: activeWindow
         function onActivatedChanged() {
-            updateWorkspaceOccupied();
+            updateTimer.restart();
         }
     }
 
     Connections {
         target: HyprlandData
         function onWindowListChanged() {
-            updateWorkspaceOccupied();
+            updateTimer.restart();
         }
     }
 
     onWorkspaceGroupChanged: {
-        updateWorkspaceOccupied();
+        updateTimer.restart();
     }
 
     implicitWidth: orientation === "vertical" ? baseSize : workspaceButtonSize * effectiveWorkspaceCount + widgetPadding * 2
@@ -413,7 +421,7 @@ Item {
                             return winFocus < bestFocus ? win : best;
                         }, null);
                     }
-                    property var mainAppIconSource: Quickshell.iconPath(AppSearch.guessIcon(focusedWindow?.class), "image-missing")
+                    property var mainAppIconSource: Quickshell.iconPath(AppSearch.getCachedIcon(focusedWindow?.class), "image-missing")
 
                     Text {
                         opacity: Config.workspaces.alwaysShowNumbers || ((Config.workspaces.showNumbers && (!Config.workspaces.showAppIcons || !workspaceButtonBackground.focusedWindow || Config.workspaces.alwaysShowNumbers)) || (Config.workspaces.alwaysShowNumbers && !Config.workspaces.showAppIcons)) ? 1 : 0
@@ -544,7 +552,7 @@ Item {
                             return winFocus < bestFocus ? win : best;
                         }, null);
                     }
-                    property var mainAppIconSource: Quickshell.iconPath(AppSearch.guessIcon(focusedWindow?.class), "image-missing")
+                    property var mainAppIconSource: Quickshell.iconPath(AppSearch.getCachedIcon(focusedWindow?.class), "image-missing")
 
                     Text {
                         opacity: Config.workspaces.alwaysShowNumbers || ((Config.workspaces.showNumbers && (!Config.workspaces.showAppIcons || !workspaceButtonBackgroundVert.focusedWindow || Config.workspaces.alwaysShowNumbers)) || (Config.workspaces.alwaysShowNumbers && !Config.workspaces.showAppIcons)) ? 1 : 0

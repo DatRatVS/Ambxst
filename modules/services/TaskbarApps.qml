@@ -53,7 +53,7 @@ Singleton {
     // Debounce timer to prevent rapid recalculations
     Timer {
         id: updateTimer
-        interval: 50
+        interval: 100
         repeat: false
         onTriggered: root._updateApps()
     }

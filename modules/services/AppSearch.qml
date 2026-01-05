@@ -243,7 +243,7 @@ Singleton {
             if (a.score !== b.score) {
                 return b.score - a.score;
             }
-            return a.name.localeCompare(b.name);
+            return (a.name || "").localeCompare(b.name || "");
         });
         
         return results.slice(0, 10); // Limit results

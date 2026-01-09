@@ -95,8 +95,6 @@ QtObject {
             } else {
                 root.monitorScale = 1.0
             }
-            // After getting scale, proceed with freeze
-            freezeProcess.running = true
         }
     }
     
@@ -221,8 +219,10 @@ QtObject {
     }
 
     function freezeScreen() {
-        // First get scale factor, then freeze
-        scaleProcess.running = true
+        // Run both in parallel. The freeze is urgent for UI feedback.
+        // Scale is needed later for cropping.
+        scaleProcess.running = true;
+        freezeProcess.running = true;
     }
 
     function fetchWindows() {

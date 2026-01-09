@@ -21,18 +21,24 @@ if [[ ! -r "$IMAGE_PATH" ]]; then
 fi
 
 # Check dependencies
-for cmd in curl jq xdg-open; do
+for cmd in curl jq xdg-open notify-send; do
 	if ! command -v "$cmd" &>/dev/null; then
-		notify-send -u critical "Google Lens" "Missing required command: $cmd" >&2
 		echo "ERROR: Missing required command: $cmd" >&2
 		exit 1
 	fi
 done
 
+# Notify user that processing has started
+notify-send -u normal "Google Lens" "Uploading image for analysis..."
+
 # Upload to uguu.se with error handling
 echo "Uploading image to uguu.se..." >&2
+
+# Temporarily disable set -e to handle curl errors gracefully
+set +e
 uploadResponse=$(curl -sS -f -F "files[]=@$IMAGE_PATH" 'https://uguu.se/upload' 2>&1)
 curlExit=$?
+set -e
 
 if [[ $curlExit -ne 0 ]]; then
 	notify-send -u critical "Google Lens" "Upload failed (curl error $curlExit)" >&2

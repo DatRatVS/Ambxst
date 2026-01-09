@@ -168,6 +168,7 @@ Singleton {
 
     // Screenshot Tool state
     property bool screenshotToolVisible: false
+    property string screenshotToolMode: "normal" // "normal" or "lens"
 
     // Screen Record Tool state
     property bool screenRecordToolVisible: false

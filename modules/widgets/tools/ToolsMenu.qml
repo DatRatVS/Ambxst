@@ -66,6 +66,11 @@ ActionGrid {
             command: ""
         },
         {
+            icon: Icons.google,
+            tooltip: "Google Lens",
+            command: ""
+        },
+        {
             icon: GlobalStates.mirrorWindowVisible ? Icons.webcamSlash : Icons.webcam,
             tooltip: "Mirror",
             command: ""
@@ -153,6 +158,10 @@ ActionGrid {
             var scriptPath = Qt.resolvedUrl("../../../scripts/qr_scan.sh").toString().replace("file://", "");
             qrProc.command = ["bash", "-c", "nohup \"" + scriptPath + "\" > /dev/null 2>&1 &"];
             qrProc.running = true;
+            root.itemSelected();
+        } else if (action.tooltip === "Google Lens") {
+            Screenshot.captureMode = "lens";
+            GlobalStates.screenshotToolVisible = true;
             root.itemSelected();
         } else if (action.tooltip === "Mirror") {
             GlobalStates.mirrorWindowVisible = !GlobalStates.mirrorWindowVisible;

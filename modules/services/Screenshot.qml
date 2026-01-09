@@ -11,9 +11,14 @@ QtObject {
     signal screenshotCaptured(string path)
     signal errorOccurred(string message)
     signal windowListReady(var windows)
+    signal lensImageReady(string path)
 
     property string tempPath: "/tmp/ambxst_freeze.png"
     property string cropPath: "/tmp/ambxst_crop.png"
+    property string lensPath: "/tmp/image.png"
+    
+    // Mode: "normal" saves to Screenshots folder, "lens" saves to /tmp/image.png
+    property string captureMode: "normal"
     
     // We'll store the resolved XDG_PICTURES_DIR/Screenshots here
     property string screenshotsDir: ""
@@ -174,8 +179,14 @@ QtObject {
         // command set dynamically
         onExited: exitCode => {
             if (exitCode === 0) {
-                // After successful save/crop, copy to clipboard
-                copyProcess.running = true
+                if (root.captureMode === "lens") {
+                    // Run Google Lens script
+                    root.runLensScript()
+                    root.captureMode = "normal" // Reset mode
+                } else {
+                    // After successful save/crop, copy to clipboard
+                    copyProcess.running = true
+                }
             } else {
                 root.errorOccurred("Failed to save image")
             }
@@ -190,6 +201,12 @@ QtObject {
                 console.warn("Failed to copy to clipboard")
             }
         }
+    }
+
+    // Process for Google Lens upload
+    property Process lensProcess: Process {
+        id: lensProcess
+        // command set dynamically
     }
 
     function freezeScreen() {
@@ -216,13 +233,16 @@ QtObject {
     }
 
     function processRegion(x, y, w, h) {
-        if (root.screenshotsDir === "") {
-            // Fallback if xdg process hasn't finished yet?
-             root.screenshotsDir = Quickshell.env("HOME") + "/Pictures/Screenshots"
+        // Determine output path based on mode
+        if (root.captureMode === "lens") {
+            root.finalPath = root.lensPath;
+        } else {
+            if (root.screenshotsDir === "") {
+                root.screenshotsDir = Quickshell.env("HOME") + "/Pictures/Screenshots"
+            }
+            var filename = "Screenshot_" + getTimestamp() + ".png"
+            root.finalPath = root.screenshotsDir + "/" + filename
         }
-        
-        var filename = "Screenshot_" + getTimestamp() + ".png"
-        root.finalPath = root.screenshotsDir + "/" + filename
         
         // Scale coordinates by monitor scale factor for accurate cropping
         var scaledX = Math.round(x * root.monitorScale)
@@ -239,12 +259,16 @@ QtObject {
     }
 
     function processFullscreen() {
-        if (root.screenshotsDir === "") {
-             root.screenshotsDir = Quickshell.env("HOME") + "/Pictures/Screenshots"
+        // Determine output path based on mode
+        if (root.captureMode === "lens") {
+            root.finalPath = root.lensPath;
+        } else {
+            if (root.screenshotsDir === "") {
+                root.screenshotsDir = Quickshell.env("HOME") + "/Pictures/Screenshots"
+            }
+            var filename = "Screenshot_" + getTimestamp() + ".png"
+            root.finalPath = root.screenshotsDir + "/" + filename
         }
-        
-        var filename = "Screenshot_" + getTimestamp() + ".png"
-        root.finalPath = root.screenshotsDir + "/" + filename
 
         // Just copy the freeze file to final path
         cropProcess.command = ["cp", root.tempPath, root.finalPath]
@@ -264,5 +288,11 @@ QtObject {
              openScreenshotsProcess.command = ["xdg-open", root.screenshotsDir];
         }
         openScreenshotsProcess.running = true;
+    }
+
+    function runLensScript() {
+        var scriptPath = Qt.resolvedUrl("../../scripts/google_lens.sh").toString().replace("file://", "");
+        lensProcess.command = ["bash", scriptPath];
+        lensProcess.running = true;
     }
 }

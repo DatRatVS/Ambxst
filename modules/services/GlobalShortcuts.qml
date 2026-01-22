@@ -47,7 +47,7 @@ Item {
             case "overview": toggleSimpleModule("overview"); break;
             case "powermenu": toggleSimpleModule("powermenu"); break;
             case "tools": toggleSimpleModule("tools"); break;
-            case "config": toggleDashboardTab(4); break;
+            case "config": GlobalStates.settingsWindowVisible = !GlobalStates.settingsWindowVisible; break;
             case "screenshot": GlobalStates.screenshotToolVisible = true; break;
             case "screenrecord": GlobalStates.screenRecordToolVisible = true; break;
             case "lens": 
@@ -278,7 +278,7 @@ Item {
         name: "dashboard-controls"
         description: "Open dashboard controls tab"
 
-        onPressed: toggleDashboardTab(4)
+        onPressed: GlobalStates.settingsWindowVisible = !GlobalStates.settingsWindowVisible
     }
 
     // Media player shortcuts

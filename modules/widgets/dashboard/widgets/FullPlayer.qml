@@ -84,8 +84,8 @@ StyledRect {
             id: backgroundEffect
             anchors.fill: parent
             source: backgroundArt
-            blurMax: 32
-            blur: 0.75
+            blurMax: 16
+            blur: 0.5
             opacity: (MprisController.activePlayer?.trackArtUrl ?? "") !== "" ? 1.0 : 0.0
 
             Behavior on opacity {
@@ -167,12 +167,12 @@ StyledRect {
                 anchors.margins: 16
                 spacing: 8
                 visible: MprisController.activePlayer
-                layer.enabled: true
-                layer.effect: Shadow {
-                    shadowBlur: 0.5
-                    shadowOpacity: 1
-                    shadowVerticalOffset: 2
-                }
+                // layer.enabled: true
+                // layer.effect: Shadow {
+                //     shadowBlur: 0.5
+                //     shadowOpacity: 1
+                //     shadowVerticalOffset: 2
+                // }
 
                 RowLayout {
                     Layout.fillWidth: true

@@ -214,15 +214,27 @@ Rectangle {
             }
 
             Component.onCompleted: {
-                updateFilteredApps();
-                updateAppsModel();
-                focusSearchInput();
+                // Defer initial load to allow dashboard animation to start smoothly
+                initialLoadTimer.start();
                 
                 // Re-update when UsageTracker finishes loading
                 UsageTracker.usageDataReady.connect(function() {
                     AppSearch.invalidateCache();
-                    updateFilteredApps();
+                    if (appLauncher.visible) {
+                         appLauncher.updateFilteredApps();
+                    }
                 });
+            }
+
+            Timer {
+                id: initialLoadTimer
+                interval: 100
+                repeat: false
+                onTriggered: {
+                    appLauncher.updateFilteredApps();
+                    appLauncher.updateAppsModel();
+                    appLauncher.focusSearchInput();
+                }
             }
 
             onSearchTextChanged: {
@@ -550,7 +562,7 @@ Rectangle {
                     clip: true
                     interactive: appLauncher.expandedItemIndex === -1
                     cacheBuffer: 96
-                    reuseItems: false
+                    reuseItems: true
 
                     // Propiedad para detectar si está en movimiento (drag o flick)
                     property bool isScrolling: dragging || flicking

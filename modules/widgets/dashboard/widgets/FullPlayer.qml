@@ -48,7 +48,19 @@ StyledRect {
         interval: 1000
         repeat: true
         onTriggered: {
+            if (!seekBar.isDragging && player.hasActivePlayer) {
+                seekBar.value = player.length > 0 ? player.position / player.length : 0;
+            }
             MprisController.activePlayer?.positionChanged();
+        }
+    }
+
+    Connections {
+        target: MprisController.activePlayer
+        function onPositionChanged() {
+            if (!seekBar.isDragging && player.hasActivePlayer) {
+                seekBar.value = player.length > 0 ? player.position / player.length : 0;
+            }
         }
     }
 
@@ -68,16 +80,16 @@ StyledRect {
         Item {
             id: discArea
             Layout.alignment: Qt.AlignHCenter
-            Layout.preferredWidth: 180
-            Layout.preferredHeight: 180
+            Layout.preferredWidth: 220
+            Layout.preferredHeight: 220
             
             CircularSeekBar {
                 id: seekBar
                 anchors.fill: parent
-                value: player.length > 0 ? player.position / player.length : 0
+                // value is managed by Timer/Connections to prevent jump-back
                 accentColor: Colors.primary
                 trackColor: Colors.outline
-                lineWidth: 4
+                lineWidth: 6
                 
                 // Half circle (Top) from 9 o'clock (180) to 3 o'clock (360)
                 startAngleDeg: 180
@@ -87,6 +99,7 @@ StyledRect {
                 
                 onValueEdited: newValue => {
                     if (MprisController.activePlayer && MprisController.activePlayer.canSeek) {
+                        seekBar.value = newValue; // Optimistic update
                         MprisController.activePlayer.position = newValue * player.length;
                     }
                 }
@@ -96,8 +109,9 @@ StyledRect {
             Item {
                 id: coverDiscContainer
                 anchors.centerIn: parent
-                width: parent.width - 16
-                height: parent.height - 16
+                // Increased padding to separate cover from handle (which extends inwards)
+                width: parent.width - 52
+                height: parent.height - 52
                 
                 Item {
                     id: rotatingWrapper

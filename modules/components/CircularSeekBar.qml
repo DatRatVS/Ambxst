@@ -9,8 +9,8 @@ Item {
     property real value: 0
     property color accentColor: Colors.primary
     property color trackColor: Colors.outline
-    property real lineWidth: 4
-    property real ringPadding: 6
+    property real lineWidth: 8
+    property real ringPadding: 12 // Increased to avoid handle clipping
     property bool enabled: true
     readonly property bool isDragging: mouseArea.isDragging
 
@@ -22,6 +22,14 @@ Item {
 
     property real startAngleDeg: 180 // 9 o'clock
     property real spanAngleDeg: 180 // Half circle clockwise to 3 o'clock
+    
+    // Internal drag state
+    property real dragValue: 0
+    property real animatedHandleOffset: isDragging ? 9 : 6 // Grow to 18px (9*2) instead of 24px
+    property real animatedHandleWidth: isDragging ? lineWidth * 0.5 : lineWidth
+
+    Behavior on animatedHandleOffset { NumberAnimation { duration: 200; easing.type: Easing.OutCubic } }
+    Behavior on animatedHandleWidth { NumberAnimation { duration: 200; easing.type: Easing.OutCubic } }
 
     MouseArea {
         id: mouseArea
@@ -90,11 +98,13 @@ Item {
                 }
             }
             
-            root.valueEdited(progress);
+            root.dragValue = progress;
+            canvas.requestPaint();
         }
 
         onPressed: mouse => {
             isDragging = true;
+            root.dragValue = root.value; // Initialize drag value
             root.draggingChanged(true);
             updateValueFromMouse(mouse.x, mouse.y);
         }
@@ -109,16 +119,21 @@ Item {
             if (isDragging) {
                 isDragging = false;
                 root.draggingChanged(false);
+                root.valueEdited(root.dragValue); // Commit value on release
             }
         }
     }
+
+    property real handleSpacing: 10 // Increased to ensure gap is visible with thicker handle
+    property real handleSize: 8 
 
     Item {
         id: progressCanvas
         anchors.centerIn: parent
         anchors.fill: parent
 
-        property real progress: root.value
+        // Use dragValue while dragging, otherwise bound value
+        property real progress: root.isDragging ? root.dragValue : root.value
 
         Canvas {
             id: canvas
@@ -131,7 +146,8 @@ Item {
 
                 let centerX = width / 2;
                 let centerY = height / 2;
-                let radius = (Math.min(width, height) / 2) - root.lineWidth / 2;
+                // Radius reduced by ringPadding to allow handle space
+                let radius = (Math.min(width, height) / 2) - root.ringPadding;
                 let lineWidth = root.lineWidth;
 
                 ctx.lineCap = "round";
@@ -139,33 +155,60 @@ Item {
                 let startRad = root.startAngleDeg * Math.PI / 180;
                 let spanRad = root.spanAngleDeg * Math.PI / 180;
                 let currentSpan = spanRad * progressCanvas.progress;
+                
+                // Calculate gap in radians based on handleSpacing (pixels)
+                // Circumference = 2 * PI * radius
+                // Angle per pixel = 360 / Circumference
+                // Gap angle = handleSpacing * Angle per pixel
+                let handleGapRad = root.handleSpacing * (2 * Math.PI) / (2 * Math.PI * radius); 
+                // Simplified: handleSpacing / radius
+                
+                // Draw track (background part)
+                // Starts after current position + gap
+                let remainingStart = startRad + currentSpan + handleGapRad;
+                let totalEnd = startRad + spanRad;
 
-                // Draw track (full span)
-                ctx.strokeStyle = root.trackColor;
-                ctx.lineWidth = lineWidth;
-                ctx.beginPath();
-                ctx.arc(centerX, centerY, radius, startRad, startRad + spanRad, false);
-                ctx.stroke();
-
-                // Draw progress
-                if (progressCanvas.progress > 0) {
-                    ctx.strokeStyle = root.accentColor;
+                if (remainingStart < totalEnd) {
+                    ctx.strokeStyle = root.trackColor;
                     ctx.lineWidth = lineWidth;
                     ctx.beginPath();
-                    ctx.arc(centerX, centerY, radius, startRad, startRad + currentSpan, false);
+                    ctx.arc(centerX, centerY, radius, remainingStart, totalEnd, false);
                     ctx.stroke();
                 }
 
-                // Draw handle (small dot at current position)
+                // Draw progress
+                // Ends at current position - gap
+                let progressEnd = startRad + currentSpan - handleGapRad;
+                
+                if (progressCanvas.progress > 0 && progressEnd > startRad) {
+                    ctx.strokeStyle = root.accentColor;
+                    ctx.lineWidth = lineWidth;
+                    ctx.beginPath();
+                    ctx.arc(centerX, centerY, radius, startRad, progressEnd, false);
+                    ctx.stroke();
+                }
+
+                // Draw handle (radial line at current position)
                 if (root.enabled) {
                     let handleAngle = startRad + currentSpan;
-                    let handleX = centerX + radius * Math.cos(handleAngle);
-                    let handleY = centerY + radius * Math.sin(handleAngle);
+                    // Handle Dimensions:
+                    // Height: Animated offset (6 -> 12)
+                    // Width: Animated width (lineWidth -> lineWidth * 0.5)
+                    
+                    let innerRadius = radius - root.animatedHandleOffset;
+                    let outerRadius = radius + root.animatedHandleOffset;
 
-                    ctx.fillStyle = Colors.overBackground;
+                    let innerX = centerX + innerRadius * Math.cos(handleAngle);
+                    let innerY = centerY + innerRadius * Math.sin(handleAngle);
+                    let outerX = centerX + outerRadius * Math.cos(handleAngle);
+                    let outerY = centerY + outerRadius * Math.sin(handleAngle);
+
+                    ctx.strokeStyle = Colors.overBackground;
+                    ctx.lineWidth = root.animatedHandleWidth;
                     ctx.beginPath();
-                    ctx.arc(handleX, handleY, lineWidth * 1.5, 0, 2 * Math.PI);
-                    ctx.fill();
+                    ctx.moveTo(innerX, innerY);
+                    ctx.lineTo(outerX, outerY);
+                    ctx.stroke();
                 }
             }
             
@@ -185,6 +228,8 @@ Item {
                      // Force repaint even if root.value didn't change (e.g. click in same spot)
                      canvas.requestPaint();
                 }
+                function onAnimatedHandleOffsetChanged() { canvas.requestPaint(); }
+                function onAnimatedHandleWidthChanged() { canvas.requestPaint(); }
             }
         }
 

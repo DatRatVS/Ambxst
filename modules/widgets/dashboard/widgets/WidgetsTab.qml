@@ -24,21 +24,29 @@ Rectangle {
         anchors.fill: parent
         spacing: 8
 
-        // Launcher Placeholder
-        StyledRect {
-            id: launcherPlaceholder
-            variant: "pane"
+        // Player Loader (Replaces Launcher Placeholder)
+        Loader {
             Layout.preferredWidth: root.leftPanelWidth
             Layout.fillHeight: true
-            radius: Styling.radius(4)
             
-            Text {
-                anchors.centerIn: parent
-                text: "Launcher moved to standalone view\nUse Super or 'ambxst run launcher'"
-                color: Colors.overSurface
-                horizontalAlignment: Text.AlignHCenter
-                font.family: Config.theme.font
-                font.pixelSize: 14
+            asynchronous: true
+            sourceComponent: Component {
+                FullPlayer { 
+                    anchors.fill: parent
+                    // Disable background since it's inside the panel area?
+                    // Actually FullPlayer is a StyledRect with variant="pane". 
+                    // If we want it to fill the height, we might need to adjust FullPlayer to fill vertically.
+                    // But FullPlayer layout is ColumnLayout.
+                    
+                    // Let's keep it simple first: just put it there.
+                    // FullPlayer has implicitHeight based on content.
+                    // If we want it to be centered vertically in the left panel?
+                    
+                    // The left panel was "Layout.fillHeight: true".
+                    // FullPlayer is a pane. If we fill height, the background will fill.
+                    
+                    // Let's let FullPlayer handle its content.
+                }
             }
         }
 
@@ -167,6 +175,7 @@ Rectangle {
                         }
                     }
 
+                    /* 
                     Loader {
                         Layout.fillWidth: true
                         // Estimate height: Margins(32) + Disc(180) + Metadata(~60) + Controls(44) + Duration(~20) + Spacing(36) = ~372
@@ -178,7 +187,8 @@ Rectangle {
                                 onIsDraggingChanged: widgetsContainer.circularControlDragging = isDragging
                             }
                         }
-                    }
+                    } 
+                    */
 
                     Loader {
                         Layout.fillWidth: true

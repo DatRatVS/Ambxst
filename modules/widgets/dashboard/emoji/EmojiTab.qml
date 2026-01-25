@@ -30,6 +30,7 @@ Rectangle {
     property var filteredEmojis: []
 
     property real recentX: 0
+    // No behavior on recentX to avoid conflict with the highlight's own behavior
     readonly property bool isAtRecent: selectedIndex === 0 && emojisModel.count > 0 && emojisModel.get(0).isRecentContainer
 
     // Skin tone support
@@ -502,6 +503,16 @@ Rectangle {
                             
                             // Drag support
                             interactive: true
+
+                            property bool enableScrollAnimation: true
+
+                            Behavior on contentX {
+                                enabled: Config.animDuration > 0 && horizontalRecent.enableScrollAnimation && !horizontalRecent.moving
+                                NumberAnimation {
+                                    duration: Config.animDuration / 2
+                                    easing.type: Easing.OutCubic
+                                }
+                            }
                             
                             // Wheel support (Shift+Scroll)
                             MouseArea {
@@ -519,7 +530,21 @@ Rectangle {
                                 if (currentIndex !== root.selectedRecentIndex && root.selectedIndex === delegateRoot.index) {
                                     root.selectedRecentIndex = currentIndex;
                                 }
-                                positionViewAtIndex(currentIndex, ListView.Contain);
+
+                                if (currentIndex >= 0 && root.selectedIndex === delegateRoot.index) {
+                                    var itemX = currentIndex * (48 + 8); // width + spacing
+                                    var viewportLeft = horizontalRecent.contentX;
+                                    var viewportRight = viewportLeft + horizontalRecent.width;
+
+                                    if (itemX < viewportLeft) {
+                                        horizontalRecent.contentX = itemX;
+                                    } else if (itemX + 48 > viewportRight) {
+                                        horizontalRecent.contentX = itemX + 48 - horizontalRecent.width;
+                                    }
+                                    
+                                    // Force update position immediately for highlight behavior to pick up
+                                    updateRecentX();
+                                }
                             }
                             
                             onContentXChanged: updateRecentX()
@@ -527,7 +552,9 @@ Rectangle {
                             
                             function updateRecentX() {
                                 if (currentItem && root.selectedIndex === delegateRoot.index) {
-                                    root.recentX = currentItem.x - contentX + 4; // +4 for internal padding
+                                    // Use absolute position for keyboard navigation, 
+                                    // behavior on x will handle the smoothness
+                                    root.recentX = currentItem.x - contentX + 4;
                                 }
                             }
 
@@ -649,7 +676,10 @@ Rectangle {
                     return yPos;
                 }
 
-                Behavior on x { NumberAnimation { duration: Config.animDuration / 2; easing.type: Easing.OutCubic } }
+                Behavior on x { 
+                    enabled: Config.animDuration > 0
+                    NumberAnimation { duration: Config.animDuration / 2; easing.type: Easing.OutCubic } 
+                }
                 Behavior on width { NumberAnimation { duration: Config.animDuration / 2; easing.type: Easing.OutCubic } }
                 Behavior on y { NumberAnimation { duration: Config.animDuration / 2; easing.type: Easing.OutCubic } }
                 Behavior on height { NumberAnimation { duration: Config.animDuration; easing.type: Easing.OutQuart } }

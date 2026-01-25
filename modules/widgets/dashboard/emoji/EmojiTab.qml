@@ -436,6 +436,7 @@ Rectangle {
                     }
                     Text {
                         text: "Clear recent?"
+                        height: parent.height
                         font.family: Config.theme.font; font.weight: Font.Bold; font.pixelSize: Config.theme.fontSize
                         color: clearButton.item
                         opacity: root.clearButtonConfirmState ? 1.0 : 0.0

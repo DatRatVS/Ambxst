@@ -36,6 +36,51 @@ NotchAnimationBehavior {
     // Track which tabs have been loaded (for lazy loading)
     property var loadedTabs: ({0: true}) // Tab 0 (widgets) loaded by default
 
+    // LRU Tab Management
+    property var lruAccessOrder: [0]  // Tracks access order: [0] means tab 0 is most recent
+    property var lruTabsLoaded: ({0: true})  // Reflects which tabs are actually loaded
+
+    // Update LRU on tab access
+    function updateLRUAccess(tabIndex) {
+        // Remove if already in list
+        const idx = lruAccessOrder.indexOf(tabIndex);
+        if (idx !== -1) {
+            lruAccessOrder.splice(idx, 1);
+        }
+        // Add to end (most recent)
+        lruAccessOrder.push(tabIndex);
+        updateLoadedTabs();
+    }
+
+    // Determine which tabs should be loaded based on LRU and config
+    function updateLoadedTabs() {
+        let newLoadedTabs = {};
+        
+        // Always load current tab
+        newLoadedTabs[root.state.currentTab] = true;
+
+        if (Config.performance.dashboardPersistTabs) {
+            // Load up to maxPersistentTabs most recent tabs
+            const maxTabs = Math.max(1, Config.performance.dashboardMaxPersistentTabs);
+            const startIdx = Math.max(0, lruAccessOrder.length - maxTabs);
+            for (let i = startIdx; i < lruAccessOrder.length; i++) {
+                newLoadedTabs[lruAccessOrder[i]] = true;
+            }
+        }
+
+        lruTabsLoaded = newLoadedTabs;
+    }
+
+    // Check if a tab should be loaded
+    function shouldTabBeLoaded(tabIndex) {
+        if (Config.performance.dashboardPersistTabs) {
+            return lruTabsLoaded[tabIndex] === true;
+        } else {
+            // Without persistence, only load current tab
+            return root.state.currentTab === tabIndex;
+        }
+    }
+
     focus: true
 
     // Usar el comportamiento estándar de animaciones del notch
@@ -328,6 +373,9 @@ NotchAnimationBehavior {
 
                         root.state.currentTab = index;
                         GlobalStates.dashboardCurrentTab = index;
+                        
+                        // Update LRU when tab is accessed
+                        root.updateLRUAccess(index);
 
                         if (index === 0) {
                             Notifications.hideAllPopups();
@@ -339,8 +387,8 @@ NotchAnimationBehavior {
                 // Generic Tab Loader Component
                 component TabLoader : Loader {
                     anchors.fill: parent
-                    // Load if current, keep loaded afterwards (Persistence)
-                    active: root.state.currentTab === index || item !== null
+                    // Load based on LRU strategy or if currently active
+                    active: root.shouldTabBeLoaded(index) || root.state.currentTab === index
                     
                     // Visibility handles the "switching"
                     visible: root.state.currentTab === index
@@ -378,7 +426,6 @@ NotchAnimationBehavior {
                 // Tab 0: Unified Launcher
                 TabLoader {
                     property int index: 0
-                    active: true // Always load first tab
                     sourceComponent: unifiedLauncherComponent
                     z: visible ? 1 : 0
                 }

@@ -13,10 +13,37 @@ Singleton {
     property var addresses: []
     property var windowByAddress: ({})
     property var monitors: []
+    property var workspaceOccupationMap: ({})
+    property var workspaceWindowsMap: ({})
+
+    // Debounce timer to batch rapid Hyprland events
+    Timer {
+        id: updateDebounce
+        interval: 100
+        onTriggered: {
+            getClients.running = true
+            getMonitors.running = true
+        }
+    }
 
     function updateWindowList() {
-        getClients.running = true
-        getMonitors.running = true
+        updateDebounce.restart()
+    }
+
+    function updateMaps() {
+        let occupationMap = {}
+        let windowsMap = {}
+        for (var i = 0; i < root.windowList.length; ++i) {
+            var win = root.windowList[i]
+            let wsId = win.workspace.id
+            occupationMap[wsId] = true
+            if (!windowsMap[wsId]) {
+                windowsMap[wsId] = []
+            }
+            windowsMap[wsId].push(win)
+        }
+        root.workspaceOccupationMap = occupationMap
+        root.workspaceWindowsMap = windowsMap
     }
 
     Component.onCompleted: {
@@ -27,11 +54,13 @@ Singleton {
         target: Hyprland
 
         function onRawEvent(event) {
-            if(event.name in [
+            // Only request full update for critical events
+            let ignoreList = [
                 "activewindow", "focusedmon", "monitoradded", 
                 "createworkspace", "destroyworkspace", "moveworkspace", 
                 "activespecial", "movewindow", "windowtitle"
-            ]) return ;
+            ]
+            if (ignoreList.includes(event.name)) return
             updateWindowList()
         }
     }
@@ -49,6 +78,7 @@ Singleton {
                 }
                 root.windowByAddress = tempWinByAddress
                 root.addresses = root.windowList.map((win) => win.address)
+                updateMaps()
             }
         }
     }

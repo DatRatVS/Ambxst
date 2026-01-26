@@ -80,6 +80,28 @@ find_ambxst_pid() {
 	echo "$pid"
 }
 
+find_ambxst_pid_cached() {
+	# Optimized PID lookup: check cache file first, then fall back to pgrep
+	local pid_file="/tmp/ambxst.pid"
+	local pid=""
+
+	# Check if cache file exists and process is alive
+	if [ -f "$pid_file" ]; then
+		pid=$(<"$pid_file" 2>/dev/null)
+		# Verify process still exists using kill -0 (no signal, just test)
+		if [ -n "$pid" ] && kill -0 "$pid" 2>/dev/null; then
+			echo "$pid"
+			return 0
+		fi
+		# PID is stale, remove cache file
+		rm -f "$pid_file"
+	fi
+
+	# Fallback: use expensive pgrep search
+	pid=$(find_ambxst_pid)
+	echo "$pid"
+}
+
 case "${1:-}" in
 update)
 	echo "Updating Ambxst..."
@@ -104,8 +126,8 @@ run)
 		exit 0
 	fi
 
-	# Fallback path: Use QS IPC (Slow, requires finding PID)
-	PID=$(find_ambxst_pid)
+	# Fallback path: Use QS IPC with cached PID lookup
+	PID=$(find_ambxst_pid_cached)
 	if [ -z "$PID" ]; then
 		echo "Error: Ambxst is not running"
 		exit 1
@@ -117,8 +139,7 @@ run)
 	}
 	;;
 lock)
-	# Trigger lockscreen via quickshell-ipc
-	PID=$(find_ambxst_pid)
+	PID=$(find_ambxst_pid_cached)
 	if [ -z "$PID" ]; then
 		echo "Error: Ambxst is not running"
 		exit 1
@@ -129,7 +150,7 @@ lock)
 	}
 	;;
 reload)
-	PID=$(find_ambxst_pid)
+	PID=$(find_ambxst_pid_cached)
 	if [ -n "$PID" ]; then
 		echo "Stopping Ambxst (PID $PID)..."
 		kill "$PID"
@@ -143,7 +164,7 @@ reload)
 	nohup "$0" >/dev/null 2>&1 &
 	;;
 quit)
-	PID=$(find_ambxst_pid)
+	PID=$(find_ambxst_pid_cached)
 	if [ -n "$PID" ]; then
 		echo "Stopping Ambxst (PID $PID)..."
 		kill "$PID"
@@ -181,7 +202,7 @@ suspend)
 	fi
 	;;
 brightness)
-	PID=$(find_ambxst_pid)
+	PID=$(find_ambxst_pid_cached)
 	if [ -z "$PID" ]; then
 		echo "Error: Ambxst is not running"
 		exit 1
@@ -416,6 +437,9 @@ help | --help | -h)
 
 	# Force Qt6CT
 	export QT_QPA_PLATFORMTHEME=qt6ct
+
+	# Cache this script's PID before exec (for fast PID lookups in future CLI calls)
+	echo $$ >/tmp/ambxst.pid
 
 	# Launch QuickShell with the main shell.qml
 	# If NIXGL_BIN is set (NixOS/Nix setup), use it. Otherwise, just run qs directly.

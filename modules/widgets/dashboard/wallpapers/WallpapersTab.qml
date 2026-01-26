@@ -967,6 +967,8 @@ FocusScope {
             asynchronous: true
             smooth: true
             cache: false // Evitar acumular cache innecesario
+            sourceSize.width: wallpaperGridContainer.cellSize
+            sourceSize.height: wallpaperGridContainer.cellSize
 
             // Fallback a imagen original si el thumbnail falla
             onStatusChanged: {

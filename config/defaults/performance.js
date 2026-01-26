@@ -3,5 +3,7 @@
 var data = {
     "blurTransition": true,
     "windowPreview": true,
-    "wavyLine": true
+    "wavyLine": true,
+    "dashboardPersistTabs": true,
+    "dashboardMaxPersistentTabs": 2
 }

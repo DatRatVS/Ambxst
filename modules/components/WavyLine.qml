@@ -11,12 +11,12 @@ Item {
     property real fullLength: width
     property real speed: 2.4
 
-    // Factor de supersampling más agresivo
-    readonly property real supersampleFactor: 4.0
+    // Factor de supersampling optimizado
+    readonly property real supersampleFactor: 2.0
 
     layer.enabled: true
     layer.smooth: true
-    layer.samples: 8  // MSAA para el layer principal
+    layer.samples: 4  // MSAA para el layer principal
 
     // Contenedor para el shader renderizado a mayor resolución
     Item {
@@ -53,21 +53,21 @@ Item {
             // Layer con MSAA y tamaño completo
             layer.enabled: true
             layer.smooth: true
-            layer.samples: 8  // Multisampling antialiasing
+            layer.samples: 4  // Multisampling antialiasing
             layer.textureSize: Qt.size(width, height)
             layer.mipmap: true
 
             Component.onCompleted: {
-                animationTimer.start();
+                if (Config.performance.wavyLine) {
+                    animationFrameAnimation.start();
+                }
             }
 
-            Timer {
-                id: animationTimer
-                interval: 16
-                running: Config.performance.wavyLine
-                repeat: true
+            FrameAnimation {
+                id: animationFrameAnimation
+                running: Config.performance.wavyLine && wavyShader.visible
                 onTriggered: {
-                    var deltaTime = interval / 1000.0;
+                    var deltaTime = 0.016; // ~60fps default
                     wavyShader.phase += root.speed * deltaTime;
                 }
             }

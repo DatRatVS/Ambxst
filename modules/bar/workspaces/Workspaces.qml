@@ -40,8 +40,8 @@ Item {
 
     function updateWorkspaceOccupied() {
         if (Config.workspaces.dynamic) {
-            // Get occupied workspace IDs, sorted and limited by 'shown'
-            const occupiedIds = Hyprland.workspaces.values.filter(ws => HyprlandData.windowList.some(w => w.workspace.id === ws.id)).map(ws => ws.id).sort((a, b) => a - b).slice(0, Config.workspaces.shown);
+            // Get occupied workspace IDs using the precomputed occupation map, sorted and limited by 'shown'
+            const occupiedIds = Hyprland.workspaces.values.filter(ws => HyprlandData.workspaceOccupationMap[ws.id]).map(ws => ws.id).sort((a, b) => a - b).slice(0, Config.workspaces.shown);
 
             // Always include active workspace, even if empty
             const activeId = monitor?.activeWorkspace?.id || 1;
@@ -56,13 +56,13 @@ Item {
             dynamicWorkspaceIds = occupiedIds;
             workspaceOccupied = Array.from({
                 length: dynamicWorkspaceIds.length
-            }, (_, i) => HyprlandData.windowList.some(w => w.workspace.id === dynamicWorkspaceIds[i]));
+            }, (_, i) => HyprlandData.workspaceOccupationMap[dynamicWorkspaceIds[i]]);
         } else {
             workspaceOccupied = Array.from({
                 length: Config.workspaces.shown
             }, (_, i) => {
                 const wsId = workspaceGroup * Config.workspaces.shown + i + 1;
-                return HyprlandData.windowList.some(w => w.workspace.id === wsId);
+                return HyprlandData.workspaceOccupationMap[wsId];
             });
         }
         updateOccupiedRanges();
@@ -115,7 +115,7 @@ Item {
 
     Timer {
         id: updateTimer
-        interval: 50
+        interval: 100
         repeat: false
         onTriggered: workspacesWidget.updateWorkspaceOccupied()
     }
@@ -307,7 +307,8 @@ Item {
         implicitHeight: workspaceButtonWidth - activeWorkspaceMargin * 2
 
         radius: {
-            const currentWorkspaceHasWindows = Hyprland.workspaces.values.some(ws => ws.id === (monitor?.activeWorkspace?.id || 1) && HyprlandData.windowList.some(w => w.workspace.id === ws.id));
+            const activeWorkspaceId = monitor?.activeWorkspace?.id || 1;
+            const currentWorkspaceHasWindows = HyprlandData.workspaceOccupationMap[activeWorkspaceId];
             if (workspacesWidget.radius === 0)
                 return 0;
             return currentWorkspaceHasWindows ? workspacesWidget.radius > 0 ? Math.max(workspacesWidget.radius - parent.widgetPadding - activeWorkspaceMargin, 0) : 0 : implicitHeight / 2;
@@ -362,7 +363,8 @@ Item {
         implicitHeight: Math.abs(idx1 - idx2) * workspaceButtonWidth + workspaceButtonWidth - activeWorkspaceMargin * 2
 
         radius: {
-            const currentWorkspaceHasWindows = Hyprland.workspaces.values.some(ws => ws.id === (monitor?.activeWorkspace?.id || 1) && HyprlandData.windowList.some(w => w.workspace.id === ws.id));
+            const activeWorkspaceId = monitor?.activeWorkspace?.id || 1;
+            const currentWorkspaceHasWindows = HyprlandData.workspaceOccupationMap[activeWorkspaceId];
             if (workspacesWidget.radius === 0)
                 return 0;
             return currentWorkspaceHasWindows ? workspacesWidget.radius > 0 ? Math.max(workspacesWidget.radius - parent.widgetPadding - activeWorkspaceMargin, 0) : 0 : implicitWidth / 2;
@@ -427,7 +429,7 @@ Item {
                     implicitWidth: workspaceButtonWidth
                     implicitHeight: workspaceButtonWidth
                     property var focusedWindow: {
-                        const windowsInThisWorkspace = HyprlandData.windowList.filter(w => w.workspace.id == button.workspaceValue);
+                        const windowsInThisWorkspace = HyprlandData.workspaceWindowsMap[button.workspaceValue] || [];
                         if (windowsInThisWorkspace.length === 0)
                             return null;
                         // Get the window with the lowest focusHistoryID (most recently focused)
@@ -559,7 +561,7 @@ Item {
                     implicitWidth: workspaceButtonWidth
                     implicitHeight: workspaceButtonWidth
                     property var focusedWindow: {
-                        const windowsInThisWorkspace = HyprlandData.windowList.filter(w => w.workspace.id == buttonVert.workspaceValue);
+                        const windowsInThisWorkspace = HyprlandData.workspaceWindowsMap[buttonVert.workspaceValue] || [];
                         if (windowsInThisWorkspace.length === 0)
                             return null;
                         // Get the window with the lowest focusHistoryID (most recently focused)

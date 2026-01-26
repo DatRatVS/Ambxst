@@ -201,15 +201,15 @@ Item {
             id: bar
 
             anchors {
-                top: root.barPosition === "top" ? parent.top : undefined
-                bottom: root.barPosition === "bottom" ? parent.bottom : undefined
-                left: root.barPosition === "left" ? parent.left : undefined
-                right: root.barPosition === "right" ? parent.right : undefined
+                top: (root.barPosition === "top" || root.orientation === "vertical") ? parent.top : undefined
+                bottom: (root.barPosition === "bottom" || root.orientation === "vertical") ? parent.bottom : undefined
+                left: (root.barPosition === "left" || root.orientation === "horizontal") ? parent.left : undefined
+                right: (root.barPosition === "right" || root.orientation === "horizontal") ? parent.right : undefined
 
-                topMargin: root.barPosition === "top" ? root.frameOffset : 0
-                bottomMargin: root.barPosition === "bottom" ? root.frameOffset : 0
-                leftMargin: root.barPosition === "left" ? root.frameOffset : 0
-                rightMargin: root.barPosition === "right" ? root.frameOffset : 0
+                topMargin: root.frameOffset
+                bottomMargin: root.frameOffset
+                leftMargin: root.frameOffset
+                rightMargin: root.frameOffset
             }
 
 
@@ -268,7 +268,6 @@ Item {
                     when: root.barPosition === "top"
                     PropertyChanges {
                         target: bar
-                        width: root.width
                         height: 44
                     }
                 },
@@ -277,7 +276,6 @@ Item {
                     when: root.barPosition === "bottom"
                     PropertyChanges {
                         target: bar
-                        width: root.width
                         height: 44
                     }
                 },
@@ -287,7 +285,6 @@ Item {
                     PropertyChanges {
                         target: bar
                         width: 44
-                        height: root.height
                     }
                 },
                 State {
@@ -296,7 +293,6 @@ Item {
                     PropertyChanges {
                         target: bar
                         width: 44
-                        height: root.height
                     }
                 }
             ]

@@ -166,8 +166,8 @@ Item {
         height: root.reveal ? notchRegionContainer.height : Math.max(Config.notch?.hoverRegionHeight ?? 8, 8)
 
         anchors.horizontalCenter: parent.horizontalCenter
-        anchors.top: root.notchPosition === "top" ? parent.top : undefined
-        anchors.bottom: root.notchPosition === "bottom" ? parent.bottom : undefined
+        anchors.top: root.notchPosition === "top" ? parent.top : null
+        anchors.bottom: root.notchPosition === "bottom" ? parent.bottom : null
 
         Behavior on height {
             enabled: Config.animDuration > 0 && root.shouldAutoHide
@@ -187,8 +187,8 @@ Item {
     Item {
         id: notchRegionContainer
         anchors.horizontalCenter: parent.horizontalCenter
-        anchors.top: root.notchPosition === "top" ? parent.top : undefined
-        anchors.bottom: root.notchPosition === "bottom" ? parent.bottom : undefined
+        anchors.top: root.notchPosition === "top" ? parent.top : null
+        anchors.bottom: root.notchPosition === "bottom" ? parent.bottom : null
         
         width: Math.max(notchAnimationContainer.width, notificationPopupContainer.visible ? notificationPopupContainer.width : 0)
         height: notchAnimationContainer.height + (notificationPopupContainer.visible ? notificationPopupContainer.height + notificationPopupContainer.anchors.topMargin : 0)

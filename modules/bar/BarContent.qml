@@ -142,10 +142,10 @@ Item {
         hoverEnabled: true
 
         anchors {
-            top: barPosition !== "bottom" ? parent.top : undefined
-            bottom: barPosition !== "top" ? parent.bottom : undefined
-            left: barPosition !== "right" ? parent.left : undefined
-            right: barPosition !== "left" ? parent.right : undefined
+            top: barPosition !== "bottom" ? parent.top : null
+            bottom: barPosition !== "top" ? parent.bottom : null
+            left: barPosition !== "right" ? parent.left : null
+            right: barPosition !== "left" ? parent.right : null
         }
 
         // Position and size based on bar position

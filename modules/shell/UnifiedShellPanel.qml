@@ -69,8 +69,10 @@ PanelWindow {
 
     Item {
         id: maskUnionContainer
-        anchors.fill: parent
-        visible: false
+        // No anchors.fill: parent here to avoid covering the whole screen
+        width: 0
+        height: 0
+        visible: true // Must be visible for Region to see children, but Item doesn't draw anything
 
         // Hitbox from Bar
         Item {

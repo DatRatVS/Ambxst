@@ -1,7 +1,6 @@
 import QtQuick
 import Quickshell
 import Quickshell.Wayland
-import qs.modules.corners
 import qs.modules.theme
 import qs.config
 
@@ -18,37 +17,35 @@ Item {
 
     readonly property int cornerSize: Styling.radius(4) + (frameEnabled ? thickness : 0)
 
-    anchors.fill: parent
-
     RoundCorner {
         id: topLeft
         size: root.cornerSize
-        anchors.left: parent.left
-        anchors.top: parent.top
+        anchors.left: root.left
+        anchors.top: root.top
         corner: RoundCorner.CornerEnum.TopLeft
     }
 
     RoundCorner {
         id: topRight
         size: root.cornerSize
-        anchors.right: parent.right
-        anchors.top: parent.top
+        anchors.right: root.right
+        anchors.top: root.top
         corner: RoundCorner.CornerEnum.TopRight
     }
 
     RoundCorner {
         id: bottomLeft
         size: root.cornerSize
-        anchors.left: parent.left
-        anchors.bottom: parent.bottom
+        anchors.left: root.left
+        anchors.bottom: root.bottom
         corner: RoundCorner.CornerEnum.BottomLeft
     }
 
     RoundCorner {
         id: bottomRight
         size: root.cornerSize
-        anchors.right: parent.right
-        anchors.bottom: parent.bottom
+        anchors.right: root.right
+        anchors.bottom: root.bottom
         corner: RoundCorner.CornerEnum.BottomRight
     }
 }

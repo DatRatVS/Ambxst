@@ -1,75 +1,25 @@
 import QtQuick
+import QtQuick.Effects
 import Quickshell
+import Quickshell.Io
 import Quickshell.Wayland
 import Quickshell.Hyprland
 import qs.modules.globals
+import qs.modules.theme
+import qs.modules.widgets.defaultview
+import qs.modules.widgets.dashboard
+import qs.modules.widgets.powermenu
+import qs.modules.widgets.tools
+import qs.modules.services
+import qs.modules.components
+import qs.modules.widgets.launcher
 import qs.config
+import "./NotchNotificationView.qml"
 
-PanelWindow {
-    id: notchPanel
+Item {
+    id: root
 
-    anchors {
-        top: true
-        bottom: true
-        left: true
-        right: true
-    }
-
-    color: "transparent"
-
-    WlrLayershell.keyboardFocus: WlrKeyboardFocus.None
-
-    readonly property alias screenVisibilities: notchContent.screenVisibilities
-    readonly property alias notchPosition: notchContent.notchPosition
-    readonly property alias hoverActive: notchContent.hoverActive
-    readonly property alias screenNotchOpen: notchContent.screenNotchOpen
-    readonly property alias reveal: notchContent.reveal
-
-    HyprlandFocusGrab {
-        id: focusGrab
-        windows: {
-            let windowList = [notchPanel];
-            // Agregar la barra de esta pantalla al focus grab cuando el notch este abierto
-            if (notchContent.barPanelRef && (screenVisibilities.launcher || screenVisibilities.dashboard || screenVisibilities.powermenu || screenVisibilities.tools)) {
-                windowList.push(notchContent.barPanelRef);
-            }
-            return windowList;
-        }
-        active: notchPanel.screenNotchOpen
-
-        onCleared: {
-            Visibilities.setActiveModule("");
-        }
-    }
-
-    exclusionMode: ExclusionMode.Ignore
-    WlrLayershell.layer: WlrLayer.Overlay
-
-    mask: Region {
-        item: notchContent.notchHitbox
-    }
-
-    Component.onCompleted: {
-        Visibilities.registerNotchPanel(screen.name, notchPanel);
-        Visibilities.registerNotch(screen.name, notchContent.notchContainerRef);
-    }
-
-    Component.onDestruction: {
-        Visibilities.unregisterNotchPanel(screen.name);
-        Visibilities.unregisterNotch(screen.name);
-    }
-
-    NotchContent {
-        id: notchContent
-        anchors.fill: parent
-        screen: notchPanel.screen
-    }
-}
-
-
-    color: "transparent"
-
-    WlrLayershell.keyboardFocus: WlrKeyboardFocus.None
+    required property ShellScreen screen
 
     // Get this screen's visibility state
     readonly property var screenVisibilities: Visibilities.getForScreen(screen.name)
@@ -109,7 +59,6 @@ PanelWindow {
     }
 
     // Should auto-hide: when bar is NOT same side (always), unpinned OR when fullscreen
-    // This ensures notch follows bar's auto-hide behavior regardless of position, but always hides if bar is not at the same side
     readonly property bool shouldAutoHide: barPosition !== notchPosition || !barPinned || activeWindowFullscreen
 
     // Check if the bar for this screen is vertical
@@ -145,16 +94,14 @@ PanelWindow {
         return false;
     }
 
-
-
     // Timer to delay hiding the notch after mouse leaves
     Timer {
         id: hideDelayTimer
         interval: 1000
         repeat: false
         onTriggered: {
-            if (!notchPanel.isMouseOverNotch) {
-                notchPanel.hoverActive = false;
+            if (!root.isMouseOverNotch) {
+                root.hoverActive = false;
             }
         }
     }
@@ -171,39 +118,8 @@ PanelWindow {
         }
     }
 
-    HyprlandFocusGrab {
-        id: focusGrab
-        windows: {
-            let windowList = [notchPanel];
-            // Agregar la barra de esta pantalla al focus grab cuando el notch este abierto
-            if (barPanelRef && (screenVisibilities.launcher || screenVisibilities.dashboard || screenVisibilities.powermenu || screenVisibilities.tools)) {
-                windowList.push(barPanelRef);
-            }
-            return windowList;
-        }
-        active: notchPanel.screenNotchOpen
-
-        onCleared: {
-            Visibilities.setActiveModule("");
-        }
-    }
-
-    exclusionMode: ExclusionMode.Ignore
-    WlrLayershell.layer: WlrLayer.Overlay
-
-    mask: Region {
-        item: notchPanel.reveal ? notchRegionContainer : notchHoverRegion
-    }
-
-    Component.onCompleted: {
-        Visibilities.registerNotchPanel(screen.name, notchPanel);
-        Visibilities.registerNotch(screen.name, notchContainer);
-    }
-
-    Component.onDestruction: {
-        Visibilities.unregisterNotchPanel(screen.name);
-        Visibilities.unregisterNotch(screen.name);
-    }
+    // The hitbox for the mask
+    readonly property Item notchHitbox: root.reveal ? notchRegionContainer : notchHoverRegion
 
     // Default view component - user@host text
     Component {
@@ -241,22 +157,20 @@ PanelWindow {
         NotchNotificationView {}
     }
 
-        // Hover region for detecting mouse when notch is hidden (doesn't block clicks)
-    // Placed outside notchRegionContainer so it can work with mask independently
+    // Hover region for detecting mouse when notch is hidden (doesn't block clicks)
     Item {
         id: notchHoverRegion
 
         // Width follows the notch, height is small hover region when hidden
         width: notchRegionContainer.width + 20
-        height: notchPanel.reveal ? notchRegionContainer.height : Math.max(Config.notch?.hoverRegionHeight ?? 8, 8)
+        height: root.reveal ? notchRegionContainer.height : Math.max(Config.notch?.hoverRegionHeight ?? 8, 8)
 
         anchors.horizontalCenter: parent.horizontalCenter
-        anchors.top: notchPanel.notchPosition === "top" ? parent.top : undefined
-        anchors.bottom: notchPanel.notchPosition === "bottom" ? parent.bottom : undefined
+        anchors.top: root.notchPosition === "top" ? parent.top : undefined
+        anchors.bottom: root.notchPosition === "bottom" ? parent.bottom : undefined
 
         Behavior on height {
-
-            enabled: Config.animDuration > 0 && notchPanel.shouldAutoHide
+            enabled: Config.animDuration > 0 && root.shouldAutoHide
             NumberAnimation {
                 duration: Config.animDuration / 4
                 easing.type: Easing.OutCubic
@@ -266,15 +180,15 @@ PanelWindow {
         // HoverHandler doesn't block mouse events
         HoverHandler {
             id: notchMouseAreaHover
-            enabled: notchPanel.shouldAutoHide
+            enabled: root.shouldAutoHide
         }
     }
 
     Item {
         id: notchRegionContainer
         anchors.horizontalCenter: parent.horizontalCenter
-        anchors.top: notchPanel.notchPosition === "top" ? parent.top : undefined
-        anchors.bottom: notchPanel.notchPosition === "bottom" ? parent.bottom : undefined
+        anchors.top: root.notchPosition === "top" ? parent.top : undefined
+        anchors.bottom: root.notchPosition === "bottom" ? parent.bottom : undefined
         
         width: Math.max(notchAnimationContainer.width, notificationPopupContainer.visible ? notificationPopupContainer.width : 0)
         height: notchAnimationContainer.height + (notificationPopupContainer.visible ? notificationPopupContainer.height + notificationPopupContainer.anchors.topMargin : 0)
@@ -282,23 +196,23 @@ PanelWindow {
         // HoverHandler to detect when mouse is over the revealed notch
         HoverHandler {
             id: notchRegionHover
-            enabled: notchPanel.shouldAutoHide
+            enabled: root.shouldAutoHide
         }
 
         // Animation container for reveal/hide
         Item {
             id: notchAnimationContainer
             anchors.horizontalCenter: parent.horizontalCenter
-            anchors.top: notchPanel.notchPosition === "top" ? parent.top : undefined
-            anchors.bottom: notchPanel.notchPosition === "bottom" ? parent.bottom : undefined
+            anchors.top: root.notchPosition === "top" ? parent.top : undefined
+            anchors.bottom: root.notchPosition === "bottom" ? parent.bottom : undefined
 
             width: notchContainer.width
-            height: notchContainer.height + (notchPanel.notchPosition === "top" ? notchContainer.anchors.topMargin : notchContainer.anchors.bottomMargin)
+            height: notchContainer.height + (root.notchPosition === "top" ? notchContainer.anchors.topMargin : notchContainer.anchors.bottomMargin)
 
             // Opacity animation
-            opacity: notchPanel.reveal ? 1 : 0
+            opacity: root.reveal ? 1 : 0
             Behavior on opacity {
-                enabled: Config.animDuration > 0 && notchPanel.shouldAutoHide
+                enabled: Config.animDuration > 0 && root.shouldAutoHide
                 NumberAnimation {
                     duration: Config.animDuration / 2
                     easing.type: Easing.OutCubic
@@ -308,14 +222,14 @@ PanelWindow {
             // Slide animation (slide up when hidden)
             transform: Translate {
                 y: {
-                    if (notchPanel.reveal) return 0;
-                    if (notchPanel.notchPosition === "top")
+                    if (root.reveal) return 0;
+                    if (root.notchPosition === "top")
                         return -(Math.max(notchContainer.height, 50) + 16);
                     else
                         return (Math.max(notchContainer.height, 50) + 16);
                 }
                 Behavior on y {
-                    enabled: Config.animDuration > 0 && notchPanel.shouldAutoHide
+                    enabled: Config.animDuration > 0 && root.shouldAutoHide
                     NumberAnimation {
                         duration: Config.animDuration / 2
                         easing.type: Easing.OutCubic
@@ -327,13 +241,13 @@ PanelWindow {
             Notch {
                 id: notchContainer
                 anchors.horizontalCenter: parent.horizontalCenter
-                anchors.top: notchPanel.notchPosition === "top" ? parent.top : undefined
-                anchors.bottom: notchPanel.notchPosition === "bottom" ? parent.bottom : undefined
+                anchors.top: root.notchPosition === "top" ? parent.top : undefined
+                anchors.bottom: root.notchPosition === "bottom" ? parent.bottom : undefined
 
                 readonly property int frameOffset: Config.bar?.frameEnabled ? (Config.bar?.frameThickness ?? 6) : 0
 
-                anchors.topMargin: (notchPanel.notchPosition === "top" ? (Config.notchTheme === "default" ? 0 : (Config.notchTheme === "island" ? 4 : 0)) : 0) + (notchPanel.notchPosition === "top" ? frameOffset : 0)
-                anchors.bottomMargin: (notchPanel.notchPosition === "bottom" ? (Config.notchTheme === "default" ? 0 : (Config.notchTheme === "island" ? 4 : 0)) : 0) + (notchPanel.notchPosition === "bottom" ? frameOffset : 0)
+                anchors.topMargin: (root.notchPosition === "top" ? (Config.notchTheme === "default" ? 0 : (Config.notchTheme === "island" ? 4 : 0)) : 0) + (root.notchPosition === "top" ? frameOffset : 0)
+                anchors.bottomMargin: (root.notchPosition === "bottom" ? (Config.notchTheme === "default" ? 0 : (Config.notchTheme === "island" ? 4 : 0)) : 0) + (root.notchPosition === "bottom" ? frameOffset : 0)
 
                 layer.enabled: true
                 layer.effect: Shadow {}
@@ -344,11 +258,11 @@ PanelWindow {
                 powermenuViewComponent: powermenuViewComponent
                 toolsMenuViewComponent: toolsMenuViewComponent
                 notificationViewComponent: notificationViewComponent
-                visibilities: screenVisibilities
+                visibilities: root.screenVisibilities
 
                 // Handle global keyboard events
                 Keys.onPressed: event => {
-                    if (event.key === Qt.Key_Escape && notchPanel.screenNotchOpen) {
+                    if (event.key === Qt.Key_Escape && root.screenNotchOpen) {
                         Visibilities.setActiveModule("");
                         event.accepted = true;
                     }
@@ -360,11 +274,11 @@ PanelWindow {
         StyledRect {
             id: notificationPopupContainer
             variant: "bg"
-            anchors.top: notchPanel.notchPosition === "top" ? notchAnimationContainer.bottom : undefined
-            anchors.bottom: notchPanel.notchPosition === "bottom" ? notchAnimationContainer.top : undefined
+            anchors.top: root.notchPosition === "top" ? notchAnimationContainer.bottom : undefined
+            anchors.bottom: root.notchPosition === "bottom" ? notchAnimationContainer.top : undefined
             anchors.horizontalCenter: parent.horizontalCenter
-            anchors.topMargin: notchPanel.notchPosition === "top" ? 4 : 0
-            anchors.bottomMargin: notchPanel.notchPosition === "bottom" ? 4 : 0
+            anchors.topMargin: root.notchPosition === "top" ? 4 : 0
+            anchors.bottomMargin: root.notchPosition === "bottom" ? 4 : 0
             
             width: Math.round(popupHovered ? 420 + 48 : 320 + 48)
             height: shouldShowNotificationPopup ? (popupHovered ? notificationPopup.implicitHeight + 32 : notificationPopup.implicitHeight + 32) : 0
@@ -374,9 +288,9 @@ PanelWindow {
             radius: Styling.radius(20)
 
             // Apply same reveal animation as notch
-            opacity: notchPanel.reveal ? 1 : 0
+            opacity: root.reveal ? 1 : 0
             Behavior on opacity {
-                enabled: Config.animDuration > 0 && notchPanel.shouldAutoHide
+                enabled: Config.animDuration > 0 && root.shouldAutoHide
                 NumberAnimation {
                     duration: Config.animDuration / 2
                     easing.type: Easing.OutCubic
@@ -385,14 +299,14 @@ PanelWindow {
 
             transform: Translate {
                 y: {
-                    if (notchPanel.reveal) return 0;
-                    if (notchPanel.notchPosition === "top")
+                    if (root.reveal) return 0;
+                    if (root.notchPosition === "top")
                         return -(notchContainer.height + 16);
                     else
                         return (notchContainer.height + 16);
                 }
                 Behavior on y {
-                    enabled: Config.animDuration > 0 && notchPanel.shouldAutoHide
+                    enabled: Config.animDuration > 0 && root.shouldAutoHide
                     NumberAnimation {
                         duration: Config.animDuration / 2
                         easing.type: Easing.OutCubic
@@ -407,7 +321,7 @@ PanelWindow {
 
             readonly property bool shouldShowNotificationPopup: {
                 // Mostrar solo si hay notificaciones y el notch esta expandido
-                if (!notchPanel.hasActiveNotifications || !notchPanel.screenNotchOpen)
+                if (!root.hasActiveNotifications || !root.screenNotchOpen)
                     return false;
 
                 // NO mostrar si estamos en el launcher (widgets tab con currentTab === 0)
@@ -536,4 +450,7 @@ PanelWindow {
             }
         }
     }
+
+    // Export some internal items for Visibilities
+    property alias notchContainerRef: notchContainer
 }

@@ -22,6 +22,7 @@ import qs.modules.desktop
 import qs.modules.lockscreen
 import qs.modules.dock
 import qs.modules.globals
+import qs.modules.shell
 import qs.config
 import "modules/tools"
 
@@ -60,76 +61,50 @@ ShellRoot {
         }
     }
 
+    // Unified Visual Panel and Reservation Windows
     Variants {
-        model: {
-            const screens = Quickshell.screens;
-            const list = Config.bar.screenList;
-            if (!list || list.length === 0)
-                return screens;
-            return screens.filter(screen => list.includes(screen.name));
-        }
+        model: Quickshell.screens
 
-        Loader {
-            id: barLoader
-            
-            // Force reload when position changes to prevent artifacts
-            property bool _active: true
-            active: _active
-
-            Connections {
-                target: Config.bar
-                function onPositionChanged() {
-                    barLoader._active = false;
-                    barReloadTimer.restart();
-                }
-            }
-
-            Timer {
-                id: barReloadTimer
-                interval: 100
-                onTriggered: barLoader._active = true
-            }
-
+        Item {
+            id: screenShellContainer
             required property ShellScreen modelData
-            sourceComponent: Bar {
-                screen: barLoader.modelData
-            }
-        }
-    }
 
-    Variants {
-        model: {
-            const screens = Quickshell.screens;
-            const list = Config.bar.screenList;
-            if (!list || list.length === 0)
-                return screens;
-            return screens.filter(screen => list.includes(screen.name));
-        }
-
-        Loader {
-            id: notchLoader
-            // Delay notch creation to ensure it renders above the bar
-            // Both use WlrLayer.Overlay, so we need the notch to be created last
-            active: notchDelayTimer.triggered
-            required property ShellScreen modelData
-            sourceComponent: NotchWindow {
-                screen: notchLoader.modelData
+            // Unified Visual Panel (Bar, Notch, Dock, Frame, Corners)
+            UnifiedShellPanel {
+                id: unifiedPanel
+                targetScreen: screenShellContainer.modelData
             }
 
-            Timer {
-                id: notchDelayTimer
-                property bool triggered: false
-                interval: 300
-                running: true
-                onTriggered: triggered = true
-            }
-
-            Connections {
-                target: Config.bar
-                function onPositionChanged() {
-                    notchDelayTimer.triggered = false;
-                    notchDelayTimer.restart();
+            // Reservation Windows for Exclusive Zones
+            ReservationWindows {
+                screen: screenShellContainer.modelData
+                
+                // Bar status for reservations
+                barEnabled: {
+                    const list = Config.bar.screenList;
+                    return (!list || list.length === 0 || list.includes(screen.name));
                 }
+                barPosition: unifiedPanel.barPosition
+                barPinned: unifiedPanel.pinned
+                barReveal: unifiedPanel.reveal
+                barFullscreen: unifiedPanel.activeWindowFullscreen
+
+                // Dock status for reservations
+                dockEnabled: {
+                    if (!(Config.dock?.enabled ?? false) || (Config.dock?.theme ?? "default") === "integrated")
+                        return false;
+                    
+                    const list = Config.dock?.screenList ?? [];
+                    if (!list || list.length === 0)
+                        return true;
+                    return list.includes(screenShellContainer.modelData.name);
+                }
+                dockPosition: unifiedPanel.dockPosition
+                dockPinned: unifiedPanel.dockPinned
+                dockReveal: unifiedPanel.dockReveal
+                dockFullscreen: unifiedPanel.dockFullscreen
+                
+                frameEnabled: Config.bar?.frameEnabled ?? false
             }
         }
     }
@@ -174,51 +149,6 @@ ShellRoot {
         }
     }
 
-
-    Variants {
-        model: Quickshell.screens
-
-        Loader {
-            id: cornersLoader
-            active: true
-            required property ShellScreen modelData
-            sourceComponent: ScreenCorners {
-                screen: cornersLoader.modelData
-            }
-        }
-    }
-
-    Variants {
-        model: Quickshell.screens
-
-        Loader {
-            id: frameLoader
-            active: Config.bar?.frameEnabled ?? false
-            required property ShellScreen modelData
-            sourceComponent: ScreenFrame {
-                targetScreen: frameLoader.modelData
-            }
-        }
-    }
-
-    // Application Dock - only load when enabled and not integrated
-    Loader {
-        id: dockLoader
-
-        // Delay dock loading to ensure bar loads first (prevents layout issues)
-        property bool _ready: false
-        Timer {
-            id: dockDelayTimer
-            interval: 300
-            running: true
-            repeat: false
-            onTriggered: dockLoader._ready = true
-        }
-
-        active: _ready && (Config.dock?.enabled ?? false) && (Config.dock?.theme ?? "default") !== "integrated"
-        sourceComponent: Dock {}
-    }
-
     // Secure lockscreen using WlSessionLock
     WlSessionLock {
         id: sessionLock
@@ -240,8 +170,6 @@ ShellRoot {
     HyprlandKeybinds {
         id: hyprlandKeybinds
     }
-
-
 
     // Screenshot Tool
     Variants {

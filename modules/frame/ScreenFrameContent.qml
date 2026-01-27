@@ -21,19 +21,26 @@ Item {
             return 6;
         return Math.max(1, Math.min(Math.round(value), 40));
     }
-    
+
     readonly property bool containBar: Config.bar?.containBar ?? false
     readonly property string barPos: Config.bar?.position ?? "top"
-    // Assuming standard bar height of 44 plus standard thickness
-    // Expansion needs to account for the bar height PLUS the inner thickness to enclose it
+
+    // We inherit thickness properties from parent root now to avoid duplication/cycles,
+    // or we calculate them here for drawing purposes.
+    // Ideally, ScreenFrame passes them down, but since we are inside ScreenFrame, we can access them via root's properties?
+    // No, ScreenFrameContent is independent component.
+    // Let's keep logic here for drawing, but ensure it matches ScreenFrame.
+
+    // Total side height = thickness (outer) + 44 (bar) + thickness (inner)
     readonly property int barExpansion: 44 + thickness
-    
+
     readonly property int topThickness: thickness + ((containBar && barPos === "top") ? barExpansion : 0)
     readonly property int bottomThickness: thickness + ((containBar && barPos === "bottom") ? barExpansion : 0)
     readonly property int leftThickness: thickness + ((containBar && barPos === "left") ? barExpansion : 0)
     readonly property int rightThickness: thickness + ((containBar && barPos === "right") ? barExpansion : 0)
 
     readonly property int actualFrameSize: frameEnabled ? thickness : 0
+
     readonly property int innerRadius: Styling.radius(4)
 
     // Visual part
@@ -89,7 +96,7 @@ Item {
                     return;
 
                 ctx.globalCompositeOperation = "destination-out";
-                
+
                 // Draw rounded rect path for cutout
                 const rr = Math.min(r, innerW / 2, innerH / 2);
                 ctx.beginPath();
@@ -108,12 +115,24 @@ Item {
 
     Connections {
         target: root
-        function onThicknessChanged() { frameCanvas.requestPaint(); }
-        function onInnerRadiusChanged() { frameCanvas.requestPaint(); }
-        function onTopThicknessChanged() { frameCanvas.requestPaint(); }
-        function onBottomThicknessChanged() { frameCanvas.requestPaint(); }
-        function onLeftThicknessChanged() { frameCanvas.requestPaint(); }
-        function onRightThicknessChanged() { frameCanvas.requestPaint(); }
+        function onThicknessChanged() {
+            frameCanvas.requestPaint();
+        }
+        function onInnerRadiusChanged() {
+            frameCanvas.requestPaint();
+        }
+        function onTopThicknessChanged() {
+            frameCanvas.requestPaint();
+        }
+        function onBottomThicknessChanged() {
+            frameCanvas.requestPaint();
+        }
+        function onLeftThicknessChanged() {
+            frameCanvas.requestPaint();
+        }
+        function onRightThicknessChanged() {
+            frameCanvas.requestPaint();
+        }
     }
 
     onWidthChanged: frameCanvas.requestPaint()

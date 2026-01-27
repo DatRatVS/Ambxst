@@ -32,6 +32,7 @@ PanelWindow {
     exclusionMode: ExclusionMode.Ignore
 
     // Altura implicita incluye espacio extra para animaciones / futuros elementos.
+
     implicitHeight: orientation === "horizontal" ? 200 : Screen.height
 
     mask: Region {

@@ -13,7 +13,9 @@ QtObject {
     // Main Sections:
     // 0: Network, 1: Bluetooth, 2: Mixer, 3: Effects, 4: Theme, 5: Binds, 6: System, 7: Compositor, 8: Ambxst
     
-    readonly property var items: [
+    property var dynamicItems: []
+
+    readonly property var staticItems: [
         // --- Network ---
         { label: "Network", keywords: "internet wifi connection ethernet ip", section: 0, subSection: "", subLabel: "", icon: Icons.wifiHigh, isIcon: true },
         
@@ -60,20 +62,24 @@ QtObject {
         // --- Binds ---
         { label: "Key Bindings", keywords: "shortcuts keyboard hotkeys", section: 5, subSection: "", subLabel: "", icon: Icons.keyboard, isIcon: true },
         // Binds > Ambxst
-        { label: "Widgets Keybind", keywords: "dashboard shortcut super", section: 5, subSection: "", subLabel: "Binds > Ambxst", icon: Icons.keyboard, isIcon: true },
-        { label: "Clipboard Keybind", keywords: "copy paste shortcut super v", section: 5, subSection: "", subLabel: "Binds > Ambxst", icon: Icons.keyboard, isIcon: true },
+        { label: "Launcher Keybind", keywords: "app launcher menu shortcut", section: 5, subSection: "", subLabel: "Binds > Ambxst", icon: Icons.rocket, isIcon: true },
+        { label: "Dashboard Keybind", keywords: "widgets dashboard shortcut", section: 5, subSection: "", subLabel: "Binds > Ambxst", icon: Icons.squaresFour, isIcon: true },
+        { label: "Clipboard Keybind", keywords: "copy paste shortcut super v", section: 5, subSection: "", subLabel: "Binds > Ambxst", icon: Icons.clipboard, isIcon: true },
         { label: "Emoji Keybind", keywords: "picker shortcut super period", section: 5, subSection: "", subLabel: "Binds > Ambxst", icon: Icons.keyboard, isIcon: true },
         { label: "Tmux Keybind", keywords: "terminal shortcut", section: 5, subSection: "", subLabel: "Binds > Ambxst", icon: Icons.keyboard, isIcon: true },
         { label: "Wallpapers Keybind", keywords: "background shortcut super comma", section: 5, subSection: "", subLabel: "Binds > Ambxst", icon: Icons.keyboard, isIcon: true },
         { label: "Assistant Keybind", keywords: "ai help shortcut", section: 5, subSection: "", subLabel: "Binds > Ambxst", icon: Icons.keyboard, isIcon: true },
         { label: "Notes Keybind", keywords: "note shortcut super n", section: 5, subSection: "", subLabel: "Binds > Ambxst", icon: Icons.keyboard, isIcon: true },
         { label: "Overview Keybind", keywords: "workspace shortcut super tab", section: 5, subSection: "", subLabel: "Binds > Ambxst", icon: Icons.keyboard, isIcon: true },
-        { label: "Powermenu Keybind", keywords: "logout shutdown shortcut super escape", section: 5, subSection: "", subLabel: "Binds > Ambxst", icon: Icons.keyboard, isIcon: true },
-        { label: "Screenshot Keybind", keywords: "capture screen shortcut print", section: 5, subSection: "", subLabel: "Binds > Ambxst", icon: Icons.keyboard, isIcon: true },
-        { label: "Screenrecord Keybind", keywords: "record video shortcut", section: 5, subSection: "", subLabel: "Binds > Ambxst", icon: Icons.keyboard, isIcon: true },
-        { label: "Lens Keybind", keywords: "magnifier zoom shortcut", section: 5, subSection: "", subLabel: "Binds > Ambxst", icon: Icons.keyboard, isIcon: true },
-        { label: "Reload Keybind", keywords: "refresh restart shortcut", section: 5, subSection: "", subLabel: "Binds > Ambxst", icon: Icons.keyboard, isIcon: true },
-        { label: "Quit Keybind", keywords: "exit close shortcut", section: 5, subSection: "", subLabel: "Binds > Ambxst", icon: Icons.keyboard, isIcon: true },
+        { label: "Powermenu Keybind", keywords: "logout shutdown shortcut super escape", section: 5, subSection: "", subLabel: "Binds > Ambxst", icon: Icons.power, isIcon: true },
+        { label: "Settings Keybind", keywords: "config preferences shortcut", section: 5, subSection: "", subLabel: "Binds > Ambxst", icon: Icons.gear, isIcon: true },
+        { label: "Lockscreen Keybind", keywords: "lock security shortcut", section: 5, subSection: "", subLabel: "Binds > Ambxst", icon: Icons.lock, isIcon: true },
+        { label: "Tools Keybind", keywords: "utilities tools shortcut", section: 5, subSection: "", subLabel: "Binds > Ambxst", icon: Icons.wrench, isIcon: true },
+        { label: "Screenshot Keybind", keywords: "capture screen shortcut print", section: 5, subSection: "", subLabel: "Binds > Ambxst", icon: Icons.camera, isIcon: true },
+        { label: "Screenrecord Keybind", keywords: "record video shortcut", section: 5, subSection: "", subLabel: "Binds > Ambxst", icon: Icons.videoCamera, isIcon: true },
+        { label: "Lens Keybind", keywords: "magnifier zoom shortcut", section: 5, subSection: "", subLabel: "Binds > Ambxst", icon: Icons.magnifyingGlass, isIcon: true },
+        { label: "Reload Keybind", keywords: "refresh restart shortcut", section: 5, subSection: "", subLabel: "Binds > Ambxst", icon: Icons.arrowCounterClockwise, isIcon: true },
+        { label: "Quit Keybind", keywords: "exit close shortcut", section: 5, subSection: "", subLabel: "Binds > Ambxst", icon: Icons.signOut, isIcon: true },
         
         // --- System ---
         { label: "System", keywords: "hardware info resources cpu ram", section: 6, subSection: "", subLabel: "System", icon: Icons.circuitry, isIcon: true },
@@ -203,4 +209,25 @@ QtObject {
         // Ambxst > System
         { label: "Shell System", keywords: "config settings ambxst", section: 8, subSection: "system", subLabel: "Ambxst > System", icon: Icons.circuitry, isIcon: true }
     ]
+
+    property var items: staticItems.concat(dynamicItems)
+
+    function addDynamicItems(newItems) {
+        // Simple deduplication based on label + section
+        let currentLabels = new Set(items.map(i => i.section + ":" + i.label));
+        let uniqueNew = [];
+        
+        for (let i = 0; i < newItems.length; i++) {
+            let item = newItems[i];
+            let key = item.section + ":" + item.label;
+            if (!currentLabels.has(key)) {
+                uniqueNew.push(item);
+                currentLabels.add(key);
+            }
+        }
+        
+        if (uniqueNew.length > 0) {
+            dynamicItems = dynamicItems.concat(uniqueNew);
+        }
+    }
 }

@@ -149,6 +149,7 @@ Item {
                     // =====================
                     ColumnLayout {
                         visible: root.currentSection === "prefixes"
+                        property string settingsSection: "prefixes"
                         Layout.fillWidth: true
                         spacing: 8
 
@@ -225,6 +226,7 @@ Item {
                     // =====================
                     ColumnLayout {
                         visible: root.currentSection === "weather"
+                        property string settingsSection: "weather"
                         Layout.fillWidth: true
                         spacing: 8
 
@@ -364,6 +366,7 @@ Item {
                     // =====================
                     ColumnLayout {
                         visible: root.currentSection === "performance"
+                        property string settingsSection: "performance"
                         Layout.fillWidth: true
                         spacing: 8
 
@@ -423,6 +426,7 @@ Item {
                     // =====================
                     ColumnLayout {
                         visible: root.currentSection === "system"
+                        property string settingsSection: "system"
                         Layout.fillWidth: true
                         spacing: 8
 
@@ -583,6 +587,7 @@ Item {
                     // =====================
                     ColumnLayout {
                         visible: root.currentSection === "idle"
+                        property string settingsSection: "idle"
                         Layout.fillWidth: true
                         spacing: 8
 

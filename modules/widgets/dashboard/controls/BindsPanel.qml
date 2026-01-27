@@ -1794,6 +1794,10 @@ Item {
         property bool isHovered: false
         property var layouts: []  // Layouts this bind is restricted to (empty = all layouts)
 
+        // Crawler properties
+        property string label: displayName
+        property string keywords: keybindText + " " + dispatcher + " " + argument + " bind shortcut"
+
         // Computed display values
         readonly property bool hasCustomName: customName !== ""
         readonly property string displayName: hasCustomName ? customName : bindName

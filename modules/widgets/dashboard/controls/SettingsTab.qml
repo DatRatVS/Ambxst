@@ -8,6 +8,7 @@ import QtQuick.Effects
 import qs.modules.components
 import qs.modules.services
 import qs.config
+import "SettingsCrawler.js" as SettingsCrawler
 
 Rectangle {
     id: root
@@ -47,6 +48,64 @@ Rectangle {
     }
 
     SettingsIndex { id: searchIndex }
+
+    // Dynamic Settings Indexer
+    Item {
+        id: settingsIndexer
+        visible: false // Headless
+
+        property int currentPanelIndex: 0
+        property var aggregatedItems: []
+        property bool isIndexing: false
+
+        // Helper to load panels one by one
+        Loader {
+            id: indexerLoader
+            active: settingsIndexer.isIndexing
+            asynchronous: true
+            source: settingsIndexer.isIndexing && settingsIndexer.currentPanelIndex < contentArea.panelComponents.length 
+                    ? contentArea.panelComponents[settingsIndexer.currentPanelIndex].component 
+                    : ""
+            
+            onStatusChanged: {
+                if (status === Loader.Ready && item) {
+                    // Scrape
+                    const sectionId = contentArea.panelComponents[settingsIndexer.currentPanelIndex].section;
+                    const newItems = SettingsCrawler.crawl(item, sectionId);
+                    settingsIndexer.aggregatedItems = settingsIndexer.aggregatedItems.concat(newItems);
+                    
+                    // Move to next
+                    settingsIndexer.currentPanelIndex++;
+                } else if (status === Loader.Error) {
+                    console.warn("Failed to load panel for indexing:", source);
+                    settingsIndexer.currentPanelIndex++;
+                }
+            }
+        }
+
+        onCurrentPanelIndexChanged: {
+            if (currentPanelIndex >= contentArea.panelComponents.length) {
+                // Done
+                if (isIndexing) {
+                    isIndexing = false;
+                    searchIndex.addDynamicItems(aggregatedItems);
+                }
+            }
+        }
+
+        Component.onCompleted: {
+            // Start indexing after a short delay to allow UI to settle
+            indexingTimer.start();
+        }
+
+        Timer {
+            id: indexingTimer
+            interval: 500
+            onTriggered: {
+                settingsIndexer.isIndexing = true;
+            }
+        }
+    }
 
     // Store pending subsection to apply when panel loads
     property string pendingSubSection: ""

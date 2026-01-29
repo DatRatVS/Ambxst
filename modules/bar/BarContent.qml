@@ -168,7 +168,6 @@ Item {
     readonly property int barTargetWidth: orientation === "vertical" ? (contentImplicitWidth + 2 * barPadding) : 0
     readonly property int barTargetHeight: orientation === "horizontal" ? (contentImplicitHeight + 2 * barPadding) : 0
 
-    // Total size including frame and outer margins for the hitbox
     readonly property int totalBarWidth: barTargetWidth + 
         ((root.barPosition === "left" || root.orientation === "horizontal") ? (root.frameOffset + root.leftOuterMargin) : 0) +
         ((root.barPosition === "right" || root.orientation === "horizontal") ? (root.frameOffset + root.rightOuterMargin) : 0)
@@ -177,6 +176,7 @@ Item {
         ((root.barPosition === "top" || root.orientation === "vertical") ? (root.frameOffset + root.topOuterMargin) : 0) +
         ((root.barPosition === "bottom" || root.orientation === "vertical") ? (root.frameOffset + root.bottomOuterMargin) : 0)
 
+    // Base outer margin for reservation logic (4px + border when !containBar)
     readonly property int baseOuterMargin: barBg.outerMargin
 
     // Shadow logic for bar components

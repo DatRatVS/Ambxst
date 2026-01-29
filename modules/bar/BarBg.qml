@@ -30,7 +30,8 @@ Item {
     readonly property int displacement: !Config.bar.containBar ? borderWidth : 0
 
     // Combined outer margin for screen/frame edges
-    readonly property int outerMargin: 4 + displacement
+    // This margin (4px) should only exist when bar is floating (!containBar)
+    readonly property int outerMargin: !Config.bar.containBar ? (4 + displacement) : 0
 
     // StyledRect expanded that covers bar + corners
     StyledRect {

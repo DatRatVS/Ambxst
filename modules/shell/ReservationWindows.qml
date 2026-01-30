@@ -27,7 +27,12 @@ Item {
     onBarOuterMarginChanged: updateAllZones();
     onContainBarChanged: updateAllZones();
 
-    readonly property int borderWidth: Config.theme.srBg.border[1]
+    // Reference the full border array first (helps QML detect changes)
+    readonly property var borderData: Config.theme.srBg.border
+    readonly property int borderWidth: borderData[1]
+
+    // Watch for border changes and update zones
+    onBorderWidthChanged: updateAllZones()
 
     property bool dockEnabled: true
     property string dockPosition: "bottom"

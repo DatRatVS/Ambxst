@@ -37,5 +37,10 @@ var data = {
         "chi_sim": false,
         "chi_tra": false,
         "kor": false
+    },
+    "pomodoro": {
+        "workTime": 1500,
+        "restTime": 300,
+        "autoStart": false
     }
 }

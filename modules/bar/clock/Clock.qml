@@ -182,7 +182,7 @@ Item {
                 variant: "popup"
                 radius: Styling.radius(8)
                 enableShadow: false
-                width: popupWrapper.width
+                width: 300 + 16 // Match popupWrapper width
                 height: calendarContent.height + 32
 
                 property date currentDate: new Date()
@@ -314,7 +314,7 @@ Item {
                 }
             }
 
-            // Wrapper StyledRect
+            // Weather Wrapper StyledRect
             StyledRect {
                 id: popupWrapper
                 variant: "popup"
@@ -598,6 +598,22 @@ Item {
                             }
                         }
                     }
+                }
+            }
+
+            // Pomodoro Wrapper StyledRect
+            StyledRect {
+                id: pomodoroWrapper
+                variant: "popup"
+                radius: Styling.radius(8)
+                enableShadow: false
+                width: 300 + 16 // Match weather popup width
+                height: pomodoroWidget.height + 16
+
+                Pomodoro {
+                    id: pomodoroWidget
+                    anchors.centerIn: parent
+                    width: 300
                 }
             }
         }

@@ -20,23 +20,25 @@ QtObject {
         
         const font = Config.theme.font || "gg sans"
 
-        // Background derivatives (Base: background, progression 50, 30, 20, 15, 10, 0)
+        const isLight = Config.theme.lightMode
+        
+        // Background derivatives
         const bg = Colors.background
-        const backgroundaccent = toRGB(Qt.lighter(bg, 1.66))
+        const backgroundaccent = isLight ? toRGB(Qt.darker(bg, 1.05)) : toRGB(Qt.lighter(bg, 1.66))
         const backgroundprimary = toRGB(bg)
-        const backgroundsecondary = toRGB(Qt.darker(bg, 1.5))
-        const backgroundsecondaryalt = toRGB(Qt.darker(bg, 2.0))
-        const backgroundtertiary = toRGB(Qt.darker(bg, 3.0))
-        const backgroundfloating = "0,0,0"
+        const backgroundsecondary = isLight ? toRGB(Qt.darker(bg, 1.1)) : toRGB(Qt.darker(bg, 1.5))
+        const backgroundsecondaryalt = isLight ? toRGB(Qt.darker(bg, 1.15)) : toRGB(Qt.darker(bg, 2.0))
+        const backgroundtertiary = isLight ? toRGB(Qt.darker(bg, 1.2)) : toRGB(Qt.darker(bg, 3.0))
+        const backgroundfloating = isLight ? toRGB(Qt.darker(bg, 1.05)) : "0,0,0"
 
-        // Text derivatives (Base: overBackground, progression 255, 222, 185, 140, 115, 80)
+        // Text derivatives
         const fg = Colors.overBackground
         const textbrightest = toRGB(fg)
-        const textbrighter = toRGB(Qt.darker(fg, 1.15))
-        const textbright = toRGB(Qt.darker(fg, 1.38))
-        const textdark = toRGB(Qt.darker(fg, 1.82))
-        const textdarker = toRGB(Qt.darker(fg, 2.22))
-        const textdarkest = toRGB(Qt.darker(fg, 3.19))
+        const textbrighter = isLight ? toRGB(Qt.lighter(fg, 1.15)) : toRGB(Qt.darker(fg, 1.15))
+        const textbright = isLight ? toRGB(Qt.lighter(fg, 1.38)) : toRGB(Qt.darker(fg, 1.38))
+        const textdark = isLight ? toRGB(Qt.lighter(fg, 1.82)) : toRGB(Qt.darker(fg, 1.82))
+        const textdarker = isLight ? toRGB(Qt.lighter(fg, 2.22)) : toRGB(Qt.darker(fg, 2.22))
+        const textdarkest = isLight ? toRGB(Qt.lighter(fg, 3.19)) : toRGB(Qt.darker(fg, 3.19))
 
         let css = `/**
  * @name Ambxst

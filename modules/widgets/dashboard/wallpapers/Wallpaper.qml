@@ -37,7 +37,8 @@ PanelWindow {
     property alias tintEnabled: wallpaperAdapter.tintEnabled
     property int thumbnailsVersion: 0
 
-    property string mpvShaderPath: Quickshell.dataDir + "/mpv_tint_0.glsl"
+    readonly property string mpvShaderDir: Quickshell.dataDir + "/mpv_shaders"
+    property string mpvShaderPath: ""
     property bool mpvShaderReady: false
     
     readonly property var optimizedPalette: [
@@ -402,13 +403,11 @@ PanelWindow {
         }
     }
 
-    property int shaderToggle: 0
-
     function updateMpvRuntime(enable) {
         var cmdString;
         if (enable) {
-            // Since we are rotating filenames (A/B), we can just set the new path.
-            // MPV will handle the switch smoothly.
+            // Since we are using unique filenames, we can just set the new path.
+            // MPV will handle the switch smoothly and won't use cached versions.
             var setCmd = JSON.stringify({ "command": ["set_property", "glsl-shaders", mpvShaderPath] });
             cmdString = "echo '" + setCmd + "' | socat - " + mpvSocket;
         } else {
@@ -449,28 +448,26 @@ PanelWindow {
 
         var shaderContent = ShaderGenerator.generate(colors);
         
-        // Rotate filename to force MPV to see it as a new resource
-        shaderToggle = 1 - shaderToggle;
-        var currentShaderPath = Quickshell.dataDir + "/mpv_tint_" + shaderToggle + ".glsl";
-        
-        // Cleanup the OTHER shader file to prevent proliferation and confusion
-        var otherShaderPath = Quickshell.dataDir + "/mpv_tint_" + (1 - shaderToggle) + ".glsl";
-        var legacyShaderPath = Quickshell.dataDir + "/mpv_tint.glsl";
+        // Generate a unique filename in a dedicated directory
+        var timestamp = Date.now();
+        var currentShaderPath = mpvShaderDir + "/tint_" + timestamp + ".glsl";
 
         // Store the current active path so updateMpvRuntime knows which one to use
         wallpaper.mpvShaderPath = currentShaderPath;
         
         var cmd = [
             "python3", "-c", 
-            "import sys, os; " +
-            "open(sys.argv[1], 'w').write(sys.argv[2]); " +
-            "print('Wrote shader to ' + sys.argv[1]); " +
-            "os.remove(sys.argv[3]) if os.path.exists(sys.argv[3]) else None; " +
-            "os.remove(sys.argv[4]) if os.path.exists(sys.argv[4]) else None;",
+            "import sys, os, pathlib; " +
+            "d = pathlib.Path(sys.argv[1]); " +
+            "d.mkdir(parents=True, exist_ok=True); " +
+            "[f.unlink() for f in d.iterdir() if f.is_file()]; " +
+            "pathlib.Path(sys.argv[2]).write_text(sys.argv[3]); " +
+            "print('Wrote shader to ' + sys.argv[2]); " +
+            "legacy_dir = os.path.dirname(sys.argv[1]); " +
+            "[pathlib.Path(legacy_dir, f).unlink(missing_ok=True) for f in ['mpv_tint_0.glsl', 'mpv_tint_1.glsl', 'mpv_tint.glsl']]",
+            mpvShaderDir,
             currentShaderPath, 
-            shaderContent,
-            otherShaderPath,
-            legacyShaderPath
+            shaderContent
         ];
         
         mpvShaderWriter.command = cmd;
@@ -509,6 +506,24 @@ PanelWindow {
     Process {
         id: mpvShaderWriter
         running: false
+        command: []
+
+        stdout: StdioCollector {
+            onStreamFinished: {
+                if (text.length > 0) {
+                    console.log("mpvShaderWriter stdout:", text);
+                }
+            }
+        }
+
+        stderr: StdioCollector {
+            onStreamFinished: {
+                if (text.length > 0) {
+                    console.warn("mpvShaderWriter stderr:", text);
+                }
+            }
+        }
+
         onExited: code => {
             if (code === 0) {
                 console.log("MPV tint shader generated at:", mpvShaderPath);

@@ -106,12 +106,13 @@ Singleton {
                 }
             }
         }
-        
+
         property var wakeStartTimer: Timer {
             id: wakeStartTimer
             interval: 1000
             repeat: false
-            onTriggered: if (!isPaused) parent.start()
+            onTriggered: if (!isPaused)
+                parent.start()
         }
 
         running: !isPaused && !SuspendManager.isSuspending && interval > 0
@@ -148,7 +149,7 @@ Singleton {
 
     FileView {
         id: notifFileView
-        path: Quickshell.dataPath("notifications.json")
+        path: Quickshell.cachePath("notifications.json")
         onLoaded: loadNotifications()
     }
 

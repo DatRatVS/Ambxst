@@ -28,7 +28,7 @@ Item {
 
         if (videoExts.includes(ext) || imageExts.includes(ext)) {
             const fileName = itemPath.substring(itemPath.lastIndexOf('/') + 1);
-            return Quickshell.dataDir + "/desktop_thumbnails/" + fileName + ".jpg";
+            return Quickshell.cacheDir + "/desktop_thumbnails/" + fileName + ".jpg";
         }
 
         return '';

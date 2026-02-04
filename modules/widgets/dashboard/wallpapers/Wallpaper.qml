@@ -37,22 +37,11 @@ PanelWindow {
     property alias tintEnabled: wallpaperAdapter.tintEnabled
     property int thumbnailsVersion: 0
 
-    readonly property string mpvShaderDir: Quickshell.dataDir + "/mpv_shaders"
+    readonly property string mpvShaderDir: Quickshell.cacheDir + "/mpv_shaders"
     property string mpvShaderPath: ""
     property bool mpvShaderReady: false
-    
-    readonly property var optimizedPalette: [
-        "background", "overBackground", "shadow",
-        "surface", "surfaceBright", "surfaceDim",
-        "surfaceContainer", "surfaceContainerHigh", "surfaceContainerHighest", "surfaceContainerLow", "surfaceContainerLowest",
-        "primary", "secondary", "tertiary",
-        "red", "lightRed",
-        "green", "lightGreen",
-        "blue", "lightBlue",
-        "yellow", "lightYellow",
-        "cyan", "lightCyan",
-        "magenta", "lightMagenta"
-    ]
+
+    readonly property var optimizedPalette: ["background", "overBackground", "shadow", "surface", "surfaceBright", "surfaceDim", "surfaceContainer", "surfaceContainerHigh", "surfaceContainerHighest", "surfaceContainerLow", "surfaceContainerLowest", "primary", "secondary", "tertiary", "red", "lightRed", "green", "lightGreen", "blue", "lightBlue", "yellow", "lightYellow", "cyan", "lightCyan", "magenta", "lightMagenta"]
 
     // Sync state from the primary wallpaper manager to secondary instances
     Binding {
@@ -75,7 +64,7 @@ PanelWindow {
         value: GlobalStates.wallpaperManager.subfolderFilters
         when: GlobalStates.wallpaperManager !== null && GlobalStates.wallpaperManager !== wallpaper
     }
-    
+
     Binding {
         target: wallpaper
         property: "initialLoadCompleted"
@@ -113,17 +102,18 @@ PanelWindow {
     }
 
     function applyColorPreset() {
-        if (!activeColorPreset) return;
-        
+        if (!activeColorPreset)
+            return;
+
         var mode = Config.theme.lightMode ? "light.json" : "dark.json";
-        
+
         var officialFile = officialColorPresetsDir + "/" + activeColorPreset + "/" + mode;
         var userFile = colorPresetsDir + "/" + activeColorPreset + "/" + mode;
-        var dest = Quickshell.dataPath("colors.json");
-        
+        var dest = Quickshell.cachePath("colors.json");
+
         // Try official first, then user. Use bash conditional.
         var cmd = "if [ -f '" + officialFile + "' ]; then cp '" + officialFile + "' '" + dest + "'; else cp '" + userFile + "' '" + dest + "'; fi";
-        
+
         console.log("Applying color preset:", activeColorPreset);
         applyPresetProcess.command = ["bash", "-c", cmd];
         applyPresetProcess.running = true;
@@ -131,7 +121,7 @@ PanelWindow {
 
     function setColorPreset(name) {
         wallpaperConfig.adapter.activeColorPreset = name;
-        // activeColorPreset property will update automatically via binding to adapter
+    // activeColorPreset property will update automatically via binding to adapter
     }
 
     // Funciones utilitarias para tipos de archivo
@@ -159,7 +149,7 @@ PanelWindow {
         var relativeDir = pathParts.join('/');
 
         // Build the proxy path
-        var thumbnailPath = Quickshell.dataDir + "/thumbnails/" + relativeDir + "/" + thumbnailName;
+        var thumbnailPath = Quickshell.cacheDir + "/thumbnails/" + relativeDir + "/" + thumbnailName;
         return thumbnailPath;
     }
 
@@ -193,21 +183,21 @@ PanelWindow {
         if (!filePath) {
             return "";
         }
-        
+
         var fileType = getFileType(filePath);
-        
+
         // Para imágenes estáticas, usar el archivo original
         if (fileType === 'image') {
             return filePath;
         }
-        
+
         // Para videos y GIFs, usar el frame cacheado
         if (fileType === 'video' || fileType === 'gif') {
             var fileName = filePath.split('/').pop();
-            var cachePath = Quickshell.dataDir + "/lockscreen/" + fileName + ".jpg";
+            var cachePath = Quickshell.cacheDir + "/lockscreen/" + fileName + ".jpg";
             return cachePath;
         }
-        
+
         return filePath;
     }
 
@@ -216,18 +206,14 @@ PanelWindow {
             console.warn("generateLockscreenFrame: empty filePath");
             return;
         }
-        
+
         console.log("Generating lockscreen frame for:", filePath);
-        
+
         var scriptPath = decodeURIComponent(Qt.resolvedUrl("../../../../scripts/lockwall.py").toString().replace("file://", ""));
-        var dataPath = Quickshell.dataDir;
-        
-        lockscreenWallpaperScript.command = [
-            "python3", scriptPath,
-            filePath,
-            dataPath
-        ];
-        
+        var dataPath = Quickshell.cacheDir;
+
+        lockscreenWallpaperScript.command = ["python3", scriptPath, filePath, dataPath];
+
         lockscreenWallpaperScript.running = true;
     }
 
@@ -242,7 +228,8 @@ PanelWindow {
     }
 
     function scanSubfolders() {
-        if (!wallpaperDir) return;
+        if (!wallpaperDir)
+            return;
         // Explicitly update command with current wallpaperDir
         var cmd = ["find", wallpaperDir, "-mindepth", "1", "-name", ".*", "-prune", "-o", "-type", "d", "-print"];
         scanSubfoldersProcess.command = cmd;
@@ -252,30 +239,34 @@ PanelWindow {
     // Update directory watcher when wallpaperDir changes
     onWallpaperDirChanged: {
         // Skip initial spurious changes before config is loaded
-        if (!_wallpaperDirInitialized) return;
-        
+        if (!_wallpaperDirInitialized)
+            return;
+
         // Only the primary wallpaper manager should handle directory changes
-        if (GlobalStates.wallpaperManager !== wallpaper) return;
-        
+        if (GlobalStates.wallpaperManager !== wallpaper)
+            return;
+
         console.log("Wallpaper directory changed to:", wallpaperDir);
         usingFallback = false;
-        
+
         // Clear current lists to reflect change immediately
         wallpaperPaths = [];
         subfolderFilters = [];
-        
+
         directoryWatcher.path = wallpaperDir;
-        
+
         // Force update scan command
         var cmd = ["find", wallpaperDir, "-name", ".*", "-prune", "-o", "-type", "f", "(", "-name", "*.jpg", "-o", "-name", "*.jpeg", "-o", "-name", "*.png", "-o", "-name", "*.webp", "-o", "-name", "*.tif", "-o", "-name", "*.tiff", "-o", "-name", "*.gif", "-o", "-name", "*.mp4", "-o", "-name", "*.webm", "-o", "-name", "*.mov", "-o", "-name", "*.avi", "-o", "-name", "*.mkv", ")", "-print"];
         scanWallpapers.command = cmd;
         scanWallpapers.running = true;
-        
+
         scanSubfolders();
-        
+
         // Regenerate thumbnails for the new directory (delayed)
-        if (delayedThumbnailGen.running) delayedThumbnailGen.restart();
-        else delayedThumbnailGen.start();
+        if (delayedThumbnailGen.running)
+            delayedThumbnailGen.restart();
+        else
+            delayedThumbnailGen.start();
     }
 
     onCurrentWallpaperChanged:
@@ -352,7 +343,7 @@ PanelWindow {
     // Función para re-ejecutar Matugen con el wallpaper actual
     function setMatugenScheme(scheme) {
         wallpaperConfig.adapter.matugenScheme = scheme;
-        
+
         if (wallpaperConfig.adapter.activeColorPreset) {
             console.log("Switching to Matugen scheme, clearing preset");
             wallpaperConfig.adapter.activeColorPreset = "";
@@ -408,14 +399,18 @@ PanelWindow {
         if (enable) {
             // Since we are using unique filenames, we can just set the new path.
             // MPV will handle the switch smoothly and won't use cached versions.
-            var setCmd = JSON.stringify({ "command": ["set_property", "glsl-shaders", mpvShaderPath] });
+            var setCmd = JSON.stringify({
+                "command": ["set_property", "glsl-shaders", mpvShaderPath]
+            });
             cmdString = "echo '" + setCmd + "' | socat - " + mpvSocket;
         } else {
             // Clear shaders
-            var jsonCmd = JSON.stringify({ "command": ["set_property", "glsl-shaders", ""] });
+            var jsonCmd = JSON.stringify({
+                "command": ["set_property", "glsl-shaders", ""]
+            });
             cmdString = "echo '" + jsonCmd + "' | socat - " + mpvSocket;
         }
-        
+
         mpvIpcProcess.command = ["bash", "-c", cmdString];
         mpvIpcProcess.running = true;
     }
@@ -425,7 +420,7 @@ PanelWindow {
             updateMpvRuntime(false);
             return;
         }
-        
+
         var colors = [];
         // Log the first color to see if it changed
         var firstColorRaw = Colors[optimizedPalette[0]];
@@ -436,40 +431,31 @@ PanelWindow {
             if (rawColor) {
                 var c = Qt.darker(rawColor, 1.0);
                 if (c && !isNaN(c.r) && !isNaN(c.g) && !isNaN(c.b)) {
-                    colors.push({r: c.r, g: c.g, b: c.b});
+                    colors.push({
+                        r: c.r,
+                        g: c.g,
+                        b: c.b
+                    });
                 }
             }
         }
-        
+
         if (colors.length === 0) {
             console.warn("MpvShaderGenerator: No valid colors found for palette! Aborting.");
             return;
         }
 
         var shaderContent = ShaderGenerator.generate(colors);
-        
+
         // Generate a unique filename in a dedicated directory
         var timestamp = Date.now();
         var currentShaderPath = mpvShaderDir + "/tint_" + timestamp + ".glsl";
 
         // Store the current active path so updateMpvRuntime knows which one to use
         wallpaper.mpvShaderPath = currentShaderPath;
-        
-        var cmd = [
-            "python3", "-c", 
-            "import sys, os, pathlib; " +
-            "d = pathlib.Path(sys.argv[1]); " +
-            "d.mkdir(parents=True, exist_ok=True); " +
-            "[f.unlink() for f in d.iterdir() if f.is_file()]; " +
-            "pathlib.Path(sys.argv[2]).write_text(sys.argv[3]); " +
-            "print('Wrote shader to ' + sys.argv[2]); " +
-            "legacy_dir = os.path.dirname(sys.argv[1]); " +
-            "[pathlib.Path(legacy_dir, f).unlink(missing_ok=True) for f in ['mpv_tint_0.glsl', 'mpv_tint_1.glsl', 'mpv_tint.glsl']]",
-            mpvShaderDir,
-            currentShaderPath, 
-            shaderContent
-        ];
-        
+
+        var cmd = ["python3", "-c", "import sys, os, pathlib; " + "d = pathlib.Path(sys.argv[1]); " + "d.mkdir(parents=True, exist_ok=True); " + "[f.unlink() for f in d.iterdir() if f.is_file()]; " + "pathlib.Path(sys.argv[2]).write_text(sys.argv[3]); " + "print('Wrote shader to ' + sys.argv[2]); " + "legacy_dir = os.path.dirname(sys.argv[1]); " + "[pathlib.Path(legacy_dir, f).unlink(missing_ok=True) for f in ['mpv_tint_0.glsl', 'mpv_tint_1.glsl', 'mpv_tint.glsl']]", mpvShaderDir, currentShaderPath, shaderContent];
+
         mpvShaderWriter.command = cmd;
         mpvShaderWriter.running = true;
     }
@@ -535,7 +521,7 @@ PanelWindow {
             }
         }
     }
-    
+
     // Trigger update when colors change
     Timer {
         id: shaderUpdateDebounce
@@ -545,11 +531,11 @@ PanelWindow {
             updateMpvShader();
         }
     }
-    
+
     Connections {
         target: Colors
         // Watch for file reload (theme change)
-        function onFileChanged() { 
+        function onFileChanged() {
             console.log("Colors file changed, scheduling update...");
             shaderUpdateDebounce.restart();
         }
@@ -559,12 +545,12 @@ PanelWindow {
             shaderUpdateDebounce.restart();
         }
         // Fallback
-        function onPrimaryChanged() { 
+        function onPrimaryChanged() {
             console.log("Colors primary changed, scheduling update...");
             shaderUpdateDebounce.restart();
         }
     }
-    
+
     Connections {
         target: Config
         function onOledModeChanged() {
@@ -572,7 +558,7 @@ PanelWindow {
             shaderUpdateDebounce.restart();
         }
     }
-    
+
     onTintEnabledChanged: {
         console.log("Tint enabled changed to", tintEnabled);
         updateMpvShader();
@@ -586,7 +572,7 @@ PanelWindow {
             _wallpaperDirInitialized = true;
             return;
         }
-        
+
         GlobalStates.wallpaperManager = wallpaper;
 
         // Verificar si existe wallpapers.json, si no, crear con fallback
@@ -599,9 +585,9 @@ PanelWindow {
         officialPresetsWatcher.reload();
         // Load initial wallpaper config - this will trigger onWallPathChanged which does the actual scan
         wallpaperConfig.reload();
-        
+
         // Generate lockscreen frame for initial wallpaper after a short delay
-        Qt.callLater(function() {
+        Qt.callLater(function () {
             if (currentWallpaper) {
                 generateLockscreenFrame(currentWallpaper);
             }
@@ -653,8 +639,9 @@ PanelWindow {
 
             onCurrentWallChanged: {
                 // Skip during initial load - scanWallpapers handles this
-                if (!wallpaper._wallpaperDirInitialized) return;
-                
+                if (!wallpaper._wallpaperDirInitialized)
+                    return;
+
                 // Siempre actualizar si es diferente al actual
                 if (currentWall && currentWall !== wallpaper.currentWallpaper) {
                     // If paths are not loaded yet, wait for scanWallpapers to finish
@@ -678,21 +665,21 @@ PanelWindow {
             onWallPathChanged: {
                 if (wallPath) {
                     console.log("Config wallPath updated:", wallPath);
-                    
+
                     // Initialize scanning on first valid wallPath load
                     if (!wallpaper._wallpaperDirInitialized && GlobalStates.wallpaperManager === wallpaper) {
                         wallpaper._wallpaperDirInitialized = true;
-                        
+
                         // Set up directory watcher
                         directoryWatcher.path = wallPath;
                         directoryWatcher.reload();
-                        
+
                         // Perform initial wallpaper scan
                         var cmd = ["find", wallPath, "-name", ".*", "-prune", "-o", "-type", "f", "(", "-name", "*.jpg", "-o", "-name", "*.jpeg", "-o", "-name", "*.png", "-o", "-name", "*.webp", "-o", "-name", "*.tif", "-o", "-name", "*.tiff", "-o", "-name", "*.gif", "-o", "-name", "*.mp4", "-o", "-name", "*.webm", "-o", "-name", "*.mov", "-o", "-name", "*.avi", "-o", "-name", "*.mkv", ")", "-print"];
                         scanWallpapers.command = cmd;
                         scanWallpapers.running = true;
                         wallpaper.scanSubfolders();
-                        
+
                         // Start thumbnail generation
                         delayedThumbnailGen.start();
                     }
@@ -772,7 +759,7 @@ PanelWindow {
     Process {
         id: thumbnailGeneratorScript
         running: false
-        command: ["python3", decodeURIComponent(Qt.resolvedUrl("../../../../scripts/thumbgen.py").toString().replace("file://", "")), Quickshell.dataDir + "/wallpapers.json", Quickshell.dataDir, fallbackDir]
+        command: ["python3", decodeURIComponent(Qt.resolvedUrl("../../../../scripts/thumbgen.py").toString().replace("file://", "")), Quickshell.cacheDir + "/wallpapers.json", Quickshell.cacheDir, fallbackDir]
 
         stdout: StdioCollector {
             onStreamFinished: {
@@ -849,20 +836,20 @@ PanelWindow {
                 var rawPaths = text.trim().split("\n").filter(function (f) {
                     return f.length > 0;
                 });
-                
+
                 allSubdirs = rawPaths;
-                
+
                 var basePath = wallpaperDir.endsWith("/") ? wallpaperDir : wallpaperDir + "/";
-                
-                var topLevelFolders = rawPaths.filter(function(path) {
+
+                var topLevelFolders = rawPaths.filter(function (path) {
                     var relative = path.replace(basePath, "");
                     return relative.indexOf("/") === -1;
-                }).map(function(path) {
+                }).map(function (path) {
                     return path.split("/").pop();
-                }).filter(function(name) {
+                }).filter(function (name) {
                     return name.length > 0 && !name.startsWith(".");
                 });
-                
+
                 topLevelFolders.sort();
                 subfolderFilters = topLevelFolders;
                 subfolderFiltersChanged();  // Emitir señal manualmente
@@ -895,13 +882,16 @@ PanelWindow {
         printErrors: false
 
         onFileChanged: {
-            if (wallpaperDir === "") return;
+            if (wallpaperDir === "")
+                return;
             console.log("Wallpaper directory changed, rescanning...");
             scanWallpapers.running = true;
             scanSubfoldersProcess.running = true;
             // Regenerar thumbnails si hay nuevos videos (delayed)
-            if (delayedThumbnailGen.running) delayedThumbnailGen.restart();
-            else delayedThumbnailGen.start();
+            if (delayedThumbnailGen.running)
+                delayedThumbnailGen.restart();
+            else
+                delayedThumbnailGen.start();
         }
 
         // Remove onLoadFailed to prevent premature fallback activation
@@ -910,7 +900,7 @@ PanelWindow {
     // Recursive directory watchers for subfolders
     Instantiator {
         model: allSubdirs
-        
+
         delegate: FileView {
             path: modelData
             watchChanges: true
@@ -919,10 +909,12 @@ PanelWindow {
                 console.log("Subdirectory content changed (" + path + "), rescanning...");
                 scanWallpapers.running = true;
                 scanSubfoldersProcess.running = true;
-                
+
                 // Regenerar thumbnails (delayed)
-                if (delayedThumbnailGen.running) delayedThumbnailGen.restart();
-                else delayedThumbnailGen.start();
+                if (delayedThumbnailGen.running)
+                    delayedThumbnailGen.restart();
+                else
+                    delayedThumbnailGen.start();
             }
         }
     }
@@ -933,23 +925,23 @@ PanelWindow {
         path: colorPresetsDir
         watchChanges: true
         printErrors: false
-        
+
         onFileChanged: {
-             console.log("User color presets directory changed, rescanning...");
-             scanPresetsProcess.running = true;
+            console.log("User color presets directory changed, rescanning...");
+            scanPresetsProcess.running = true;
         }
     }
-    
+
     // Directory watcher for official color presets
     FileView {
         id: officialPresetsWatcher
         path: officialColorPresetsDir
         watchChanges: true
         printErrors: false
-        
+
         onFileChanged: {
-             console.log("Official color presets directory changed, rescanning...");
-             scanPresetsProcess.running = true;
+            console.log("Official color presets directory changed, rescanning...");
+            scanPresetsProcess.running = true;
         }
     }
 
@@ -986,8 +978,10 @@ PanelWindow {
                         // Always try to load the saved wallpaper when list changes
                         if (wallpaperPaths.length > 0) {
                             // Trigger thumbnail generation if list changed
-                            if (delayedThumbnailGen.running) delayedThumbnailGen.restart();
-                            else delayedThumbnailGen.start();
+                            if (delayedThumbnailGen.running)
+                                delayedThumbnailGen.restart();
+                            else
+                                delayedThumbnailGen.start();
 
                             if (wallpaperConfig.adapter.currentWall) {
                                 var savedIndex = wallpaperPaths.indexOf(wallpaperConfig.adapter.currentWall);
@@ -1077,15 +1071,16 @@ PanelWindow {
         running: false
         // Scan both directories. find will complain to stderr if one is missing but still output what it finds.
         command: ["find", officialColorPresetsDir, colorPresetsDir, "-mindepth", "1", "-maxdepth", "1", "-type", "d"]
-        
+
         stdout: StdioCollector {
             onStreamFinished: {
                 console.log("Scan Presets Output:", text);
                 var rawLines = text.trim().split("\n");
                 var uniqueNames = [];
-                for (var i=0; i<rawLines.length; i++) {
+                for (var i = 0; i < rawLines.length; i++) {
                     var line = rawLines[i].trim();
-                    if (line.length === 0) continue;
+                    if (line.length === 0)
+                        continue;
                     var name = line.split('/').pop();
                     // Deduplicate
                     if (uniqueNames.indexOf(name) === -1) {
@@ -1097,7 +1092,7 @@ PanelWindow {
                 colorPresets = uniqueNames;
             }
         }
-        
+
         stderr: StdioCollector {
             onStreamFinished: {
                 // Suppress common "No such file or directory" if one dir is missing
@@ -1110,10 +1105,12 @@ PanelWindow {
         id: applyPresetProcess
         running: false
         command: []
-        
+
         onExited: code => {
-            if (code === 0) console.log("Color preset applied successfully");
-            else console.warn("Failed to apply color preset, code:", code);
+            if (code === 0)
+                console.log("Color preset applied successfully");
+            else
+                console.warn("Failed to apply color preset, code:", code);
         }
     }
 
@@ -1231,81 +1228,70 @@ PanelWindow {
         }
 
         Component {
-        id: staticImageComponent
-        Item {
-            id: staticImageRoot
-            width: parent.width
-            height: parent.height
-            property string sourceFile: parent.sourceFile
-            property bool tint: wallpaper.tintEnabled
-
-            // Subset of colors for optimization (approx 25 colors vs 98)
-            readonly property var optimizedPalette: [
-                "background", "overBackground", "shadow",
-                "surface", "surfaceBright", "surfaceDim",
-                "surfaceContainer", "surfaceContainerHigh", "surfaceContainerHighest", "surfaceContainerLow", "surfaceContainerLowest",
-                "primary", "secondary", "tertiary",
-                "red", "lightRed",
-                "green", "lightGreen",
-                "blue", "lightBlue",
-                "yellow", "lightYellow",
-                "cyan", "lightCyan",
-                "magenta", "lightMagenta"
-            ]
-
-            // Palette generation for the shader
+            id: staticImageComponent
             Item {
-                id: paletteSourceItem
-                // Must be visible for ShaderEffectSource to capture it, 
-                // but we hide it visually by placing it behind or expecting ShaderEffectSource hideSource behavior.
-                visible: true 
-                width: staticImageRoot.optimizedPalette.length
-                height: 1
-                opacity: 0 // Make invisible to eye but maintain presence for capture if needed (though hideSource usually handles this)
-                
-                Row {
-                    anchors.fill: parent
-                    Repeater {
-                        model: staticImageRoot.optimizedPalette
-                        Rectangle {
-                            width: 1
-                            height: 1
-                            color: Colors[modelData]
+                id: staticImageRoot
+                width: parent.width
+                height: parent.height
+                property string sourceFile: parent.sourceFile
+                property bool tint: wallpaper.tintEnabled
+
+                // Subset of colors for optimization (approx 25 colors vs 98)
+                readonly property var optimizedPalette: ["background", "overBackground", "shadow", "surface", "surfaceBright", "surfaceDim", "surfaceContainer", "surfaceContainerHigh", "surfaceContainerHighest", "surfaceContainerLow", "surfaceContainerLowest", "primary", "secondary", "tertiary", "red", "lightRed", "green", "lightGreen", "blue", "lightBlue", "yellow", "lightYellow", "cyan", "lightCyan", "magenta", "lightMagenta"]
+
+                // Palette generation for the shader
+                Item {
+                    id: paletteSourceItem
+                    // Must be visible for ShaderEffectSource to capture it,
+                    // but we hide it visually by placing it behind or expecting ShaderEffectSource hideSource behavior.
+                    visible: true
+                    width: staticImageRoot.optimizedPalette.length
+                    height: 1
+                    opacity: 0 // Make invisible to eye but maintain presence for capture if needed (though hideSource usually handles this)
+
+                    Row {
+                        anchors.fill: parent
+                        Repeater {
+                            model: staticImageRoot.optimizedPalette
+                            Rectangle {
+                                width: 1
+                                height: 1
+                                color: Colors[modelData]
+                            }
                         }
                     }
                 }
-            }
 
-            ShaderEffectSource {
-                id: paletteTextureSource
-                sourceItem: paletteSourceItem
-                hideSource: true
-                visible: false // The source object itself doesn't need to be visible in the scene graph
-                smooth: false
-                recursive: false
-            }
+                ShaderEffectSource {
+                    id: paletteTextureSource
+                    sourceItem: paletteSourceItem
+                    hideSource: true
+                    visible: false // The source object itself doesn't need to be visible in the scene graph
+                    smooth: false
+                    recursive: false
+                }
 
-            Image {
-                id: rawImage
-                anchors.fill: parent
-                source: parent.sourceFile ? "file://" + parent.sourceFile : ""
-                fillMode: Image.PreserveAspectCrop
-                asynchronous: true
-                smooth: true
-                sourceSize.width: wallpaper.width
-                sourceSize.height: wallpaper.height
-                layer.enabled: parent.tint
-                layer.effect: ShaderEffect {
-                    property var paletteTexture: paletteTextureSource
-                    property real paletteSize: staticImageRoot.optimizedPalette.length
-                    property real texWidth: rawImage.width
-                    property real texHeight: rawImage.height
+                Image {
+                    id: rawImage
+                    anchors.fill: parent
+                    source: parent.sourceFile ? "file://" + parent.sourceFile : ""
+                    fillMode: Image.PreserveAspectCrop
+                    asynchronous: true
+                    smooth: true
+                    sourceSize.width: wallpaper.width
+                    sourceSize.height: wallpaper.height
+                    layer.enabled: parent.tint
+                    layer.effect: ShaderEffect {
+                        property var paletteTexture: paletteTextureSource
+                        property real paletteSize: staticImageRoot.optimizedPalette.length
+                        property real texWidth: rawImage.width
+                        property real texHeight: rawImage.height
 
-                    fragmentShader: "palette.frag.qsb"
+                        fragmentShader: "palette.frag.qsb"
+                    }
                 }
             }
         }
-    }
 
         Component {
             id: mpvpaperComponent

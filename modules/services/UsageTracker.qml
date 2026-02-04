@@ -7,20 +7,20 @@ Singleton {
     id: root
 
     // Path to usage.json file in dataPath
-    property string usageFilePath: Quickshell.dataPath("usage.json")
-    
+    property string usageFilePath: Quickshell.cachePath("usage.json")
+
     // In-memory cache: { appId: { count: N, lastUsed: timestamp } }
     property var usageData: ({})
     property bool dataLoaded: false
     property bool fileReady: false
-    
+
     // Signal emitted when data is loaded
-    signal usageDataReady()
-    
+    signal usageDataReady
+
     // Decay factor for time-based scoring (apps used recently get higher scores)
     readonly property int maxBoostScore: 200
     readonly property int dayInMs: 86400000
-    
+
     // Ensure the file exists
     Process {
         id: ensureUsageFile
@@ -85,7 +85,7 @@ Singleton {
         }
 
         var now = Date.now();
-        
+
         if (usageData[appId]) {
             usageData[appId].count++;
             usageData[appId].lastUsed = now;
@@ -95,10 +95,10 @@ Singleton {
                 lastUsed: now
             };
         }
-        
+
         // Force property change notification
         usageData = usageData;
-        
+
         saveUsageData();
     }
 
@@ -112,22 +112,23 @@ Singleton {
         var data = usageData[appId];
         var now = Date.now();
         var daysSinceLastUse = (now - data.lastUsed) / dayInMs;
-        
+
         // Time decay: apps used within last day get full boost, then decay exponentially
         // Formula: baseScore + (maxBoost * e^(-daysSinceLastUse/7))
         // This gives apps used in the last week a significant boost, with decay over time
         var timeBoost = maxBoostScore * Math.exp(-daysSinceLastUse / 7);
-        
+
         // Frequency score: logarithmic scale to prevent over-weighting heavily used apps
         var frequencyScore = Math.log(data.count + 1) * 20;
-        
+
         return timeBoost + frequencyScore;
     }
 
     // Get all apps sorted by usage (most used/recent first)
     function getTopApps(limit) {
-        if (!limit) limit = 10;
-        
+        if (!limit)
+            limit = 10;
+
         var apps = [];
         for (var appId in usageData) {
             apps.push({
@@ -137,11 +138,11 @@ Singleton {
                 lastUsed: usageData[appId].lastUsed
             });
         }
-        
-        apps.sort(function(a, b) {
+
+        apps.sort(function (a, b) {
             return b.score - a.score;
         });
-        
+
         return apps.slice(0, limit);
     }
 
@@ -150,14 +151,14 @@ Singleton {
         var now = Date.now();
         var ninetyDaysInMs = dayInMs * 90;
         var changed = false;
-        
+
         for (var appId in usageData) {
             if (now - usageData[appId].lastUsed > ninetyDaysInMs) {
                 delete usageData[appId];
                 changed = true;
             }
         }
-        
+
         if (changed) {
             usageData = usageData;
             saveUsageData();

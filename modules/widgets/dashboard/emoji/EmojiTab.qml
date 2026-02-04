@@ -35,11 +35,31 @@ Rectangle {
 
     // Skin tone support
     property var skinTones: [
-        { name: "Light", modifier: "🏻", emoji: "👋🏻" },
-        { name: "Medium-Light", modifier: "🏼", emoji: "👋🏼" },
-        { name: "Medium", modifier: "🏽", emoji: "👋🏽" },
-        { name: "Medium-Dark", modifier: "🏾", emoji: "👋🏾" },
-        { name: "Dark", modifier: "🏿", emoji: "👋🏿" }
+        {
+            name: "Light",
+            modifier: "🏻",
+            emoji: "👋🏻"
+        },
+        {
+            name: "Medium-Light",
+            modifier: "🏼",
+            emoji: "👋🏼"
+        },
+        {
+            name: "Medium",
+            modifier: "🏽",
+            emoji: "👋🏽"
+        },
+        {
+            name: "Medium-Dark",
+            modifier: "🏾",
+            emoji: "👋🏾"
+        },
+        {
+            name: "Dark",
+            modifier: "🏿",
+            emoji: "👋🏿"
+        }
     ]
 
     // Options menu state
@@ -51,16 +71,22 @@ Rectangle {
 
     function getSkinToneName(modifier) {
         for (var i = 0; i < skinTones.length; i++) {
-            if (skinTones[i].modifier === modifier) return skinTones[i].name.toLowerCase();
+            if (skinTones[i].modifier === modifier)
+                return skinTones[i].name.toLowerCase();
         }
         return "default";
     }
 
-    ListModel { id: emojisModel }
-    ListModel { id: recentModel }
+    ListModel {
+        id: emojisModel
+    }
+    ListModel {
+        id: recentModel
+    }
 
     function adjustScrollForExpandedItem(index) {
-        if (index < 0 || index >= emojisModel.count) return;
+        if (index < 0 || index >= emojisModel.count)
+            return;
         var itemY = 0;
         for (var i = 0; i < index && i < emojisModel.count; i++) {
             var h = 48;
@@ -82,8 +108,10 @@ Rectangle {
         var viewportBottom = viewportTop + emojiList.height;
         var itemBottom = itemY + currentItemHeight;
 
-        if (itemY < viewportTop) emojiList.contentY = itemY;
-        else if (itemBottom > viewportBottom) emojiList.contentY = Math.min(itemBottom - emojiList.height, maxContentY);
+        if (itemY < viewportTop)
+            emojiList.contentY = itemY;
+        else if (itemBottom > viewportBottom)
+            emojiList.contentY = Math.min(itemBottom - emojiList.height, maxContentY);
     }
 
     onSelectedIndexChanged: {
@@ -95,7 +123,7 @@ Rectangle {
             selectedOptionIndex = 0;
             keyboardNavigation = false;
         }
-        
+
         // Reset horizontal focus when leaving recent container
         if (selectedIndex !== 0) {
             selectedRecentIndex = -1;
@@ -121,7 +149,9 @@ Rectangle {
         loadInitialEmojis();
         emojiList.enableScrollAnimation = false;
         emojiList.contentY = 0;
-        Qt.callLater(() => { emojiList.enableScrollAnimation = true; });
+        Qt.callLater(() => {
+            emojiList.enableScrollAnimation = true;
+        });
     }
 
     function clearRecentEmojis() {
@@ -134,9 +164,13 @@ Rectangle {
         searchInput.focusInput();
     }
 
-    function focusSearchInput() { searchInput.focusInput(); }
+    function focusSearchInput() {
+        searchInput.focusInput();
+    }
 
-    function resetClearButton() { clearButtonConfirmState = false; }
+    function resetClearButton() {
+        clearButtonConfirmState = false;
+    }
 
     function performSearch() {
         if (searchText.length === 0) {
@@ -163,7 +197,11 @@ Rectangle {
         filteredEmojis = filtered;
         emojisModel.clear();
         for (var i = 0; i < filtered.length; i++) {
-            emojisModel.append({ emojiId: filtered[i].search, emojiData: filtered[i], isRecentContainer: false });
+            emojisModel.append({
+                emojiId: filtered[i].search,
+                emojiData: filtered[i],
+                isRecentContainer: false
+            });
         }
         if (searchText.length > 0 && filteredEmojis.length > 0) {
             selectedIndex = 0;
@@ -173,7 +211,10 @@ Rectangle {
     function updateRecentModel() {
         recentModel.clear();
         for (var i = 0; i < recentEmojis.length; i++) {
-            recentModel.append({ emojiId: recentEmojis[i].search, emojiData: recentEmojis[i] });
+            recentModel.append({
+                emojiId: recentEmojis[i].search,
+                emojiData: recentEmojis[i]
+            });
         }
     }
 
@@ -185,25 +226,33 @@ Rectangle {
     function loadInitialEmojis() {
         emojisModel.clear();
         if (recentEmojis.length > 0 && searchText === "") {
-            emojisModel.append({ emojiId: "recent_container", emojiData: {}, isRecentContainer: true });
+            emojisModel.append({
+                emojiId: "recent_container",
+                emojiData: {},
+                isRecentContainer: true
+            });
         }
         var initial = [];
         for (var i = 0; i < Math.min(50, emojiData.length); i++) {
             var e = emojiData[i];
-            emojisModel.append({ emojiId: e.search, emojiData: e, isRecentContainer: false });
+            emojisModel.append({
+                emojiId: e.search,
+                emojiData: e,
+                isRecentContainer: false
+            });
             initial.push(e);
         }
         filteredEmojis = initial;
     }
 
     function loadRecentEmojis() {
-        recentProcess.command = ["bash", "-c", "cat " + Quickshell.dataDir + "/emojis.json 2>/dev/null || echo '[]'"];
+        recentProcess.command = ["bash", "-c", "cat " + Quickshell.cacheDir + "/emojis.json 2>/dev/null || echo '[]'"];
         recentProcess.running = true;
     }
 
     function saveRecentEmojis() {
         var jsonData = JSON.stringify(recentEmojis, null, 2);
-        saveProcess.command = ["bash", "-c", "echo '" + jsonData.replace(/'/g, "'\\''") + "' > " + Quickshell.dataDir + "/emojis.json"];
+        saveProcess.command = ["bash", "-c", "echo '" + jsonData.replace(/'/g, "'\\''") + "' > " + Quickshell.cacheDir + "/emojis.json"];
         saveProcess.running = true;
     }
 
@@ -212,7 +261,8 @@ Rectangle {
         emoji.usage = (emoji.usage || 0) + 1;
         emoji.lastUsed = Date.now();
         recentEmojis.unshift(emoji);
-        if (recentEmojis.length > 50) recentEmojis = recentEmojis.slice(0, 50);
+        if (recentEmojis.length > 50)
+            recentEmojis = recentEmojis.slice(0, 50);
         recentEmojis.sort((a, b) => b.usage !== a.usage ? b.usage - a.usage : b.lastUsed - a.lastUsed);
         updateRecentModel();
         saveRecentEmojis();
@@ -220,7 +270,8 @@ Rectangle {
 
     function copyEmoji(emoji, skinToneModifier) {
         var emojiToCopy = emoji.emoji;
-        if (skinToneModifier && skinToneModifier !== "") emojiToCopy = emoji.emoji + skinToneModifier;
+        if (skinToneModifier && skinToneModifier !== "")
+            emojiToCopy = emoji.emoji + skinToneModifier;
         var emojiForRecent = {
             emoji: emojiToCopy,
             name: emoji.name + (skinToneModifier ? " (" + getSkinToneName(skinToneModifier) + ")" : ""),
@@ -270,7 +321,10 @@ Rectangle {
 
     Behavior on height {
         enabled: Config.animDuration > 0
-        NumberAnimation { duration: Config.animDuration; easing.type: Easing.OutQuart }
+        NumberAnimation {
+            duration: Config.animDuration
+            easing.type: Easing.OutQuart
+        }
     }
 
     Process {
@@ -283,11 +337,21 @@ Rectangle {
                     var data = [];
                     for (var emoji in jsonData) {
                         var emojiInfo = jsonData[emoji];
-                        data.push({ emoji: emoji, name: emojiInfo.name, slug: emojiInfo.slug, group: emojiInfo.group, search: emojiInfo.name + " " + emojiInfo.slug, skin_tone_support: emojiInfo.skin_tone_support || false });
+                        data.push({
+                            emoji: emoji,
+                            name: emojiInfo.name,
+                            slug: emojiInfo.slug,
+                            group: emojiInfo.group,
+                            search: emojiInfo.name + " " + emojiInfo.slug,
+                            skin_tone_support: emojiInfo.skin_tone_support || false
+                        });
                     }
                     emojiData = data;
                     loadInitialEmojis();
-                } catch (e) { emojiData = []; loadInitialEmojis(); }
+                } catch (e) {
+                    emojiData = [];
+                    loadInitialEmojis();
+                }
             }
         }
     }
@@ -300,12 +364,17 @@ Rectangle {
                 try {
                     recentEmojis = JSON.parse(text.trim());
                     updateRecentModel();
-                } catch (e) { recentEmojis = []; updateRecentModel(); }
+                } catch (e) {
+                    recentEmojis = [];
+                    updateRecentModel();
+                }
             }
         }
     }
 
-    Process { id: saveProcess }
+    Process {
+        id: saveProcess
+    }
 
     Item {
         id: mainLayout
@@ -332,7 +401,8 @@ Rectangle {
                     if (root.expandedItemIndex >= 0) {
                         let emoji = emojisModel.get(root.expandedItemIndex).emojiData;
                         var skinTone = root.skinTones[root.selectedOptionIndex];
-                        if (skinTone) root.copyEmoji(emoji, skinTone.modifier);
+                        if (skinTone)
+                            root.copyEmoji(emoji, skinTone.modifier);
                     } else if (selectedIndex === 0 && emojisModel.count > 0 && emojisModel.get(0).isRecentContainer) {
                         if (selectedRecentIndex >= 0 && selectedRecentIndex < recentEmojis.length) {
                             root.copyEmoji(recentEmojis[selectedRecentIndex]);
@@ -375,7 +445,8 @@ Rectangle {
                             root.selectedOptionIndex++;
                             root.keyboardNavigation = true;
                         }
-                    } else root.onDownPressed();
+                    } else
+                        root.onDownPressed();
                 }
                 onUpPressed: {
                     if (root.expandedItemIndex >= 0) {
@@ -383,7 +454,8 @@ Rectangle {
                             root.selectedOptionIndex--;
                             root.keyboardNavigation = true;
                         }
-                    } else root.onUpPressed();
+                    } else
+                        root.onUpPressed();
                 }
                 onLeftPressed: root.onLeftPressed()
                 onRightPressed: root.onRightPressed()
@@ -395,14 +467,22 @@ Rectangle {
                 height: 48
                 radius: searchInput.radius
                 variant: {
-                    if (root.clearButtonConfirmState) return "error";
-                    else if (root.clearButtonFocused || clearButtonMouseArea.containsMouse) return "focus";
-                    else return "pane";
+                    if (root.clearButtonConfirmState)
+                        return "error";
+                    else if (root.clearButtonFocused || clearButtonMouseArea.containsMouse)
+                        return "focus";
+                    else
+                        return "pane";
                 }
                 visible: recentEmojis.length > 0 && searchText === ""
                 activeFocusOnTab: true
 
-                Behavior on width { NumberAnimation { duration: Config.animDuration; easing.type: Easing.OutQuart } }
+                Behavior on width {
+                    NumberAnimation {
+                        duration: Config.animDuration
+                        easing.type: Easing.OutQuart
+                    }
+                }
 
                 onActiveFocusChanged: {
                     if (activeFocus) {
@@ -418,8 +498,10 @@ Rectangle {
                     anchors.fill: parent
                     hoverEnabled: true
                     onClicked: {
-                        if (root.clearButtonConfirmState) root.clearRecentEmojis();
-                        else root.clearButtonConfirmState = true;
+                        if (root.clearButtonConfirmState)
+                            root.clearRecentEmojis();
+                        else
+                            root.clearButtonConfirmState = true;
                     }
                 }
                 Row {
@@ -427,28 +509,41 @@ Rectangle {
                     anchors.margins: 8
                     spacing: 8
                     Text {
-                        width: 32; height: parent.height
+                        width: 32
+                        height: parent.height
                         text: root.clearButtonConfirmState ? Icons.xeyes : Icons.broom
-                        font.family: Icons.font; font.pixelSize: 20
+                        font.family: Icons.font
+                        font.pixelSize: 20
                         color: root.clearButtonConfirmState ? clearButton.item : Styling.srItem("overprimary")
-                        horizontalAlignment: Text.AlignHCenter; verticalAlignment: Text.AlignVCenter
+                        horizontalAlignment: Text.AlignHCenter
+                        verticalAlignment: Text.AlignVCenter
                         textFormat: Text.RichText
                     }
                     Text {
                         text: "Clear recent?"
                         height: parent.height
-                        font.family: Config.theme.font; font.weight: Font.Bold; font.pixelSize: Config.theme.fontSize
+                        font.family: Config.theme.font
+                        font.weight: Font.Bold
+                        font.pixelSize: Config.theme.fontSize
                         color: clearButton.item
                         opacity: root.clearButtonConfirmState ? 1.0 : 0.0
-                        visible: opacity > 0; verticalAlignment: Text.AlignVCenter
-                        Behavior on opacity { NumberAnimation { duration: Config.animDuration / 2; easing.type: Easing.OutQuart } }
+                        visible: opacity > 0
+                        verticalAlignment: Text.AlignVCenter
+                        Behavior on opacity {
+                            NumberAnimation {
+                                duration: Config.animDuration / 2
+                                easing.type: Easing.OutQuart
+                            }
+                        }
                     }
                 }
 
                 Keys.onPressed: event => {
                     if (event.key === Qt.Key_Return || event.key === Qt.Key_Enter) {
-                        if (root.clearButtonConfirmState) root.clearRecentEmojis();
-                        else root.clearButtonConfirmState = true;
+                        if (root.clearButtonConfirmState)
+                            root.clearRecentEmojis();
+                        else
+                            root.clearButtonConfirmState = true;
                         event.accepted = true;
                     } else if (event.key === Qt.Key_Escape) {
                         root.resetClearButton();
@@ -479,11 +574,15 @@ Rectangle {
 
             Behavior on contentY {
                 enabled: Config.animDuration > 0 && emojiList.enableScrollAnimation && !emojiList.moving
-                NumberAnimation { duration: Config.animDuration / 2; easing.type: Easing.OutCubic }
+                NumberAnimation {
+                    duration: Config.animDuration / 2
+                    easing.type: Easing.OutCubic
+                }
             }
 
             onCurrentIndexChanged: {
-                if (currentIndex !== root.selectedIndex) root.selectedIndex = currentIndex;
+                if (currentIndex !== root.selectedIndex)
+                    root.selectedIndex = currentIndex;
                 if (currentIndex >= 0) {
                     var itemY = 0;
                     for (var i = 0; i < currentIndex && i < emojisModel.count; i++) {
@@ -501,8 +600,10 @@ Rectangle {
                             currentItemHeight = 48 + 4 + (36 * Math.min(3, root.skinTones.length)) + 8;
                         }
                     }
-                    if (itemY < emojiList.contentY) emojiList.contentY = itemY;
-                    else if (itemY + currentItemHeight > emojiList.contentY + emojiList.height) emojiList.contentY = itemY + currentItemHeight - emojiList.height;
+                    if (itemY < emojiList.contentY)
+                        emojiList.contentY = itemY;
+                    else if (itemY + currentItemHeight > emojiList.contentY + emojiList.height)
+                        emojiList.contentY = itemY + currentItemHeight - emojiList.height;
                 }
             }
 
@@ -513,7 +614,8 @@ Rectangle {
                 required property int index
                 width: emojiList.width
                 height: {
-                    if (isRecentContainer) return 48;
+                    if (isRecentContainer)
+                        return 48;
                     if (index === root.expandedItemIndex && emojiData.skin_tone_support) {
                         return 48 + 4 + (36 * Math.min(3, root.skinTones.length)) + 8;
                     }
@@ -541,7 +643,7 @@ Rectangle {
                             currentIndex: root.selectedRecentIndex
                             clip: true
                             boundsBehavior: Flickable.StopAtBounds
-                            
+
                             // Drag support
                             interactive: true
 
@@ -554,7 +656,7 @@ Rectangle {
                                     easing.type: Easing.OutCubic
                                 }
                             }
-                            
+
                             // Wheel support (Shift+Scroll)
                             MouseArea {
                                 anchors.fill: parent
@@ -599,8 +701,10 @@ Rectangle {
                             }
 
                             delegate: Rectangle {
-                                width: 56; height: 48; color: "transparent"
-                                
+                                width: 56
+                                height: 48
+                                color: "transparent"
+
                                 Text {
                                     anchors.centerIn: parent
                                     text: model.emojiData.emoji
@@ -609,8 +713,12 @@ Rectangle {
                                 }
 
                                 MouseArea {
-                                    anchors.fill: parent; hoverEnabled: true
-                                    onEntered: { root.selectedIndex = delegateRoot.index; root.selectedRecentIndex = model.index; }
+                                    anchors.fill: parent
+                                    hoverEnabled: true
+                                    onEntered: {
+                                        root.selectedIndex = delegateRoot.index;
+                                        root.selectedRecentIndex = model.index;
+                                    }
                                     onClicked: root.copyEmoji(model.emojiData)
                                 }
                             }
@@ -623,61 +731,115 @@ Rectangle {
                     Item {
                         anchors.fill: parent
                         property bool isSelected: root.selectedIndex === index
-                        
+
                         MouseArea {
-                            anchors.fill: parent; hoverEnabled: true
-                            onEntered: { root.selectedIndex = index; root.selectedRecentIndex = -1; }
+                            anchors.fill: parent
+                            hoverEnabled: true
+                            onEntered: {
+                                root.selectedIndex = index;
+                                root.selectedRecentIndex = -1;
+                            }
                             onClicked: {
                                 if (emojiData.skin_tone_support) {
-                                    if (root.expandedItemIndex === index) root.expandedItemIndex = -1;
-                                    else { root.expandedItemIndex = index; root.selectedOptionIndex = 0; }
-                                } else root.copyEmoji(emojiData);
+                                    if (root.expandedItemIndex === index)
+                                        root.expandedItemIndex = -1;
+                                    else {
+                                        root.expandedItemIndex = index;
+                                        root.selectedOptionIndex = 0;
+                                    }
+                                } else
+                                    root.copyEmoji(emojiData);
                             }
                         }
-                        
+
                         Row {
-                            anchors.fill: parent; anchors.margins: 8; spacing: 8
+                            anchors.fill: parent
+                            anchors.margins: 8
+                            spacing: 8
                             StyledRect {
-                                id: iconBg; width: 32; height: 32; radius: Styling.radius(-4)
+                                id: iconBg
+                                width: 32
+                                height: 32
+                                radius: Styling.radius(-4)
                                 variant: isSelected && root.expandedItemIndex !== index ? "overprimary" : "common"
-                                Text { anchors.centerIn: parent; text: emojiData.emoji; font.pixelSize: 24; color: iconBg.item }
+                                Text {
+                                    anchors.centerIn: parent
+                                    text: emojiData.emoji
+                                    font.pixelSize: 24
+                                    color: iconBg.item
+                                }
                             }
                             Text {
-                                width: parent.width - 40; height: parent.height
-                                text: emojiData.search; color: isSelected ? (root.expandedItemIndex === index ? Colors.overSurface : Styling.srItem("primary")) : Colors.overSurface
-                                font.family: Config.theme.font; font.weight: Font.Bold; font.pixelSize: Config.theme.fontSize
-                                elide: Text.ElideRight; verticalAlignment: Text.AlignVCenter
+                                width: parent.width - 40
+                                height: parent.height
+                                text: emojiData.search
+                                color: isSelected ? (root.expandedItemIndex === index ? Colors.overSurface : Styling.srItem("primary")) : Colors.overSurface
+                                font.family: Config.theme.font
+                                font.weight: Font.Bold
+                                font.pixelSize: Config.theme.fontSize
+                                elide: Text.ElideRight
+                                verticalAlignment: Text.AlignVCenter
                             }
                         }
 
                         RowLayout {
-                            anchors.left: parent.left; anchors.right: parent.right; anchors.bottom: parent.bottom
-                            anchors.margins: 8; anchors.bottomMargin: 8; spacing: 4
+                            anchors.left: parent.left
+                            anchors.right: parent.right
+                            anchors.bottom: parent.bottom
+                            anchors.margins: 8
+                            anchors.bottomMargin: 8
+                            spacing: 4
                             visible: index === root.expandedItemIndex && emojiData.skin_tone_support
                             opacity: visible ? 1 : 0
-                            Behavior on opacity { NumberAnimation { duration: Config.animDuration; easing.type: Easing.OutQuart } }
+                            Behavior on opacity {
+                                NumberAnimation {
+                                    duration: Config.animDuration
+                                    easing.type: Easing.OutQuart
+                                }
+                            }
 
                             ClippingRectangle {
-                                Layout.fillWidth: true; Layout.preferredHeight: 36 * Math.min(3, root.skinTones.length)
-                                color: Colors.background; radius: Styling.radius(0)
+                                Layout.fillWidth: true
+                                Layout.preferredHeight: 36 * Math.min(3, root.skinTones.length)
+                                color: Colors.background
+                                radius: Styling.radius(0)
                                 ListView {
-                                    id: skinToneList; anchors.fill: parent; clip: true; model: root.skinTones
+                                    id: skinToneList
+                                    anchors.fill: parent
+                                    clip: true
+                                    model: root.skinTones
                                     currentIndex: root.selectedOptionIndex
-                                    highlight: StyledRect { variant: "primary"; radius: Styling.radius(0); z: -1 }
+                                    highlight: StyledRect {
+                                        variant: "primary"
+                                        radius: Styling.radius(0)
+                                        z: -1
+                                    }
                                     delegate: Item {
-                                        width: skinToneList.width; height: 36
+                                        width: skinToneList.width
+                                        height: 36
                                         RowLayout {
-                                            anchors.fill: parent; anchors.margins: 8; spacing: 8
-                                            Text { text: emojiData.emoji + modelData.modifier; font.pixelSize: 20 }
+                                            anchors.fill: parent
+                                            anchors.margins: 8
+                                            spacing: 8
                                             Text {
-                                                Layout.fillWidth: true; text: modelData.name; font.family: Config.theme.font
+                                                text: emojiData.emoji + modelData.modifier
+                                                font.pixelSize: 20
+                                            }
+                                            Text {
+                                                Layout.fillWidth: true
+                                                text: modelData.name
+                                                font.family: Config.theme.font
                                                 font.pixelSize: Config.theme.fontSize
                                                 color: skinToneList.currentIndex === index ? Styling.srItem("primary") : Colors.overSurface
                                             }
                                         }
                                         MouseArea {
-                                            anchors.fill: parent; hoverEnabled: true
-                                            onEntered: { skinToneList.currentIndex = index; root.selectedOptionIndex = index; }
+                                            anchors.fill: parent
+                                            hoverEnabled: true
+                                            onEntered: {
+                                                skinToneList.currentIndex = index;
+                                                root.selectedOptionIndex = index;
+                                            }
                                             onClicked: root.copyEmoji(emojiData, modelData.modifier)
                                         }
                                     }
@@ -703,13 +865,16 @@ Rectangle {
                         }
                         yPos += h;
                     }
-                    if (root.isAtRecent) yPos += 4;
+                    if (root.isAtRecent)
+                        yPos += 4;
                     return yPos;
                 }
                 height: {
-                    if (emojiList.currentIndex === -1) return 0;
+                    if (emojiList.currentIndex === -1)
+                        return 0;
                     var item = emojisModel.get(emojiList.currentIndex);
-                    if (item && item.isRecentContainer) return 40;
+                    if (item && item.isRecentContainer)
+                        return 40;
                     if (item && item.emojiData && item.emojiData.skin_tone_support && emojiList.currentIndex === root.expandedItemIndex) {
                         return 48 + 4 + (36 * Math.min(3, root.skinTones.length)) + 8;
                     }
@@ -718,11 +883,29 @@ Rectangle {
 
                 Behavior on x {
                     enabled: Config.animDuration > 0 && !emojiList.moving
-                    NumberAnimation { duration: Config.animDuration / 2; easing.type: Easing.OutCubic }
+                    NumberAnimation {
+                        duration: Config.animDuration / 2
+                        easing.type: Easing.OutCubic
+                    }
                 }
-                Behavior on y { NumberAnimation { duration: Config.animDuration / 2; easing.type: Easing.OutCubic } }
-                Behavior on width { NumberAnimation { duration: Config.animDuration / 2; easing.type: Easing.OutCubic } }
-                Behavior on height { NumberAnimation { duration: Config.animDuration; easing.type: Easing.OutQuart } }
+                Behavior on y {
+                    NumberAnimation {
+                        duration: Config.animDuration / 2
+                        easing.type: Easing.OutCubic
+                    }
+                }
+                Behavior on width {
+                    NumberAnimation {
+                        duration: Config.animDuration / 2
+                        easing.type: Easing.OutCubic
+                    }
+                }
+                Behavior on height {
+                    NumberAnimation {
+                        duration: Config.animDuration
+                        easing.type: Easing.OutQuart
+                    }
+                }
 
                 StyledRect {
                     anchors.fill: parent
@@ -742,7 +925,8 @@ Rectangle {
     }
 
     MouseArea {
-        anchors.fill: parent; z: -1
+        anchors.fill: parent
+        z: -1
         onClicked: focusSearchInput()
     }
 }

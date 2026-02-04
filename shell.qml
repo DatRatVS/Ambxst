@@ -1,7 +1,7 @@
 //@ pragma UseQApplication
-//@ pragma ShellId Ambxst
-//@ pragma DataDir $BASE/Ambxst
-//@ pragma StateDir $BASE/Ambxst
+//@ pragma ShellId ambxst
+//@ pragma DataDir $BASE/ambxst
+//@ pragma StateDir $BASE/ambxst
 
 import QtQuick
 import Quickshell
@@ -82,7 +82,7 @@ ShellRoot {
             // Reservation Windows for Exclusive Zones
             ReservationWindows {
                 screen: screenShellContainer.modelData
-                
+
                 // Bar status for reservations
                 barEnabled: {
                     const list = Config.bar.screenList;
@@ -97,7 +97,7 @@ ShellRoot {
                 dockEnabled: {
                     if (!(Config.dock?.enabled ?? false) || (Config.dock?.theme ?? "default") === "integrated")
                         return false;
-                    
+
                     const list = Config.dock?.screenList ?? [];
                     if (!list || list.length === 0)
                         return true;
@@ -106,7 +106,7 @@ ShellRoot {
                 dockPosition: unifiedPanel.dockPosition
                 dockPinned: unifiedPanel.dockPinned
                 containBar: unifiedPanel.containBar
-                
+
                 frameEnabled: Config.bar?.frameEnabled ?? false
                 frameThickness: Config.bar?.frameThickness ?? 6
             }
@@ -158,9 +158,8 @@ ShellRoot {
         id: sessionLock
         locked: GlobalStates.lockscreenVisible
 
-        LockScreen {
-            // WlSessionLockSurface creates automatically for each screen
-        }
+        // WlSessionLockSurface creates automatically for each screen
+        LockScreen {}
     }
 
     HyprlandConfig {
@@ -199,13 +198,12 @@ ShellRoot {
         }
     }
 
-
     // Screen Record Tool
     Loader {
         id: screenRecordLoader
         active: SuspendManager.wakeReady
         source: "modules/tools/ScreenrecordTool.qml"
-        
+
         Connections {
             target: GlobalStates
             function onScreenRecordToolVisibleChanged() {
@@ -218,7 +216,7 @@ ShellRoot {
                 }
             }
         }
-        
+
         Connections {
             target: screenRecordLoader.item
             ignoreUnknownSignals: true
@@ -248,23 +246,23 @@ ShellRoot {
     Connections {
         target: ClipboardService
         function onListCompleted() {
-            // Service initialized and ready
+        // Service initialized and ready
         }
     }
 
     // Force initialization of control services at startup
     QtObject {
         id: serviceInitializer
-        
+
         Component.onCompleted: {
             // Reference the services to force their creation
-            let _ = NightLightService.active
-            _ = GameModeService.toggled
-            _ = CaffeineService.inhibit
-            _ = WeatherService.dataAvailable
-            _ = SystemResources.cpuUsage
-            _ = IdleService.lockCmd // Force init
-            _ = GlobalShortcuts.appId // Force init
+            let _ = NightLightService.active;
+            _ = GameModeService.toggled;
+            _ = CaffeineService.inhibit;
+            _ = WeatherService.dataAvailable;
+            _ = SystemResources.cpuUsage;
+            _ = IdleService.lockCmd; // Force init
+            _ = GlobalShortcuts.appId; // Force init
         }
     }
 }

@@ -16,6 +16,12 @@ StyledRect {
     
     property int expandedPanel: -1 // -1: none, 0: wifi, 1: bluetooth
     
+    onVisibleChanged: {
+        if (!visible) {
+            root.expandedPanel = -1;
+        }
+    }
+    
     Behavior on implicitHeight {
         enabled: Config.animDuration > 0
         NumberAnimation {

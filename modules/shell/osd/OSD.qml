@@ -14,30 +14,30 @@ PanelWindow {
 
     property ShellScreen targetScreen
     screen: targetScreen
-    
+
     WlrLayershell.layer: WlrLayer.Overlay
-    WlrLayershell.namespace: "osd"
+    WlrLayershell.namespace: "ambxst:osd"
     WlrLayershell.keyboardFocus: WlrKeyboardFocus.None
     exclusionMode: ExclusionMode.Ignore
-    
+
     anchors.bottom: true
     anchors.left: true
     anchors.right: true
-    
+
     WlrLayershell.margins.bottom: 100
-    
+
     color: "transparent"
-    
+
     visible: GlobalStates.osdVisible
-    
+
     // Internal state for responsiveness
     property real osdValue: 0
     property bool osdMuted: false
-    
+
     // Centering wrapper
     Item {
         anchors.fill: parent
-        
+
         StyledRect {
             id: osdRect
             variant: "popup"
@@ -46,7 +46,7 @@ PanelWindow {
             implicitWidth: 220
             implicitHeight: 52
             radius: Styling.radius(16)
-            
+
             RowLayout {
                 anchors.fill: parent
                 anchors.leftMargin: 12
@@ -76,12 +76,18 @@ PanelWindow {
 
                     Behavior on rotation {
                         enabled: Config.animDuration > 0
-                        NumberAnimation { duration: Config.animDuration; easing.type: Easing.OutQuart }
+                        NumberAnimation {
+                            duration: Config.animDuration
+                            easing.type: Easing.OutQuart
+                        }
                     }
 
                     Behavior on scale {
                         enabled: Config.animDuration > 0
-                        NumberAnimation { duration: Config.animDuration; easing.type: Easing.OutQuart }
+                        NumberAnimation {
+                            duration: Config.animDuration
+                            easing.type: Easing.OutQuart
+                        }
                     }
                 }
 
@@ -93,12 +99,15 @@ PanelWindow {
                     RowLayout {
                         Layout.fillWidth: true
                         spacing: 0
-                        
+
                         Text {
                             text: {
-                                if (GlobalStates.osdIndicator === "volume") return "Volume";
-                                if (GlobalStates.osdIndicator === "mic") return "Microphone";
-                                if (GlobalStates.osdIndicator === "brightness") return "Brightness";
+                                if (GlobalStates.osdIndicator === "volume")
+                                    return "Volume";
+                                if (GlobalStates.osdIndicator === "mic")
+                                    return "Microphone";
+                                if (GlobalStates.osdIndicator === "brightness")
+                                    return "Brightness";
                                 return "";
                             }
                             font.family: "Roboto Condensed"
@@ -107,8 +116,10 @@ PanelWindow {
                             color: Colors.overBackground
                             Layout.alignment: Qt.AlignBottom
                         }
-                        
-                        Item { Layout.fillWidth: true }
+
+                        Item {
+                            Layout.fillWidth: true
+                        }
 
                         Text {
                             text: Math.round(root.osdValue * 100)
@@ -151,7 +162,7 @@ PanelWindow {
         interval: 2500
         onTriggered: GlobalStates.osdVisible = false
     }
-    
+
     Connections {
         target: GlobalStates
         function onOsdVisibleChanged() {

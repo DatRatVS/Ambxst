@@ -29,21 +29,21 @@ Item {
     readonly property int borderWidth: borderData[1]
 
     // Force update when any state that affects reservation changes
-    onBarEnabledChanged: updateAllZones();
-    onBarPositionChanged: updateAllZones();
-    onBarPinnedChanged: updateAllZones();
-    onBarSizeChanged: updateAllZones();
-    onBarOuterMarginChanged: updateAllZones();
-    onContainBarChanged: updateAllZones();
+    onBarEnabledChanged: updateAllZones()
+    onBarPositionChanged: updateAllZones()
+    onBarPinnedChanged: updateAllZones()
+    onBarSizeChanged: updateAllZones()
+    onBarOuterMarginChanged: updateAllZones()
+    onContainBarChanged: updateAllZones()
 
-    onDockEnabledChanged: updateAllZones();
-    onDockPositionChanged: updateAllZones();
-    onDockPinnedChanged: updateAllZones();
-    onDockHeightChanged: updateAllZones();
+    onDockEnabledChanged: updateAllZones()
+    onDockPositionChanged: updateAllZones()
+    onDockPinnedChanged: updateAllZones()
+    onDockHeightChanged: updateAllZones()
 
-    onFrameEnabledChanged: updateAllZones();
-    onFrameThicknessChanged: updateAllZones();
-    onBorderWidthChanged: updateAllZones();
+    onFrameEnabledChanged: updateAllZones()
+    onFrameThicknessChanged: updateAllZones()
+    onBorderWidthChanged: updateAllZones()
 
     Connections {
         target: Config
@@ -55,8 +55,9 @@ Item {
     readonly property int actualFrameSize: frameEnabled ? frameThickness : 0
 
     function getExtraZone(side) {
-        if (!Config.barReady) return 0;
-        
+        if (!Config.barReady)
+            return 0;
+
         // Base zone is frame + border (static area)
         // This is the area that remains even if panels are hidden, IF frame is enabled.
         let zone = actualFrameSize > 0 ? actualFrameSize + borderWidth : 0;
@@ -64,10 +65,11 @@ Item {
         // Bar zone - only reserve if pinned (static)
         if (barEnabled && barPosition === side && barPinned) {
             // If we don't have a frame, we still might have a border if the bar is present
-            if (zone === 0) zone = borderWidth;
-            
+            if (zone === 0)
+                zone = borderWidth;
+
             zone += barSize + barOuterMargin;
-            
+
             // Add extra thickness if containing bar (only if frame is actually enabled)
             if (containBar && frameEnabled) {
                 // zone already includes (actualFrameSize + borderWidth) from the start.
@@ -79,13 +81,14 @@ Item {
 
         // Dock zone - only reserve if pinned (static)
         if (dockEnabled && dockPosition === side && dockPinned) {
-            if (zone === 0) zone = borderWidth;
+            if (zone === 0)
+                zone = borderWidth;
             zone += dockHeight;
         }
 
         return zone;
     }
-    
+
     function getExclusionMode(side) {
         return getExtraZone(side) > 0 ? ExclusionMode.Normal : ExclusionMode.Ignore;
     }
@@ -95,7 +98,7 @@ Item {
         id: updateTimer
         interval: 10
         repeat: false
-        onTriggered: performUpdate();
+        onTriggered: performUpdate()
     }
 
     function updateAllZones() {
@@ -114,15 +117,23 @@ Item {
         const newRightMode = getExclusionMode("right");
 
         // Apply changes only if they differ from current state
-        if (topWindow.exclusiveZone !== newTop) topWindow.exclusiveZone = newTop;
-        if (bottomWindow.exclusiveZone !== newBottom) bottomWindow.exclusiveZone = newBottom;
-        if (leftWindow.exclusiveZone !== newLeft) leftWindow.exclusiveZone = newLeft;
-        if (rightWindow.exclusiveZone !== newRight) rightWindow.exclusiveZone = newRight;
+        if (topWindow.exclusiveZone !== newTop)
+            topWindow.exclusiveZone = newTop;
+        if (bottomWindow.exclusiveZone !== newBottom)
+            bottomWindow.exclusiveZone = newBottom;
+        if (leftWindow.exclusiveZone !== newLeft)
+            leftWindow.exclusiveZone = newLeft;
+        if (rightWindow.exclusiveZone !== newRight)
+            rightWindow.exclusiveZone = newRight;
 
-        if (topWindow.exclusionMode !== newTopMode) topWindow.exclusionMode = newTopMode;
-        if (bottomWindow.exclusionMode !== newBottomMode) bottomWindow.exclusionMode = newBottomMode;
-        if (leftWindow.exclusionMode !== newLeftMode) leftWindow.exclusionMode = newLeftMode;
-        if (rightWindow.exclusionMode !== newRightMode) rightWindow.exclusionMode = newRightMode;
+        if (topWindow.exclusionMode !== newTopMode)
+            topWindow.exclusionMode = newTopMode;
+        if (bottomWindow.exclusionMode !== newBottomMode)
+            bottomWindow.exclusionMode = newBottomMode;
+        if (leftWindow.exclusionMode !== newLeftMode)
+            leftWindow.exclusionMode = newLeftMode;
+        if (rightWindow.exclusionMode !== newRightMode)
+            rightWindow.exclusionMode = newRightMode;
 
         console.log(`ReservationWindows [${screen.name}]: Zones updated - T:${newTop} B:${newBottom} L:${newLeft} R:${newRight}`);
     }
@@ -140,13 +151,19 @@ Item {
         visible: true
         implicitHeight: 1
         color: "transparent"
-        anchors { left: true; right: true; top: true }
+        anchors {
+            left: true
+            right: true
+            top: true
+        }
         WlrLayershell.layer: WlrLayer.Top
         WlrLayershell.keyboardFocus: WlrKeyboardFocus.None
-        WlrLayershell.namespace: "quickshell:reservation:top"
+        WlrLayershell.namespace: "ambxst:reservation:top"
         exclusionMode: root.getExclusionMode("top")
         exclusiveZone: root.getExtraZone("top")
-        mask: Region { item: noInputRegion }
+        mask: Region {
+            item: noInputRegion
+        }
     }
 
     PanelWindow {
@@ -155,13 +172,19 @@ Item {
         visible: true
         implicitHeight: 1
         color: "transparent"
-        anchors { left: true; right: true; bottom: true }
+        anchors {
+            left: true
+            right: true
+            bottom: true
+        }
         WlrLayershell.layer: WlrLayer.Top
         WlrLayershell.keyboardFocus: WlrKeyboardFocus.None
-        WlrLayershell.namespace: "quickshell:reservation:bottom"
+        WlrLayershell.namespace: "ambxst:reservation:bottom"
         exclusionMode: root.getExclusionMode("bottom")
         exclusiveZone: root.getExtraZone("bottom")
-        mask: Region { item: noInputRegion }
+        mask: Region {
+            item: noInputRegion
+        }
     }
 
     PanelWindow {
@@ -170,13 +193,19 @@ Item {
         visible: true
         implicitWidth: 1
         color: "transparent"
-        anchors { top: true; bottom: true; left: true }
+        anchors {
+            top: true
+            bottom: true
+            left: true
+        }
         WlrLayershell.layer: WlrLayer.Top
         WlrLayershell.keyboardFocus: WlrKeyboardFocus.None
-        WlrLayershell.namespace: "quickshell:reservation:left"
+        WlrLayershell.namespace: "ambxst:reservation:left"
         exclusionMode: root.getExclusionMode("left")
         exclusiveZone: root.getExtraZone("left")
-        mask: Region { item: noInputRegion }
+        mask: Region {
+            item: noInputRegion
+        }
     }
 
     PanelWindow {
@@ -185,12 +214,18 @@ Item {
         visible: true
         implicitWidth: 1
         color: "transparent"
-        anchors { top: true; bottom: true; right: true }
+        anchors {
+            top: true
+            bottom: true
+            right: true
+        }
         WlrLayershell.layer: WlrLayer.Top
         WlrLayershell.keyboardFocus: WlrKeyboardFocus.None
-        WlrLayershell.namespace: "quickshell:reservation:right"
+        WlrLayershell.namespace: "ambxst:reservation:right"
         exclusionMode: root.getExclusionMode("right")
         exclusiveZone: root.getExtraZone("right")
-        mask: Region { item: noInputRegion }
+        mask: Region {
+            item: noInputRegion
+        }
     }
 }

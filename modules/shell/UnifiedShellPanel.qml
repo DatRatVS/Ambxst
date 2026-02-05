@@ -29,6 +29,7 @@ PanelWindow {
     color: "transparent"
 
     WlrLayershell.keyboardFocus: WlrKeyboardFocus.None
+    WlrLayershell.namespace: "ambxst"
     WlrLayershell.layer: WlrLayer.Overlay
     exclusionMode: ExclusionMode.Ignore
     

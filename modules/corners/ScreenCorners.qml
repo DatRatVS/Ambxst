@@ -11,15 +11,16 @@ PanelWindow {
     // Fullscreen detection
     readonly property bool activeWindowFullscreen: {
         const monitor = Hyprland.monitorFor(screen);
-        if (!monitor) return false;
-        
+        if (!monitor)
+            return false;
+
         const activeWorkspaceId = monitor.activeWorkspace.id;
         const monId = monitor.id;
 
         // Check active toplevel first (fast path)
         const toplevel = ToplevelManager.activeToplevel;
         if (toplevel && toplevel.fullscreen && Hyprland.focusedMonitor.id === monId) {
-             return true;
+            return true;
         }
 
         // Check all windows on this monitor (robust path)
@@ -36,7 +37,7 @@ PanelWindow {
 
     color: "transparent"
     exclusionMode: ExclusionMode.Ignore
-    WlrLayershell.namespace: "quickshell:screenCorners"
+    WlrLayershell.namespace: "ambxst:screenCorners"
     WlrLayershell.layer: WlrLayer.Overlay
     mask: Region {
         item: null

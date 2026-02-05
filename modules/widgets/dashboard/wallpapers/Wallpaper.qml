@@ -18,7 +18,7 @@ PanelWindow {
     }
 
     WlrLayershell.layer: WlrLayer.Background
-    WlrLayershell.namespace: "quickshell:wallpaper"
+    WlrLayershell.namespace: "ambxst:wallpaper"
     exclusionMode: ExclusionMode.Ignore
 
     color: "transparent"

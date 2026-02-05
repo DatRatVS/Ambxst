@@ -14,15 +14,16 @@ Item {
     readonly property alias baseThickness: frameContent.thickness
     readonly property bool hasFullscreenWindow: {
         const monitor = Hyprland.monitorFor(targetScreen);
-        if (!monitor) return false;
-        
+        if (!monitor)
+            return false;
+
         const activeWorkspaceId = monitor.activeWorkspace.id;
         const monId = monitor.id;
 
         // Check active toplevel first (fast path)
         const toplevel = ToplevelManager.activeToplevel;
         if (toplevel && toplevel.fullscreen && Hyprland.focusedMonitor.id === monId) {
-             return true;
+            return true;
         }
 
         // Check all windows on this monitor (robust path)
@@ -67,13 +68,15 @@ Item {
         }
         WlrLayershell.layer: WlrLayer.Top
         WlrLayershell.keyboardFocus: WlrKeyboardFocus.None
-        WlrLayershell.namespace: "quickshell:screenFrame:top"
-        
+        WlrLayershell.namespace: "ambxst:screenFrame:top"
+
         // Always Normal mode, control zone size directly
         exclusionMode: (root.containBar && root.barPos === "top" && !root.hasFullscreenWindow) ? ExclusionMode.Normal : ExclusionMode.Ignore
         exclusiveZone: (root.containBar && root.barPos === "top" && !root.hasFullscreenWindow) ? root.topThickness : 0
 
-        mask: Region { item: noInputRegion }
+        mask: Region {
+            item: noInputRegion
+        }
     }
 
     PanelWindow {
@@ -90,12 +93,14 @@ Item {
         }
         WlrLayershell.layer: WlrLayer.Top
         WlrLayershell.keyboardFocus: WlrKeyboardFocus.None
-        WlrLayershell.namespace: "quickshell:screenFrame:bottom"
-        
+        WlrLayershell.namespace: "ambxst:screenFrame:bottom"
+
         exclusionMode: (root.containBar && root.barPos === "bottom" && !root.hasFullscreenWindow) ? ExclusionMode.Normal : ExclusionMode.Ignore
         exclusiveZone: (root.containBar && root.barPos === "bottom" && !root.hasFullscreenWindow) ? root.bottomThickness : 0
 
-        mask: Region { item: noInputRegion }
+        mask: Region {
+            item: noInputRegion
+        }
     }
 
     PanelWindow {
@@ -112,12 +117,14 @@ Item {
         }
         WlrLayershell.layer: WlrLayer.Top
         WlrLayershell.keyboardFocus: WlrKeyboardFocus.None
-        WlrLayershell.namespace: "quickshell:screenFrame:left"
-        
+        WlrLayershell.namespace: "ambxst:screenFrame:left"
+
         exclusionMode: (root.containBar && root.barPos === "left" && !root.hasFullscreenWindow) ? ExclusionMode.Normal : ExclusionMode.Ignore
         exclusiveZone: (root.containBar && root.barPos === "left" && !root.hasFullscreenWindow) ? root.leftThickness : 0
 
-        mask: Region { item: noInputRegion }
+        mask: Region {
+            item: noInputRegion
+        }
     }
 
     PanelWindow {
@@ -134,12 +141,14 @@ Item {
         }
         WlrLayershell.layer: WlrLayer.Top
         WlrLayershell.keyboardFocus: WlrKeyboardFocus.None
-        WlrLayershell.namespace: "quickshell:screenFrame:right"
-        
+        WlrLayershell.namespace: "ambxst:screenFrame:right"
+
         exclusionMode: (root.containBar && root.barPos === "right" && !root.hasFullscreenWindow) ? ExclusionMode.Normal : ExclusionMode.Ignore
         exclusiveZone: (root.containBar && root.barPos === "right" && !root.hasFullscreenWindow) ? root.rightThickness : 0
 
-        mask: Region { item: noInputRegion }
+        mask: Region {
+            item: noInputRegion
+        }
     }
 
     PanelWindow {
@@ -155,10 +164,12 @@ Item {
         }
         WlrLayershell.layer: WlrLayer.Top
         WlrLayershell.keyboardFocus: WlrKeyboardFocus.None
-        WlrLayershell.namespace: "quickshell:screenFrame:overlay"
+        WlrLayershell.namespace: "ambxst:screenFrame:overlay"
         exclusionMode: ExclusionMode.Ignore
         exclusiveZone: 0
-        mask: Region { item: noInputRegion }
+        mask: Region {
+            item: noInputRegion
+        }
 
         ScreenFrameContent {
             id: frameContent

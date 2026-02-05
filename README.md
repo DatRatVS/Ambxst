@@ -32,6 +32,10 @@ An <i><b>Ax</b>tremely</i> customizable shell.
   <img src="./assets/screenshots/5.png" width="32%" />
   <img src="./assets/screenshots/6.png" width="32%" />
   <img src="./assets/screenshots/7.png" width="32%" />
+
+  <img src="./assets/screenshots/8.png" width="32%" />
+  <img src="./assets/screenshots/9.png" width="32%" />
+  <img src="./assets/screenshots/10.png" width="32%" />
 </div>
 
 ---

@@ -21,6 +21,15 @@ ClippingRectangle {
     property bool animateRadius: true
     property real backgroundOpacity: -1  // -1 means use config value
 
+    // Static mode: caches the rendered content to a texture, reducing GPU work.
+    // Use for StyledRects that don't animate or change frequently.
+    // Automatically disabled during theme changes to allow repaint.
+    property bool cacheContent: false
+    readonly property bool _effectiveCacheEnabled: cacheContent && !_isInvalidating
+
+    // Track when we're invalidating due to theme change
+    property bool _isInvalidating: false
+
     readonly property var variantConfig: Styling.getStyledRectConfig(variant) || {}
 
     readonly property var gradientStops: variantConfig.gradient
@@ -119,6 +128,14 @@ ClippingRectangle {
             // Repaint when cache version changes (theme colors changed)
             onCacheVersionChanged: gradientCanvas.requestPaint()
 
+            // Repaint when gradient stops change (variant changed)
+            Connections {
+                target: root
+                function onGradientStopsChanged() {
+                    gradientCanvas.requestPaint();
+                }
+            }
+
             // Expose the source for shaders
             property alias source: gradientSource
         }
@@ -190,9 +207,28 @@ ClippingRectangle {
         }
     }
 
-    // Shadow effect
-    layer.enabled: enableShadow
-    layer.effect: Shadow {}
+    // Shadow effect and/or content caching
+    // When cacheContent is true, renders to texture once (reduces GPU redraw)
+    // When enableShadow is true, applies shadow effect
+    layer.enabled: enableShadow || _effectiveCacheEnabled
+    layer.effect: enableShadow ? shadowEffect : null
+
+    Component {
+        id: shadowEffect
+        Shadow {}
+    }
+
+    // Temporarily disable cache when theme changes to allow repaint
+    Connections {
+        target: GradientCache
+        function onVersionChanged() {
+            if (root.cacheContent) {
+                root._isInvalidating = true;
+                // Re-enable cache after a frame to capture the new render
+                Qt.callLater(() => { root._isInvalidating = false; });
+            }
+        }
+    }
 
     // Border overlay to avoid ClippingRectangle artifacts
     ClippingRectangle {

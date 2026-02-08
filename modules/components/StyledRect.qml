@@ -55,6 +55,10 @@ ClippingRectangle {
 
     readonly property real rectOpacity: backgroundOpacity >= 0 ? backgroundOpacity : variantConfig.opacity
 
+    // Use cached gradient texture instead of creating one per instance
+    readonly property bool needsGradientTexture: gradientType === "linear" || gradientType === "radial"
+    readonly property var cachedGradientTexture: needsGradientTexture ? GradientCache.getTexture(gradientStops) : null
+
     radius: variantConfig.radius !== undefined ? variantConfig.radius : Styling.radius(0)
     color: (hasSolidColor && gradientType !== "linear" && gradientType !== "radial" && gradientType !== "halftone") ? solidColor : "transparent"
 
@@ -65,111 +69,70 @@ ClippingRectangle {
         }
     }
 
-    // Linear gradient texture generator
-    Canvas {
-        id: linearGradientCanvas
-        width: 256
-        height: 32 // Increase height to avoid interpolation artifacts at non-integer scales
-        visible: false
-
-        onPaint: {
-            var ctx = getContext("2d");
-            ctx.clearRect(0, 0, width, height);
-
-            var stops = root.gradientStops;
-            if (!stops || stops.length === 0)
-                return;
-
-            var grad = ctx.createLinearGradient(0, 0, width, 0);
-            for (var i = 0; i < stops.length; i++) {
-                var s = stops[i];
-                grad.addColorStop(s[1], Config.resolveColor(s[0]));
-            }
-
-            ctx.fillStyle = grad;
-            ctx.fillRect(0, 0, width, height);
-        }
-
-        Connections {
-            target: root
-            function onGradientStopsChanged() {
-                linearGradientCanvas.requestPaint();
-            }
-        }
-        Connections {
-            target: Colors
-            function onLoaded() {
-                linearGradientCanvas.requestPaint();
-            }
-        }
-        Component.onCompleted: requestPaint()
-    }
-
-    // Shared gradient texture source
-    ShaderEffectSource {
-        id: gradientTextureSource
-        sourceItem: linearGradientCanvas
-        hideSource: true
-        smooth: true
-        wrapMode: ShaderEffectSource.ClampToEdge
-        visible: false
-    }
-
-    // Linear gradient
-    ShaderEffect {
+    // Linear gradient - uses cached texture
+    Loader {
         anchors.fill: parent
-        opacity: rectOpacity
-        visible: gradientType === "linear"
+        active: root.gradientType === "linear" && root.cachedGradientTexture !== null
 
-        property real angle: gradientAngle
-        property real canvasWidth: width
-        property real canvasHeight: height
-        property var gradTex: gradientTextureSource
+        sourceComponent: ShaderEffect {
+            opacity: root.rectOpacity
 
-        vertexShader: "linear_gradient.vert.qsb"
-        fragmentShader: "linear_gradient.frag.qsb"
+            property real angle: root.gradientAngle
+            property real canvasWidth: width
+            property real canvasHeight: height
+            property var gradTex: root.cachedGradientTexture
+
+            vertexShader: "linear_gradient.vert.qsb"
+            fragmentShader: "linear_gradient.frag.qsb"
+        }
     }
 
-    // Radial gradient
-    ShaderEffect {
+    // Radial gradient - uses cached texture
+    Loader {
         anchors.fill: parent
-        opacity: rectOpacity
-        visible: gradientType === "radial"
+        active: root.gradientType === "radial" && root.cachedGradientTexture !== null
 
-        property real centerX: gradientCenterX
-        property real centerY: gradientCenterY
-        property real canvasWidth: width
-        property real canvasHeight: height
-        property var gradTex: gradientTextureSource
+        sourceComponent: ShaderEffect {
+            opacity: root.rectOpacity
 
-        vertexShader: "radial_gradient.vert.qsb"
-        fragmentShader: "radial_gradient.frag.qsb"
+            property real centerX: root.gradientCenterX
+            property real centerY: root.gradientCenterY
+            property real canvasWidth: width
+            property real canvasHeight: height
+            property var gradTex: root.cachedGradientTexture
+
+            vertexShader: "radial_gradient.vert.qsb"
+            fragmentShader: "radial_gradient.frag.qsb"
+        }
     }
 
-    // Halftone gradient
-    ShaderEffect {
+    // Halftone gradient - no texture needed, purely procedural
+    Loader {
         anchors.fill: parent
-        opacity: rectOpacity
-        visible: gradientType === "halftone"
+        active: root.gradientType === "halftone"
 
-        property real angle: gradientAngle
-        property real dotMinSize: halftoneDotMin
-        property real dotMaxSize: halftoneDotMax
-        property real gradientStart: halftoneStart
-        property real gradientEnd: halftoneEnd
-        property vector4d dotColor: {
-            const c = halftoneDotColor || Qt.rgba(1, 1, 1, 1);
-            return Qt.vector4d(c.r, c.g, c.b, c.a);
-        }
-        property vector4d backgroundColor: {
-            const c = halftoneBackgroundColor || Qt.rgba(0, 0.5, 1, 1);
-            return Qt.vector4d(c.r, c.g, c.b, c.a);
-        }
-        property real canvasWidth: width
-        property real canvasHeight: height
+        sourceComponent: ShaderEffect {
+            opacity: root.rectOpacity
 
-        vertexShader: "halftone.vert.qsb"
-        fragmentShader: "halftone.frag.qsb"
+            property real angle: root.gradientAngle
+            property real dotMinSize: root.halftoneDotMin
+            property real dotMaxSize: root.halftoneDotMax
+            property real gradientStart: root.halftoneStart
+            property real gradientEnd: root.halftoneEnd
+            property vector4d dotColor: {
+                const c = root.halftoneDotColor || Qt.rgba(1, 1, 1, 1);
+                return Qt.vector4d(c.r, c.g, c.b, c.a);
+            }
+            property vector4d backgroundColor: {
+                const c = root.halftoneBackgroundColor || Qt.rgba(0, 0.5, 1, 1);
+                return Qt.vector4d(c.r, c.g, c.b, c.a);
+            }
+            property real canvasWidth: width
+            property real canvasHeight: height
+
+            vertexShader: "halftone.vert.qsb"
+            fragmentShader: "halftone.frag.qsb"
+        }
     }
 
     // Shadow effect

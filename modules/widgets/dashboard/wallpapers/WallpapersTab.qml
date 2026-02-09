@@ -890,13 +890,13 @@ FocusScope {
                             color: Colors.surface
                             radius: Styling.radius(4)
 
-                            // Lazy loader que solo carga cuando el item está visible
-                            Loader {
-                                anchors.fill: parent
-                                sourceComponent: staticImageComponent
-                                property string sourceFile: modelData
-                                active: isInViewport
-                                asynchronous: true
+                                // Lazy loader que solo carga cuando el item está visible
+                                Loader {
+                                    anchors.fill: parent
+                                    sourceComponent: staticImageComponent
+                                    property string sourceFile: modelData
+                                    active: isInViewport && wallpapersTabRoot.visible && GlobalStates.dashboardOpen
+                                    asynchronous: true
 
                                 // Placeholder mientras carga
                                 Rectangle {

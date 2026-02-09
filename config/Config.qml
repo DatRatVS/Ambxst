@@ -38,7 +38,7 @@ Singleton {
 
     property bool pauseAutoSave: false
 
-    // Track initialization of all modules
+    // Module init status
     property bool themeReady: false
     property bool barReady: false
     property bool workspacesReady: false
@@ -57,14 +57,14 @@ Singleton {
 
     property bool initialLoadComplete: themeReady && barReady && workspacesReady && overviewReady && notchReady && hyprlandReady && performanceReady && weatherReady && desktopReady && lockscreenReady && prefixReady && systemReady && dockReady && aiReady
 
-    // Aliases for backward compatibility
+    // Compatibility aliases
     property alias loader: themeLoader
     property alias keybindsLoader: keybindsLoader
 
     // ============================================
     // BATCH INITIALIZATION
     // ============================================
-    // Single process to check environment and all config files at once
+    // Batch config check
     Process {
         id: initConfigs
         running: true
@@ -603,7 +603,7 @@ Singleton {
             property list<var> barColor: [["surface", 0.0]]
             property bool frameEnabled: false
             property int frameThickness: 6
-            // Auto-hide properties
+            // Auto-hide settings
             property bool pinnedOnStartup: true
             property bool hoverToReveal: true
             property int hoverRegionHeight: 8
@@ -1148,9 +1148,7 @@ Singleton {
         }
     }
 
-    // ============================================
-    // PINNED APPS (stored in dataPath for per-user data)
-    // ============================================
+    // Pinned apps (per-user)
     property bool pinnedAppsReady: false
 
     Process {
@@ -1229,9 +1227,7 @@ Singleton {
         }
     }
 
-    // ============================================
-    // KEYBINDS (kept separate as binds.json)
-    // ============================================
+    // Keybinds (binds.json)
     Process {
         id: checkKeybindsFile
         running: true
@@ -1261,13 +1257,13 @@ Singleton {
         }
     }
 
-    // Raw loader to check and repair binds.json
+    // Binds repair loader
     FileView {
         id: keybindsRawLoader
         path: keybindsPath
     }
 
-    // Function to repair missing binds
+    // Repair missing binds
     function repairKeybinds() {
         const raw = keybindsRawLoader.text();
         if (!raw) return;
@@ -1282,7 +1278,7 @@ Singleton {
                 needsUpdate = true;
             }
 
-            // Migration from nested dashboard structure to flat structure
+            // Migrate nested to flat structure
             if (current.ambxst.dashboard && typeof current.ambxst.dashboard === "object" && !current.ambxst.dashboard.modifiers) {
                 console.log("Migrating nested ambxst binds to flat structure...");
                 const nested = current.ambxst.dashboard;
@@ -1396,7 +1392,7 @@ Singleton {
             }
         }
 
-        // Normalize custom binds to new format with keys[], actions[] and compositor
+        // Normalize custom binds
         function normalizeCustomBinds() {
             if (!adapter || !adapter.custom)
                 return;
@@ -1599,7 +1595,7 @@ Singleton {
                     }
                 }
             }
-            // Functions to get defaults
+            // Default getters
             readonly property var defaultAmbxstBinds: {
                 "ambxst": {
                     "launcher": { "modifiers": ["SUPER"], "key": "Super_L", "dispatcher": "exec", "argument": "ambxst run launcher", "flags": "r" },
@@ -1640,7 +1636,7 @@ Singleton {
             }
 
             property list<var> custom: [
-                // Window Management
+                // Window management
                 {
                     "name": "Close Window",
                     "keys": [
@@ -1663,7 +1659,7 @@ Singleton {
                     "enabled": true
                 },
 
-                // Workspace Navigation (SUPER + [0-9])
+                // Workspace navigation
                 {
                     "name": "Workspace 1",
                     "keys": [
@@ -1875,7 +1871,7 @@ Singleton {
                     "enabled": true
                 },
 
-                // Move Window to Workspace (SUPER + SHIFT + [0-9])
+                // Move window to workspace
                 {
                     "name": "Move to Workspace 1",
                     "keys": [
@@ -2087,7 +2083,7 @@ Singleton {
                     "enabled": true
                 },
 
-                // Workspace Navigation (Mouse Scroll & Keyboard)
+                // Workspace scroll/keys
                 {
                     "name": "Previous Occupied Workspace (Scroll)",
                     "keys": [
@@ -2215,7 +2211,7 @@ Singleton {
                     "enabled": true
                 },
 
-                // Window Drag/Resize (Mouse)
+                // Window drag/resize
                 {
                     "name": "Drag Window",
                     "keys": [
@@ -2259,7 +2255,7 @@ Singleton {
                     "enabled": true
                 },
 
-                // Media Player Controls
+                // Media controls
                 {
                     "name": "Play/Pause",
                     "keys": [
@@ -2366,7 +2362,7 @@ Singleton {
                     "enabled": true
                 },
 
-                // Volume Controls
+                // Volume controls
                 {
                     "name": "Volume Up",
                     "keys": [
@@ -2431,7 +2427,7 @@ Singleton {
                     "enabled": true
                 },
 
-                // Brightness Controls
+                // Brightness controls
                 {
                     "name": "Brightness Up",
                     "keys": [
@@ -2475,7 +2471,7 @@ Singleton {
                     "enabled": true
                 },
 
-                // Special Keys
+                // Special keys
                 {
                     "name": "Calculator",
                     "keys": [
@@ -2498,7 +2494,7 @@ Singleton {
                     "enabled": true
                 },
 
-                // Special Workspaces
+                // Special workspaces
                 {
                     "name": "Toggle Special Workspace",
                     "keys": [
@@ -2542,7 +2538,7 @@ Singleton {
                     "enabled": true
                 },
 
-                // Lid Switch Events
+                // Lid switch events
                 {
                     "name": "Lock on Lid Close",
                     "keys": [
@@ -2607,7 +2603,7 @@ Singleton {
                     "enabled": true
                 },
 
-                // Window Focus (Layout-aware)
+                // Window focus
                 {
                     "name": "Focus Up",
                     "keys": [
@@ -2753,7 +2749,7 @@ Singleton {
                     "enabled": true
                 },
 
-                // Window Movement (Layout-aware)
+                // Window movement
                 {
                     "name": "Move Window Left",
                     "keys": [
@@ -2891,7 +2887,7 @@ Singleton {
                     "enabled": true
                 },
 
-                // Window Resize (Layout-aware)
+                // Window resize
                 {
                     "name": "Horizontal Resize +",
                     "keys": [
@@ -3011,7 +3007,7 @@ Singleton {
                     "enabled": true
                 },
 
-                // Scrolling Layout Specific
+                // Scrolling layout
                 {
                     "name": "Promote (Scrolling)",
                     "keys": [
@@ -3126,7 +3122,7 @@ Singleton {
                     "enabled": true
                 },
 
-                // Move Column to Workspace (Scrolling Layout)
+                // Move column to workspace
                 {
                     "name": "Move Column To Workspace 1",
                     "keys": [
@@ -3341,9 +3337,7 @@ Singleton {
         }
     }
 
-    // ============================================
-    // VALIDATION HELPER
-    // ============================================
+    // Validation helper
     function validateModule(name, rawLoader, defaults, onComplete) {
         var raw = rawLoader.text();
         if (!raw) {
@@ -3368,10 +3362,7 @@ Singleton {
         }
     }
 
-    // ============================================
-    // EXPOSED PROPERTIES (backward compatibility)
-    // ============================================
-
+    // Exposed properties
     // Theme configuration
     property QtObject theme: themeLoader.adapter
     property bool oledMode: lightMode ? false : theme.oledMode
@@ -3382,7 +3373,7 @@ Singleton {
     property int animDuration: Services.GameModeService.toggled ? 0 : theme.animDuration
     property bool tintIcons: theme.tintIcons
 
-    // Detect lightMode changes and run Matugen
+    // Handle lightMode changes
     onLightModeChanged: {
         console.log("lightMode changed to:", lightMode);
         if (GlobalStates.wallpaperManager) {
@@ -3412,12 +3403,12 @@ Singleton {
     onNotchPositionChanged: {
         if (!initialLoadComplete || !dockReady) return;
 
-        // If notch moves to bottom
+        // If notch moves bottom
         if (notchPosition === "bottom") {
-            // Check for conflict with Dock (if Dock is bottom)
+            // Conflict with Dock?
             if (dock.position === "bottom") {
                 console.log("Notch moved to bottom, adjusting Dock position...");
-                // Move Dock based on Bar position to avoid overcrowding
+                // Offset Dock to avoid notch
                 if (bar.position === "left") {
                     dock.position = "right";
                 } else {
@@ -3427,11 +3418,9 @@ Singleton {
                 GlobalStates.markShellChanged();
             }
         } 
-        // If notch moves to top
+        // If notch moves top
         else if (notchPosition === "top") {
-            // Optional: Move Dock back to bottom if it was displaced?
-            // User implied "change with this". A safe default is restoring to bottom 
-            // if it's currently on the sides, assuming Bottom is the preferred Dock state.
+            // Restore Dock if displaced
             if (dock.position === "left" || dock.position === "right") {
                 console.log("Notch moved to top, restoring Dock to bottom...");
                 dock.position = "bottom";
@@ -3476,7 +3465,7 @@ Singleton {
     // AI configuration
     property QtObject ai: aiLoader.adapter
 
-    // Save functions for modules
+    // Module save functions
     function saveBar() {
         barLoader.writeAdapter();
     }
@@ -3520,7 +3509,7 @@ Singleton {
         aiLoader.writeAdapter();
     }
 
-    // Helper functions for color handling (HEX or named colors)
+    // Color helpers
     function isHexColor(colorValue) {
         if (!colorValue || typeof colorValue !== 'string')
             return false;
@@ -3529,13 +3518,13 @@ Singleton {
     }
 
     function resolveColor(colorValue) {
-        if (!colorValue) return "transparent"; // Fallback safe color
+        if (!colorValue) return "transparent"; // Fallback
         
         if (isHexColor(colorValue)) {
             return colorValue;
         }
         
-        // Check if Colors singleton is ready
+        // Check Colors singleton
         if (typeof Colors === 'undefined' || !Colors) return "transparent";
         
         return Colors[colorValue] || "transparent"; 

@@ -37,10 +37,8 @@ Item {
 
     readonly property string focusedTitle: {
         const client = Hyprland.focusedClient;
-        const monitor = Hyprland.focusedMonitor;
-        if (!client || !monitor || client.workspace.id !== monitor.activeWorkspace.id) {
-            return "";
-        }
+        const activeWs = Hyprland.focusedMonitor?.activeWorkspace?.id;
+        if (!client || client.workspace.id !== activeWs) return "";
         return client.title;
     }
 

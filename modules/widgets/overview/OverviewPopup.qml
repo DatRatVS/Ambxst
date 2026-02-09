@@ -198,14 +198,18 @@ PanelWindow {
                     }
 
                     onTabPressed: {
-                        if (overviewLoader.item) {
+                        if (searchInput.text.length === 0) {
+                            Hyprland.dispatch("workspace r+1");
+                        } else if (overviewLoader.item) {
                             overviewLoader.item.selectNextMatch();
                         }
                     }
 
                     onShiftTabPressed: {
-                        if (overviewLoader.item) {
-                            overviewLoader.item.selectPrevMatch();
+                        if (searchInput.text.length === 0) {
+                            Hyprland.dispatch("workspace r-1");
+                        } else if (overviewLoader.item) {
+                            overviewLoader.item.selectNextMatch();
                         }
                     }
 

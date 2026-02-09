@@ -2,6 +2,7 @@ import QtQuick
 import QtQuick.Layouts
 import QtQuick.Effects
 import Quickshell
+import Quickshell.Io
 import Quickshell.Widgets
 import Quickshell.Hyprland
 import Quickshell.Services.Mpris
@@ -33,11 +34,29 @@ Item {
         return frame ? "file://" + frame : "";
     }
 
-    readonly property string focusedTitle: Hyprland.focusedClient?.title ?? "Ambxst"
+    readonly property string focusedTitle: Hyprland.focusedClient?.title ?? ""
+
+    property string hostname: ""
+
+    Process {
+        id: hostnameReader
+        running: true
+        command: ["hostname"]
+
+        stdout: StdioCollector {
+            waitForEnd: true
+            onStreamFinished: {
+                const host = text.trim();
+                if (host) {
+                    compactPlayer.hostname = host.charAt(0).toUpperCase() + host.slice(1);
+                }
+            }
+        }
+    }
 
     readonly property string userHostText: {
         const user = Quickshell.env("USER") || "user";
-        const host = Quickshell.env("HOSTNAME") || Quickshell.env("HOST") || "linux";
+        const host = hostname || "Linux";
         return user + "@" + host;
     }
 
@@ -45,8 +64,14 @@ Item {
         const displayType = Config.notch.noMediaDisplay ?? "userHost";
         if (displayType === "userHost") return userHostText;
         if (displayType === "compositor") return "Hyprland";
-        if (displayType === "custom") return Config.notch.customText ?? "Ambxst";
-        return focusedTitle;
+        return Config.notch.customText ?? "Ambxst";
+    }
+
+    readonly property string displayedTitle: {
+        if (player) {
+            return (player.trackArtist ? player.trackArtist + " - " : "") + (player.trackTitle || "Unknown");
+        }
+        return focusedTitle || noMediaText;
     }
 
     function getPlayerIcon(player) {
@@ -96,15 +121,24 @@ Item {
             id: mediaTitle
             anchors.centerIn: parent
             width: parent.width - 32
-            text: compactPlayer.player ? ((compactPlayer.player.trackArtist ? compactPlayer.player.trackArtist + " - " : "") + (compactPlayer.player.trackTitle || "Unknown")) : (Hyprland.focusedClient ? compactPlayer.focusedTitle : compactPlayer.noMediaText)
+            text: compactPlayer.displayedTitle
             font.family: Config.theme.font
             font.pixelSize: Styling.fontSize(0)
             font.bold: true
             color: Colors.overBackground
             elide: Text.ElideRight
-            visible: !compactPlayer.notchHovered
+            visible: opacity > 0
+            opacity: compactPlayer.notchHovered ? 0.0 : 1.0
             horizontalAlignment: Text.AlignHCenter
             z: 5
+
+            Behavior on opacity {
+                enabled: Config.animDuration > 0
+                NumberAnimation {
+                    duration: Config.animDuration
+                    easing.type: Easing.OutQuart
+                }
+            }
         }
 
         ClippingRectangle {
@@ -162,6 +196,15 @@ Item {
             spacing: (compactPlayer.player !== null && compactPlayer.notchHovered) ? 4 : 0
             layer.enabled: true
             layer.effect: BgShadow {}
+            opacity: compactPlayer.notchHovered ? 1.0 : 0.0
+            visible: opacity > 0
+            Behavior on opacity {
+                enabled: Config.animDuration > 0
+                NumberAnimation {
+                    duration: Config.animDuration
+                    easing.type: Easing.OutQuart
+                }
+            }
             Behavior on spacing {
                 enabled: Config.animDuration > 0
                 NumberAnimation {

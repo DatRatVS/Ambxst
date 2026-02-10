@@ -168,7 +168,7 @@ QtObject {
 
     property Process copyProcess: Process {
         id: copyProcess
-        command: ["bash", "-c", `wl-copy < "${root.finalPath}"`]
+        command: ["bash", "-c", `wl-copy --type image/png < "${root.finalPath}"`]
         onExited: exitCode => {
             if (exitCode !== 0) {
                 console.warn("Failed to copy to clipboard")

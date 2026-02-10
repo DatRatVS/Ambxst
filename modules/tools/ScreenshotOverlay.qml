@@ -190,7 +190,7 @@ PanelWindow {
                 icon: Icons.copy
                 onTriggered: {
                     var proc = Qt.createQmlObject('import Quickshell; import Quickshell.Io; Process { }', root);
-                    proc.command = ["bash", "-c", "wl-copy < \"" + root.imagePath + "\""];
+                    proc.command = ["bash", "-c", "wl-copy --type image/png < \"" + root.imagePath + "\""];
                     proc.running = true;
                 }
 
